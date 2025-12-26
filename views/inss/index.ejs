@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            red: '#DC2626',
+                            yellow: '#FBBF24',
+                            'red-light': '#EF4444',
+                            'yellow-light': '#FCD34D',
+                            'red-dark': '#B91C1C',
+                            'yellow-dark': '#D97706'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // Define a função ANTES de qualquer renderização - GARANTIDO
+        (function() {
+            'use strict';
+            
+            // Função para trocar abas - DEFINIDA GLOBALMENTE
+            window.showTab = function(tabName) {
+                // Esconde TODAS as abas de conteúdo
+                var allContents = document.querySelectorAll('.tab-content');
+                for (var i = 0; i < allContents.length; i++) {
+                    allContents[i].classList.add('hidden');
+                }
+                
+                // Remove estilo ativo de TODOS os botões
+                var allButtons = document.querySelectorAll('.tab-button');
+                for (var j = 0; j < allButtons.length; j++) {
+                    allButtons[j].classList.remove('active', 'border-primary-red', 'text-primary-red');
+                    allButtons[j].classList.add('border-transparent', 'text-gray-500');
+                }
+
+                // Mostra a aba selecionada
+                var contentElement = document.getElementById('content-' + tabName);
+                if (contentElement) {
+                    contentElement.classList.remove('hidden');
+                }
+
+                // Ativa o botão correspondente
+                var button = document.getElementById('tab-' + tabName);
+                if (button) {
+                    button.classList.add('active', 'border-primary-red', 'text-primary-red');
+                    button.classList.remove('border-transparent', 'text-gray-500');
+                }
+            };
+        })();
+    </script>
+</head>
+<body class="bg-gray-50">
+    <% if (typeof user !== 'undefined' && user) { %>
+        <%- include('../partials/navbar') %>
+    <% } %>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Calculadora de INSS</h1>
+            <p class="mt-2 text-gray-600">Cálculo progressivo conforme EC 103/2019</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Formulário -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">
+                        <i class="fas fa-calculator text-primary-red mr-2"></i>Dados de Entrada
+                    </h2>
+                    
+                    <% if (error) { %>
+                        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+                            <i class="fas fa-exclamation-circle mr-2"></i><%= error %>
+                        </div>
+                    <% } %>
+
+                    <form method="POST" action="/inss/calcular" class="space-y-4">
+                        <div>
+                            <label for="ano" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-calendar mr-2"></i>Ano da Tabela
+                            </label>
+                            <select id="ano" name="ano" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-red focus:border-transparent">
+                                <option value="">Ano Atual (Automático)</option>
+                                <option value="2026" selected>2026 (Estimado)</option>
+                                <option value="2025">2025 (Oficial)</option>
+                                <option value="2024">2024</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Selecione o ano da tabela de INSS</p>
+                        </div>
+
+                        <div>
+                            <label for="salarioBruto" class="block text-sm font-medium text-gray-700 mb-2">
+                                Salário Bruto (R$)
+                            </label>
+                            <input type="number" id="salarioBruto" name="salarioBruto" step="0.01" min="0" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-red focus:border-transparent"
+                                placeholder="0.00">
+                        </div>
+
+                        <div class="flex items-center">
+                            <input type="checkbox" id="proLabore" name="proLabore" value="true"
+                                class="h-4 w-4 text-primary-red focus:ring-primary-red border-gray-300 rounded">
+                            <label for="proLabore" class="ml-2 block text-sm text-gray-700">
+                                Pró-labore (alíquota fixa de 11%)
+                            </label>
+                        </div>
+
+                        <button type="submit"
+                            class="w-full bg-gradient-to-r from-primary-red to-primary-yellow text-white py-3 rounded-md font-semibold hover:opacity-90 transition">
+                            <i class="fas fa-calculator mr-2"></i>Calcular
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Resultado -->
+            <div class="lg:col-span-2">
+                <% if (resultado) { %>
+                    <!-- Abas -->
+                    <div class="bg-white rounded-lg shadow-md">
+                        <div class="border-b border-gray-200">
+                            <nav class="flex -mb-px">
+                                <button type="button" onclick="showTab('calculadora')" id="tab-calculadora"
+                                    class="tab-button active px-6 py-3 text-sm font-medium border-b-2 border-primary-red text-primary-red cursor-pointer">
+                                    <i class="fas fa-calculator mr-2"></i>Calculadora
+                                </button>
+                                <button type="button" onclick="showTab('memoria')" id="tab-memoria"
+                                    class="tab-button px-6 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 cursor-pointer">
+                                    <i class="fas fa-list-ol mr-2"></i>Memória de Cálculo
+                                </button>
+                                <button type="button" onclick="showTab('base-legal')" id="tab-base-legal"
+                                    class="tab-button px-6 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 cursor-pointer">
+                                    <i class="fas fa-gavel mr-2"></i>Base Legal
+                                </button>
+                            </nav>
+                        </div>
+
+                        <div class="p-6">
+                            <!-- Aba Calculadora -->
+                            <div id="content-calculadora" class="tab-content">
+                                <div class="bg-gradient-to-r from-primary-red to-primary-yellow rounded-lg p-6 text-white mb-6">
+                                    <h3 class="text-2xl font-bold mb-2">Resultado do Cálculo</h3>
+                                    <div class="mb-4">
+                                        <p class="text-sm opacity-90">Tabela de INSS</p>
+                                        <p class="text-lg font-semibold"><%= resultado.ano || '2025' %> - Teto: R$ <%= (resultado.teto || 8157.41).toFixed(2) %></p>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4 mt-4">
+                                        <div>
+                                            <p class="text-sm opacity-90">Salário Bruto</p>
+                                            <p class="text-2xl font-bold">R$ <%= resultado.salarioBruto.toFixed(2) %></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm opacity-90">Valor INSS</p>
+                                            <p class="text-2xl font-bold">R$ <%= resultado.valorINSS.toFixed(2) %></p>
+                                        </div>
+                                        <div class="col-span-2">
+                                            <p class="text-sm opacity-90">Alíquota Efetiva</p>
+                                            <p class="text-xl font-bold"><%= resultado.aliquotaEfetiva.toFixed(2) %>%</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                                    <p class="text-sm text-yellow-800 mb-2">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        <strong>Educação:</strong> O INSS é calculado de forma progressiva, aplicando diferentes alíquotas sobre cada faixa do salário.
+                                    </p>
+                                    <% if (resultado.ano === 2026) { %>
+                                        <p class="text-xs text-yellow-700 italic">
+                                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                                            <strong>Nota:</strong> Valores de 2026 são estimados. A tabela oficial será publicada em janeiro de 2026.
+                                        </p>
+                                    <% } %>
+                                </div>
+                            </div>
+
+                            <!-- Aba Memória -->
+                            <div id="content-memoria" class="tab-content hidden">
+                                <h3 class="text-xl font-bold text-gray-900 mb-4">Memória de Cálculo Passo a Passo</h3>
+                                <div class="space-y-3">
+                                    <% resultado.memoria.forEach(passo => { %>
+                                        <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-primary-red">
+                                            <div class="flex items-start">
+                                                <span class="bg-primary-red text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-3">
+                                                    <%= passo.passo %>
+                                                </span>
+                                                <div class="flex-1">
+                                                    <p class="font-semibold text-gray-900"><%= passo.descricao %></p>
+                                                    <% if (passo.calculo) { %>
+                                                        <p class="text-sm text-gray-600 mt-1"><%= passo.calculo %></p>
+                                                    <% } %>
+                                                    <% if (passo.valor) { %>
+                                                        <p class="text-primary-red font-bold mt-2">R$ <%= passo.valor %></p>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                                </div>
+                            </div>
+
+                            <!-- Aba Base Legal -->
+                            <div id="content-base-legal" class="tab-content hidden">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-xl font-bold text-gray-900">Base Legal</h3>
+                                    <button onclick="gerarPDF()" 
+                                            class="bg-primary-red text-white px-4 py-2 rounded hover:bg-red-700">
+                                        <i class="fas fa-file-pdf mr-2"></i>Gerar PDF
+                                    </button>
+                                </div>
+
+                                <!-- Tabela Completa de INSS -->
+                                <% if (resultado.tabelaFaixas) { %>
+                                    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                                        <h4 class="font-bold text-lg mb-4">Tabela de Contribuição do INSS - Ano <%= resultado.ano || new Date().getFullYear() %></h4>
+                                        <div class="overflow-x-auto">
+                                            <table class="min-w-full divide-y divide-gray-200">
+                                                <thead class="bg-gray-50">
+                                                    <tr>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Faixa</th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Salário de Contribuição</th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alíquota</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="bg-white divide-y divide-gray-200">
+                                                    <% let faixaAnterior = 0; %>
+                                                    <% resultado.tabelaFaixas.forEach((faixa, index) => { %>
+                                                        <tr class="<%= index % 2 === 0 ? 'bg-white' : 'bg-gray-50' %>">
+                                                            <td class="px-4 py-3 text-sm font-medium text-gray-900"><%= index + 1 %></td>
+                                                            <td class="px-4 py-3 text-sm text-gray-700">
+                                                                <% if (index === 0) { %>
+                                                                    Até R$ <%= faixa.limite.toFixed(2) %>
+                                                                <% } else { %>
+                                                                    De R$ <%= faixaAnterior.toFixed(2) %> até R$ <%= faixa.limite.toFixed(2) %>
+                                                                <% } %>
+                                                            </td>
+                                                            <td class="px-4 py-3 text-sm font-bold text-primary-red"><%= faixa.aliquota %>%</td>
+                                                        </tr>
+                                                        <% faixaAnterior = faixa.limite; %>
+                                                    <% }); %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mt-4">
+                                            <strong>Teto Previdenciário:</strong> R$ <%= (resultado.teto || 8157.41).toFixed(2) %>
+                                        </p>
+                                    </div>
+                                <% } %>
+
+                                <!-- Lei Completa -->
+                                <div class="bg-gray-50 rounded-lg p-6">
+                                    <h4 class="font-bold text-lg text-gray-900 mb-2">
+                                        <%= resultado.baseLegal.titulo %>
+                                    </h4>
+                                    <p class="text-gray-700 mb-4">
+                                        <strong>Artigo:</strong> <%= resultado.baseLegal.artigo %>
+                                    </p>
+                                    <% if (resultado.baseLegal.textoCompleto) { %>
+                                        <div class="text-gray-700 leading-relaxed whitespace-pre-line">
+                                            <%= resultado.baseLegal.textoCompleto %>
+                                        </div>
+                                    <% } else { %>
+                                        <p class="text-gray-600">
+                                            <%= resultado.baseLegal.descricao %>
+                                        </p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <div class="bg-white rounded-lg shadow-md p-12 text-center">
+                        <i class="fas fa-calculator text-gray-300 text-6xl mb-4"></i>
+                        <p class="text-gray-600">Preencha os dados ao lado para calcular o INSS</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Inicializa quando a página carregar
+        (function() {
+            function init() {
+                var primeiraAba = document.querySelector('.tab-button.active');
+                if (primeiraAba) {
+                    var tabName = primeiraAba.id.replace('tab-', '');
+                    if (window.showTab) {
+                        window.showTab(tabName);
+                    }
+                }
+            }
+            
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                setTimeout(init, 100);
+            }
+        })();
+
+        function gerarPDF() {
+            <% if (typeof resultado !== 'undefined' && resultado) { %>
+                const dados = {
+                    usuario: {
+                        nome: '<%= typeof user !== 'undefined' && user ? user.nome : "Usuário" %>',
+                        email: '<%= typeof user !== 'undefined' && user ? user.email : "" %>'
+                    },
+                    salarioBruto: <%= resultado.salarioBruto %>,
+                    valorINSS: <%= resultado.valorINSS %>,
+                    ano: <%= resultado.ano || new Date().getFullYear() %>,
+                    teto: <%= resultado.teto || 8157.41 %>,
+                    memoria: <%= JSON.stringify(resultado.memoria) %>,
+                    tabelaFaixas: <%= JSON.stringify(resultado.tabelaFaixas || []) %>,
+                    baseLegal: <%= JSON.stringify(resultado.baseLegal) %>
+                };
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/pdf/inss';
+                form.style.display = 'none';
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'dados';
+                input.value = JSON.stringify(dados);
+                form.appendChild(input);
+
+                document.body.appendChild(form);
+                form.submit();
+            <% } %>
+        }
+    </script>
+</body>
+</html>
+

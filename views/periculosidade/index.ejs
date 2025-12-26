@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { red: '#DC2626', yellow: '#FBBF24' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <% if (typeof user !== 'undefined' && user) { %>
+        <%- include('../partials/navbar') %>
+    <% } %>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Periculosidade e Insalubridade</h1>
+            <p class="mt-2 text-gray-600">Adicionais de risco</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-bold mb-4">Dados de Entrada</h2>
+                    
+                    <% if (error) { %>
+                        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+                            <%= error %>
+                        </div>
+                    <% } %>
+
+                    <form method="POST" action="/periculosidade/calcular" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Tipo</label>
+                            <select name="tipo" id="tipo" class="w-full px-4 py-2 border rounded-md">
+                                <option value="periculosidade">Periculosidade (30% sobre salário base)</option>
+                                <option value="insalubridade">Insalubridade (% sobre salário mínimo)</option>
+                            </select>
+                        </div>
+
+                        <div id="divSalarioBase">
+                            <label class="block text-sm font-medium mb-2">Salário Base (R$)</label>
+                            <input type="number" name="salarioBase" step="0.01" id="salarioBase"
+                                class="w-full px-4 py-2 border rounded-md">
+                        </div>
+
+                        <div id="divGrau" class="hidden">
+                            <label class="block text-sm font-medium mb-2">Grau de Insalubridade</label>
+                            <select name="grauInsalubridade" class="w-full px-4 py-2 border rounded-md">
+                                <option value="minimo">Mínimo (10%)</option>
+                                <option value="medio" selected>Médio (20%)</option>
+                                <option value="maximo">Máximo (40%)</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="w-full bg-primary-red text-white py-3 rounded-md font-semibold hover:opacity-90">
+                            Calcular
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <% if (resultado) { %>
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="bg-gradient-to-r from-primary-red to-primary-yellow rounded-lg p-6 text-white mb-6">
+                            <h3 class="text-2xl font-bold mb-4">
+                                <%= resultado.tipo === 'periculosidade' ? 'Periculosidade' : 'Insalubridade' %>
+                            </h3>
+                            <p class="text-3xl font-bold">R$ <%= resultado.valorAdicional.toFixed(2) %></p>
+                            <p class="text-sm opacity-90 mt-2"><%= resultado.percentual %>% de adicional</p>
+                        </div>
+
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                            <h4 class="font-bold mb-2">Educação</h4>
+                            <p class="text-sm text-yellow-800"><%= resultado.educacao.descricao %></p>
+                        </div>
+
+                        <h4 class="font-bold mb-4">Memória de Cálculo</h4>
+                        <div class="space-y-3">
+                            <% resultado.memoria.forEach(passo => { %>
+                                <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-primary-red">
+                                    <p class="font-semibold"><%= passo.descricao %></p>
+                                    <% if (passo.calculo) { %>
+                                        <p class="text-sm text-gray-600 mt-1"><%= passo.calculo %></p>
+                                    <% } %>
+                                </div>
+                            <% }); %>
+                        </div>
+
+                        <div class="mt-6 bg-gray-50 rounded-lg p-6">
+                            <h4 class="font-bold mb-2">Base Legal</h4>
+                            <p class="font-semibold"><%= resultado.baseLegal.titulo %></p>
+                            <p class="text-sm text-gray-600 mt-1"><%= resultado.baseLegal.descricao %></p>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <div class="bg-white rounded-lg shadow-md p-12 text-center">
+                        <i class="fas fa-shield-alt text-gray-300 text-6xl mb-4"></i>
+                        <p class="text-gray-600">Preencha os dados para calcular</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('tipo').addEventListener('change', function() {
+            const divSalario = document.getElementById('divSalarioBase');
+            const divGrau = document.getElementById('divGrau');
+            const salarioBase = document.getElementById('salarioBase');
+            
+            if (this.value === 'periculosidade') {
+                divSalario.classList.remove('hidden');
+                divGrau.classList.add('hidden');
+                salarioBase.required = true;
+            } else {
+                divSalario.classList.add('hidden');
+                divGrau.classList.remove('hidden');
+                salarioBase.required = false;
+            }
+        });
+    </script>
+</body>
+</html>
+

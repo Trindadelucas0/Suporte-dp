@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo - Suporte DP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            red: '#DC2626',
+                            yellow: '#FBBF24'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-primary-red via-primary-yellow to-primary-red min-h-screen">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4">
+        <div class="max-w-4xl w-full">
+            <!-- Cabeçalho -->
+            <div class="text-center mb-12">
+                <i class="fas fa-calculator text-white text-6xl mb-4"></i>
+                <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Suporte DP</h1>
+                <p class="text-xl text-white opacity-90">Sistema Educacional de Cálculos Trabalhistas</p>
+            </div>
+
+            <!-- Cards de Opções -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Card Cadastro (Destaque) -->
+                <div class="bg-white rounded-lg shadow-2xl p-8 transform hover:scale-105 transition duration-300 border-4 border-primary-yellow">
+                    <div class="text-center mb-6">
+                        <div class="bg-primary-yellow rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-user-plus text-white text-3xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2">Criar Conta</h2>
+                        <p class="text-gray-600">Comece agora e tenha acesso completo</p>
+                    </div>
+                    
+                    <ul class="space-y-3 mb-6 text-sm text-gray-700">
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-primary-yellow mr-2"></i>
+                            Cálculos trabalhistas completos
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-primary-yellow mr-2"></i>
+                            Histórico de todos os cálculos
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-primary-yellow mr-2"></i>
+                            Checklists de processos
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-primary-yellow mr-2"></i>
+                            Calendário de obrigações
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check-circle text-primary-yellow mr-2"></i>
+                            Geração de PDFs profissionais
+                        </li>
+                    </ul>
+
+                    <a href="/register" 
+                       class="block w-full bg-gradient-to-r from-primary-yellow to-primary-red text-white py-4 rounded-md font-bold text-lg text-center hover:opacity-90 transition shadow-lg">
+                        <i class="fas fa-user-plus mr-2"></i>Criar Conta Grátis
+                    </a>
+                </div>
+
+                <!-- Card Login -->
+                <div class="bg-white rounded-lg shadow-xl p-8">
+                    <div class="text-center mb-6">
+                        <div class="bg-primary-red rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-sign-in-alt text-white text-3xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2">Já Tenho Conta</h2>
+                        <p class="text-gray-600">Faça login para continuar</p>
+                    </div>
+
+                    <a href="/login" 
+                       class="block w-full bg-gradient-to-r from-primary-red to-primary-yellow text-white py-4 rounded-md font-bold text-lg text-center hover:opacity-90 transition shadow-lg">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Fazer Login
+                    </a>
+
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <p class="text-center text-sm text-gray-600">
+                            Esqueceu sua senha?<br>
+                            <span class="text-primary-red">Entre em contato com o administrador</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações Adicionais -->
+            <div class="mt-8 text-center">
+                <p class="text-white opacity-80 text-sm">
+                    <i class="fas fa-shield-alt mr-2"></i>
+                    Seus dados estão seguros e protegidos
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

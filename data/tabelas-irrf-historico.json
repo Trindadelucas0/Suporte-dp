@@ -1,0 +1,33 @@
+{
+  "2024": {
+    "faixas": [
+      { "limite": 1903.98, "aliquota": 0, "deducao": 0 },
+      { "limite": 2826.65, "aliquota": 7.5, "deducao": 142.80 },
+      { "limite": 3751.05, "aliquota": 15.0, "deducao": 354.80 },
+      { "limite": 4664.68, "aliquota": 22.5, "deducao": 636.13 },
+      { "limite": 999999999, "aliquota": 27.5, "deducao": 869.36 }
+    ],
+    "valorDependente": 189.59
+  },
+  "2025": {
+    "faixas": [
+      { "limite": 1903.98, "aliquota": 0, "deducao": 0 },
+      { "limite": 2826.65, "aliquota": 7.5, "deducao": 142.80 },
+      { "limite": 3751.05, "aliquota": 15.0, "deducao": 354.80 },
+      { "limite": 4664.68, "aliquota": 22.5, "deducao": 636.13 },
+      { "limite": 999999999, "aliquota": 27.5, "deducao": 869.36 }
+    ],
+    "valorDependente": 189.59
+  },
+  "2026": {
+    "faixas": [
+      { "limite": 1903.98, "aliquota": 0, "deducao": 0 },
+      { "limite": 2826.65, "aliquota": 7.5, "deducao": 142.80 },
+      { "limite": 3751.05, "aliquota": 15.0, "deducao": 354.80 },
+      { "limite": 4664.68, "aliquota": 22.5, "deducao": 636.13 },
+      { "limite": 999999999, "aliquota": 27.5, "deducao": 869.36 }
+    ],
+    "valorDependente": 189.59
+  }
+}
+

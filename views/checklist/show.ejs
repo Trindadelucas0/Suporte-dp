@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { red: '#DC2626', yellow: '#FBBF24' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <% if (typeof user !== 'undefined' && user) { %>
+        <%- include('../partials/navbar') %>
+    <% } %>
+
+    <main class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900" id="checklistTitulo"><%= checklist.titulo %></h1>
+                <button onclick="editarTitulo()" class="text-sm text-primary-red hover:underline mt-1">
+                    <i class="fas fa-edit mr-1"></i>Editar título
+                </button>
+            </div>
+            <a href="/checklist" class="text-primary-red hover:underline">
+                <i class="fas fa-arrow-left mr-1"></i>Voltar
+            </a>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="space-y-4" id="listaItens">
+                <% itens.forEach(item => { %>
+                    <div class="flex items-start border rounded-lg p-4 hover:bg-gray-50" data-item-id="<%= item.id %>">
+                        <input type="checkbox" 
+                               id="item-<%= item.id %>"
+                               <%= item.concluido ? 'checked' : '' %>
+                               onchange="toggleItem('<%= item.id %>', this.checked)"
+                               class="mt-1 h-5 w-5 text-primary-red focus:ring-primary-red border-gray-300 rounded">
+                        <div class="ml-3 flex-1">
+                            <label for="item-<%= item.id %>" class="cursor-pointer">
+                                <span class="item-text <%= item.concluido ? 'line-through text-gray-500' : 'text-gray-900' %>">
+                                    <%= item.item %>
+                                </span>
+                            </label>
+                            <% if (item.observacao) { %>
+                                <p class="text-xs text-gray-500 mt-1"><%= item.observacao %></p>
+                            <% } %>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="editarItem('<%= item.id %>', <%= JSON.stringify(item.item) %>, <%= JSON.stringify(item.observacao || '') %>)" 
+                                    class="text-primary-yellow hover:text-yellow-600">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="removerItem('<%= item.id %>')" 
+                                    class="text-red-600 hover:text-red-800">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+
+            <div class="mt-6 pt-6 border-t">
+                <button onclick="adicionarItem()" 
+                        class="w-full bg-primary-yellow text-white py-2 rounded-md hover:opacity-90 mb-4">
+                    <i class="fas fa-plus mr-2"></i>Adicionar Item
+                </button>
+                <p class="text-sm text-gray-600">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Marque os itens conforme forem concluídos. Clique no ícone de edição para modificar itens.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Edição de Título -->
+    <div id="modalTitulo" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">Editar Título</h3>
+            <input type="text" id="novoTitulo" value="<%= checklist.titulo %>" 
+                   class="w-full px-4 py-2 border rounded-md mb-4">
+            <div class="flex justify-end space-x-2">
+                <button onclick="fecharModalTitulo()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancelar</button>
+                <button onclick="salvarTitulo()" class="px-4 py-2 bg-primary-red text-white rounded hover:bg-red-700">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição de Item -->
+    <div id="modalItem" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">Editar Item</h3>
+            <input type="hidden" id="itemIdEdit">
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Item</label>
+                <input type="text" id="itemTextoEdit" class="w-full px-4 py-2 border rounded-md">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Observação (opcional)</label>
+                <textarea id="itemObservacaoEdit" rows="2" class="w-full px-4 py-2 border rounded-md"></textarea>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button onclick="fecharModalItem()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancelar</button>
+                <button onclick="salvarItem()" class="px-4 py-2 bg-primary-red text-white rounded hover:bg-red-700">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Adicionar Item -->
+    <div id="modalAdicionar" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">Adicionar Item</h3>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Item</label>
+                <input type="text" id="novoItemTexto" class="w-full px-4 py-2 border rounded-md">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Observação (opcional)</label>
+                <textarea id="novoItemObservacao" rows="2" class="w-full px-4 py-2 border rounded-md"></textarea>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button onclick="fecharModalAdicionar()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancelar</button>
+                <button onclick="salvarNovoItem()" class="px-4 py-2 bg-primary-red text-white rounded hover:bg-red-700">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const checklistId = '<%= checklist.id %>';
+
+        function toggleItem(itemId, concluido) {
+            fetch('/checklist/item/concluir', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemId, concluido: concluido.toString() })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const label = document.querySelector(`label[for="item-${itemId}"] .item-text`);
+                    if (concluido) {
+                        label.classList.add('line-through', 'text-gray-500');
+                        label.classList.remove('text-gray-900');
+                    } else {
+                        label.classList.remove('line-through', 'text-gray-500');
+                        label.classList.add('text-gray-900');
+                    }
+                }
+            });
+        }
+
+        function editarTitulo() {
+            document.getElementById('modalTitulo').classList.remove('hidden');
+        }
+
+        function fecharModalTitulo() {
+            document.getElementById('modalTitulo').classList.add('hidden');
+        }
+
+        function salvarTitulo() {
+            const novoTitulo = document.getElementById('novoTitulo').value.trim();
+            
+            if (!novoTitulo) {
+                alert('O título não pode estar vazio');
+                return;
+            }
+
+            fetch('/checklist/atualizar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ checklistId, titulo: novoTitulo })
+            })
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error('Erro ao salvar');
+                }
+                return r.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('checklistTitulo').textContent = novoTitulo;
+                    fecharModalTitulo();
+                } else {
+                    alert('Erro ao salvar título: ' + (data.error || 'Erro desconhecido'));
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao salvar título. Tente novamente.');
+            });
+        }
+
+        function editarItem(itemId, itemTexto, observacao) {
+            document.getElementById('itemIdEdit').value = itemId;
+            document.getElementById('itemTextoEdit').value = itemTexto || '';
+            document.getElementById('itemObservacaoEdit').value = observacao || '';
+            document.getElementById('modalItem').classList.remove('hidden');
+        }
+
+        function fecharModalItem() {
+            document.getElementById('modalItem').classList.add('hidden');
+        }
+
+        function salvarItem() {
+            const itemId = document.getElementById('itemIdEdit').value;
+            const item = document.getElementById('itemTextoEdit').value.trim();
+            const observacao = document.getElementById('itemObservacaoEdit').value.trim();
+            
+            if (!item) {
+                alert('O item não pode estar vazio');
+                return;
+            }
+            
+            fetch('/checklist/item/atualizar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemId, item, observacao: observacao || null })
+            })
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error('Erro ao atualizar item');
+                }
+                return r.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Erro ao atualizar item: ' + (data.error || 'Erro desconhecido'));
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao atualizar item. Tente novamente.');
+            });
+        }
+
+        function adicionarItem() {
+            document.getElementById('modalAdicionar').classList.remove('hidden');
+        }
+
+        function fecharModalAdicionar() {
+            document.getElementById('modalAdicionar').classList.add('hidden');
+            document.getElementById('novoItemTexto').value = '';
+            document.getElementById('novoItemObservacao').value = '';
+        }
+
+        function salvarNovoItem() {
+            const item = document.getElementById('novoItemTexto').value.trim();
+            const observacao = document.getElementById('novoItemObservacao').value.trim();
+            
+            if (!item) {
+                alert('O item não pode estar vazio');
+                return;
+            }
+
+            fetch('/checklist/item/adicionar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ checklistId, item, observacao: observacao || null })
+            })
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error('Erro ao adicionar item');
+                }
+                return r.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Erro ao adicionar item: ' + (data.error || 'Erro desconhecido'));
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao adicionar item. Tente novamente.');
+            });
+        }
+
+        function removerItem(itemId) {
+            if (!confirm('Tem certeza que deseja remover este item?')) {
+                return;
+            }
+
+            fetch('/checklist/item/remover', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemId })
+            })
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error('Erro ao remover item');
+                }
+                return r.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const elemento = document.querySelector(`[data-item-id="${itemId}"]`);
+                    if (elemento) {
+                        elemento.remove();
+                    }
+                } else {
+                    alert('Erro ao remover item: ' + (data.error || 'Erro desconhecido'));
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao remover item. Tente novamente.');
+            });
+        }
+    </script>
+</body>
+</html>

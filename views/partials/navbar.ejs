@@ -1,0 +1,45 @@
+<nav class="bg-gradient-to-r from-primary-red to-primary-yellow shadow-lg mb-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex items-center">
+                <a href="/dashboard" class="text-white text-xl font-bold">
+                    <i class="fas fa-calculator mr-2"></i>Suporte DP
+                </a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="/dashboard" class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-medium">
+                    <i class="fas fa-home mr-1"></i>Dashboard
+                </a>
+                <div class="relative group">
+                    <button class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-calculator mr-1"></i>Calculadoras
+                        <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                    </button>
+                    <div class="hidden group-hover:block absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-50">
+                        <a href="/inss" class="block px-4 py-2 text-gray-800 hover:bg-red-50">INSS</a>
+                        <a href="/irrf" class="block px-4 py-2 text-gray-800 hover:bg-red-50">IRRF</a>
+                        <a href="/fgts" class="block px-4 py-2 text-gray-800 hover:bg-red-50">FGTS</a>
+                        <a href="/avos" class="block px-4 py-2 text-gray-800 hover:bg-red-50">Avos (Férias/13º)</a>
+                        <a href="/periculosidade" class="block px-4 py-2 text-gray-800 hover:bg-red-50">Periculosidade/Insalubridade</a>
+                        <a href="/custo" class="block px-4 py-2 text-gray-800 hover:bg-red-50">Custo do Funcionário</a>
+                    </div>
+                </div>
+                <a href="/calendario" class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-medium">
+                    <i class="fas fa-calendar mr-1"></i>Calendário
+                </a>
+                <a href="/checklist" class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-medium">
+                    <i class="fas fa-check-square mr-1"></i>Checklists
+                </a>
+                <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+                    <a href="/admin" class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-cog mr-1"></i>Admin
+                    </a>
+                <% } %>
+                <a href="/logout" class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-medium">
+                    <i class="fas fa-sign-out-alt mr-1"></i>Sair
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { red: '#DC2626', yellow: '#FBBF24' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <% if (typeof user !== 'undefined' && user) { %>
+        <%- include('../partials/navbar') %>
+    <% } %>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Checklists de Processos</h1>
+                <p class="mt-2 text-gray-600">Gerencie seus checklists de processos trabalhistas</p>
+            </div>
+            <button onclick="abrirModalCriar()" 
+                    class="bg-primary-red text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold">
+                <i class="fas fa-plus mr-2"></i>Criar Novo Checklist
+            </button>
+        </div>
+
+        <!-- Checklists Padrão -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Checklists Padrão</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="/checklist/admissao" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition border-l-4 border-primary-red">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-plus text-primary-red text-4xl mr-4"></i>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Checklist de Admissão</h2>
+                            <p class="text-gray-600">Processo completo de admissão</p>
+                        </div>
+                    </div>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>✓ Coleta de documentos</li>
+                        <li>✓ Exame admissional</li>
+                        <li>✓ Registro CTPS Digital</li>
+                        <li>✓ Cadastro eSocial</li>
+                    </ul>
+                </a>
+
+                <a href="/checklist/rescisao" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition border-l-4 border-primary-yellow">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-minus text-primary-yellow text-4xl mr-4"></i>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Checklist de Rescisão</h2>
+                            <p class="text-gray-600">Processo completo de rescisão</p>
+                        </div>
+                    </div>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>✓ Aviso prévio</li>
+                        <li>✓ Exame demissional</li>
+                        <li>✓ Cálculo de rescisão</li>
+                        <li>✓ Chave FGTS</li>
+                    </ul>
+                </a>
+
+                <a href="/checklist/afastamento_inss" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition border-l-4 border-primary-red">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-user-injured text-primary-red text-4xl mr-4"></i>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Afastamento INSS</h2>
+                            <p class="text-gray-600">Processo de afastamento</p>
+                        </div>
+                    </div>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>✓ Atestado médico</li>
+                        <li>✓ Registro eSocial</li>
+                        <li>✓ Cálculo de avos</li>
+                        <li>✓ Retorno ao trabalho</li>
+                    </ul>
+                </a>
+            </div>
+        </div>
+
+        <!-- Meus Checklists -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Meus Checklists</h2>
+            <% if (checklists && checklists.length > 0) { %>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <% checklists.forEach(checklist => { %>
+                        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary-yellow">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-bold text-gray-900 mb-1"><%= checklist.titulo %></h3>
+                                    <p class="text-sm text-gray-500 mb-2">
+                                        <i class="fas fa-tag mr-1"></i><%= checklist.tipo || 'Personalizado' %>
+                                    </p>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <span class="mr-4">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            <%= checklist.itens_concluidos || 0 %> / <%= checklist.total_itens || 0 %> itens
+                                        </span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                        <div class="bg-primary-yellow h-2 rounded-full" 
+                                             style="width: <%= checklist.total_itens > 0 ? ((checklist.itens_concluidos / checklist.total_itens * 100) || 0) : 0 %>%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2 mt-4">
+                                <a href="/checklist/custom/<%= checklist.id %>" 
+                                   class="flex-1 bg-primary-yellow text-white px-4 py-2 rounded hover:bg-yellow-600 text-center text-sm font-semibold">
+                                    <i class="fas fa-eye mr-1"></i>Abrir
+                                </a>
+                                <button onclick="editarChecklist(<%= checklist.id %>, <%= JSON.stringify(checklist.titulo) %>)" 
+                                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deletarChecklist(<%= checklist.id %>, <%= JSON.stringify(checklist.titulo) %>)" 
+                                        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <div class="bg-white rounded-lg shadow-md p-12 text-center">
+                    <i class="fas fa-clipboard-list text-gray-300 text-6xl mb-4"></i>
+                    <p class="text-gray-600 mb-4">Você ainda não criou nenhum checklist personalizado</p>
+                    <button onclick="abrirModalCriar()" 
+                            class="bg-primary-red text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold">
+                        <i class="fas fa-plus mr-2"></i>Criar Primeiro Checklist
+                    </button>
+                </div>
+            <% } %>
+        </div>
+    </main>
+
+    <!-- Modal Criar Checklist -->
+    <div id="modalCriar" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">Criar Novo Checklist</h3>
+            <form id="formCriar" onsubmit="criarChecklist(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Título do Checklist</label>
+                    <input type="text" id="novoTituloChecklist" required
+                           class="w-full px-4 py-2 border rounded-md" 
+                           placeholder="Ex: Checklist de Férias">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Tipo (opcional)</label>
+                    <input type="text" id="novoTipoChecklist"
+                           class="w-full px-4 py-2 border rounded-md" 
+                           placeholder="Ex: Férias, Promoção, etc.">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Itens Iniciais (um por linha)</label>
+                    <textarea id="novosItensChecklist" rows="5"
+                              class="w-full px-4 py-2 border rounded-md" 
+                              placeholder="Item 1&#10;Item 2&#10;Item 3"></textarea>
+                    <p class="text-xs text-gray-500 mt-1">Digite um item por linha</p>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="fecharModalCriar()" 
+                            class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancelar</button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-primary-red text-white rounded hover:bg-red-700">Criar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Checklist -->
+    <div id="modalEditar" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">Editar Checklist</h3>
+            <form id="formEditar" onsubmit="salvarEdicaoChecklist(event)">
+                <input type="hidden" id="checklistIdEditar">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Título do Checklist</label>
+                    <input type="text" id="tituloChecklistEditar" required
+                           class="w-full px-4 py-2 border rounded-md">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Tipo (opcional)</label>
+                    <input type="text" id="tipoChecklistEditar"
+                           class="w-full px-4 py-2 border rounded-md">
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="fecharModalEditar()" 
+                            class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancelar</button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-primary-red text-white rounded hover:bg-red-700">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalCriar() {
+            document.getElementById('modalCriar').classList.remove('hidden');
+        }
+
+        function fecharModalCriar() {
+            document.getElementById('modalCriar').classList.add('hidden');
+            document.getElementById('formCriar').reset();
+        }
+
+        function criarChecklist(event) {
+            event.preventDefault();
+            const titulo = document.getElementById('novoTituloChecklist').value.trim();
+            const tipo = document.getElementById('novoTipoChecklist').value.trim();
+            const itensTexto = document.getElementById('novosItensChecklist').value.trim();
+            
+            if (!titulo) {
+                alert('O título é obrigatório');
+                return;
+            }
+
+            const itens = itensTexto ? itensTexto.split('\n').filter(item => item.trim()).map(item => item.trim()) : [];
+
+            fetch('/checklist/criar-custom', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titulo, tipo: tipo || 'custom', itens })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/checklist/custom/' + data.data.id;
+                } else {
+                    alert('Erro ao criar checklist: ' + (data.error || 'Erro desconhecido'));
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao criar checklist. Tente novamente.');
+            });
+        }
+
+        function editarChecklist(id, titulo) {
+            document.getElementById('checklistIdEditar').value = id;
+            document.getElementById('tituloChecklistEditar').value = titulo;
+            document.getElementById('modalEditar').classList.remove('hidden');
+        }
+
+        function fecharModalEditar() {
+            document.getElementById('modalEditar').classList.add('hidden');
+            document.getElementById('formEditar').reset();
+        }
+
+        function salvarEdicaoChecklist(event) {
+            event.preventDefault();
+            const id = document.getElementById('checklistIdEditar').value;
+            const titulo = document.getElementById('tituloChecklistEditar').value.trim();
+            const tipo = document.getElementById('tipoChecklistEditar').value.trim();
+
+            if (!titulo) {
+                alert('O título é obrigatório');
+                return;
+            }
+
+            fetch('/checklist/atualizar-custom', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ checklistId: id, titulo, tipo: tipo || 'custom' })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Erro ao atualizar checklist: ' + (data.error || 'Erro desconhecido'));
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao atualizar checklist. Tente novamente.');
+            });
+        }
+
+        function deletarChecklist(id, titulo) {
+            if (!confirm('Tem certeza que deseja deletar o checklist "' + titulo + '"? Esta ação não pode ser desfeita.')) {
+                return;
+            }
+
+            fetch('/checklist/deletar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ checklistId: id })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Erro ao deletar checklist: ' + (data.error || 'Erro desconhecido'));
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao deletar checklist. Tente novamente.');
+            });
+        }
+    </script>
+</body>
+</html>

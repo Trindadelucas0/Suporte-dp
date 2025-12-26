@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { red: '#DC2626', yellow: '#FBBF24' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <% if (typeof user !== 'undefined' && user) { %>
+        <%- include('../partials/navbar') %>
+    <% } %>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Calendário de Obrigações</h1>
+            <p class="mt-2 text-gray-600">Dias úteis, feriados e anotações</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold"><%= mesNome %> <%= ano %></h2>
+                        <div class="flex space-x-2">
+                            <a href="?ano=<%= ano %>&mes=<%= mes - 1 %>" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                            <a href="?ano=<%= ano %>&mes=<%= mes + 1 %>" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-7 gap-2">
+                        <div class="text-center font-semibold text-gray-700 py-2">Dom</div>
+                        <div class="text-center font-semibold text-gray-700 py-2">Seg</div>
+                        <div class="text-center font-semibold text-gray-700 py-2">Ter</div>
+                        <div class="text-center font-semibold text-gray-700 py-2">Qua</div>
+                        <div class="text-center font-semibold text-gray-700 py-2">Qui</div>
+                        <div class="text-center font-semibold text-gray-700 py-2">Sex</div>
+                        <div class="text-center font-semibold text-gray-700 py-2">Sáb</div>
+
+                        <% 
+                        const primeiroDia = new Date(ano, mes - 1, 1).getDay();
+                        for (let i = 0; i < primeiroDia; i++) {
+                        %>
+                            <div class="h-16"></div>
+                        <% } %>
+
+                        <% calendario.forEach(dia => { %>
+                            <div onclick="abrirModal('<%= dia.data %>')" 
+                                class="h-16 border rounded p-1 cursor-pointer hover:bg-gray-50
+                                    <%= dia.isFeriado ? 'bg-red-100 border-red-300' : 
+                                        dia.diaSemana === 0 ? 'bg-gray-100' : 
+                                        dia.anotacao ? 'bg-yellow-50 border-yellow-300' : '' %>">
+                                <div class="text-sm font-semibold <%= dia.isFeriado ? 'text-red-700' : '' %>">
+                                    <%= dia.dia %>
+                                </div>
+                                <% if (dia.isFeriado) { %>
+                                    <div class="text-xs text-red-600 truncate" title="<%= dia.feriadoNome %>">
+                                        <%= dia.feriadoNome %>
+                                    </div>
+                                <% } %>
+                                <% if (dia.anotacao) { %>
+                                    <div class="text-xs text-yellow-700 truncate" title="<%= dia.anotacao %>">
+                                        <i class="fas fa-sticky-note"></i>
+                                    </div>
+                                <% } %>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h3 class="text-lg font-bold mb-4">Calcular Dias Úteis</h3>
+                    <form id="formDiasUteis" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Data Início</label>
+                            <input type="date" id="dataInicio" class="w-full px-3 py-2 border rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Data Fim</label>
+                            <input type="date" id="dataFim" class="w-full px-3 py-2 border rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Tipo de Semana</label>
+                            <select id="tipoSemana" class="w-full px-3 py-2 border rounded">
+                                <option value="segunda_sexta">Segunda a Sexta</option>
+                                <option value="segunda_sabado">Segunda a Sábado</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-primary-red text-white py-2 rounded hover:bg-red-700">
+                            Calcular
+                        </button>
+                    </form>
+                    <div id="resultadoDiasUteis" class="mt-4 hidden"></div>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h4 class="font-bold mb-2">DSR - Descanso Semanal Remunerado</h4>
+                    <p class="text-sm text-yellow-800">
+                        O DSR é calculado sobre horas extras e comissões. 
+                        Considere domingos e feriados no cálculo.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Anotação -->
+    <div id="modalAnotacao" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">Anotação</h3>
+            <p class="text-sm text-gray-600 mb-4" id="modalData"></p>
+            <textarea id="modalTexto" class="w-full px-3 py-2 border rounded mb-4" rows="4"></textarea>
+            <div class="flex justify-end space-x-2">
+                <button onclick="fecharModal()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancelar</button>
+                <button onclick="salvarAnotacao()" class="px-4 py-2 bg-primary-red text-white rounded hover:bg-red-700">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let dataSelecionada = '';
+        
+        function abrirModal(data) {
+            dataSelecionada = data;
+            document.getElementById('modalData').textContent = 'Data: ' + new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
+            document.getElementById('modalAnotacao').classList.remove('hidden');
+            
+            fetch('/calendario/anotacao/' + data)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.data && data.data.anotacao) {
+                        document.getElementById('modalTexto').value = data.data.anotacao;
+                    }
+                });
+        }
+        
+        function fecharModal() {
+            document.getElementById('modalAnotacao').classList.add('hidden');
+        }
+        
+        function salvarAnotacao() {
+            const texto = document.getElementById('modalTexto').value;
+            fetch('/calendario/anotacao', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: dataSelecionada, anotacao: texto })
+            })
+            .then(r => r.json())
+            .then(() => {
+                fecharModal();
+                location.reload();
+            });
+        }
+        
+        document.getElementById('formDiasUteis').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const inicio = document.getElementById('dataInicio').value;
+            const fim = document.getElementById('dataFim').value;
+            const tipo = document.getElementById('tipoSemana').value;
+            
+            fetch(`/calendario/calcular?dataInicio=${inicio}&dataFim=${fim}&tipoSemana=${tipo}`)
+                .then(r => r.json())
+                .then(data => {
+                    const div = document.getElementById('resultadoDiasUteis');
+                    div.classList.remove('hidden');
+                    div.innerHTML = `
+                        <div class="bg-green-50 border border-green-200 rounded p-4">
+                            <p class="font-bold">Dias Úteis: ${data.diasUteis}</p>
+                            <p class="text-sm">Total: ${data.totalDias} dias</p>
+                            <p class="text-sm">Domingos: ${data.domingos}</p>
+                            <p class="text-sm">Feriados: ${data.feriados}</p>
+                        </div>
+                    `;
+                });
+        });
+    </script>
+</body>
+</html>
+

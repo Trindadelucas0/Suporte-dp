@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { red: '#DC2626', yellow: '#FBBF24' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <% if (typeof user !== 'undefined' && user) { %>
+        <%- include('../partials/navbar') %>
+    <% } %>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Calculadora de FGTS</h1>
+            <p class="mt-2 text-gray-600">Fundo de Garantia do Tempo de Serviço - Lei 8.036/1990</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-bold mb-4">Dados de Entrada</h2>
+                    
+                    <% if (error) { %>
+                        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+                            <%= error %>
+                        </div>
+                    <% } %>
+
+                    <form method="POST" action="/fgts/calcular" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Salário Bruto (R$)</label>
+                            <input type="number" name="salarioBruto" step="0.01" required
+                                class="w-full px-4 py-2 border rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Tipo de Registro</label>
+                            <select name="tipoRegistro" class="w-full px-4 py-2 border rounded-md">
+                                <option value="clt_geral">CLT Geral (8%)</option>
+                                <option value="jovem_aprendiz">Jovem Aprendiz (2%)</option>
+                                <option value="domestico">Trabalhador Doméstico (8% + 3,2%)</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="w-full bg-primary-red text-white py-3 rounded-md font-semibold hover:opacity-90">
+                            Calcular
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <% if (resultado) { %>
+                    <div class="bg-white rounded-lg shadow-md">
+                        <div class="border-b">
+                            <nav class="flex -mb-px">
+                                <button onclick="showTab('calc')" id="tab-calc" class="tab-button active px-6 py-3 border-b-2 border-primary-red text-primary-red">
+                                    Calculadora
+                                </button>
+                                <button onclick="showTab('mem')" id="tab-mem" class="tab-button px-6 py-3 border-b-2 border-transparent text-gray-500">
+                                    Memória
+                                </button>
+                                <button onclick="showTab('legal')" id="tab-legal" class="tab-button px-6 py-3 border-b-2 border-transparent text-gray-500">
+                                    Base Legal
+                                </button>
+                            </nav>
+                        </div>
+
+                        <div class="p-6">
+                            <div id="content-calc" class="tab-content">
+                                <div class="bg-gradient-to-r from-primary-red to-primary-yellow rounded-lg p-6 text-white mb-6">
+                                    <h3 class="text-2xl font-bold mb-4">Resultado</h3>
+                                    <p class="text-3xl font-bold">R$ <%= resultado.valorTotal.toFixed(2) %></p>
+                                    <p class="text-sm opacity-90 mt-2"><%= resultado.tipoNome %></p>
+                                </div>
+
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                    <p class="text-sm text-yellow-800">
+                                        <strong>Educação:</strong> <%= resultado.educacao.descricao %>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div id="content-mem" class="tab-content hidden">
+                                <h3 class="text-xl font-bold mb-4">Memória de Cálculo</h3>
+                                <div class="space-y-3">
+                                    <% resultado.memoria.forEach(passo => { %>
+                                        <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-primary-red">
+                                            <p class="font-semibold"><%= passo.descricao %></p>
+                                            <% if (passo.calculo) { %>
+                                                <p class="text-sm text-gray-600 mt-1"><%= passo.calculo %></p>
+                                            <% } %>
+                                        </div>
+                                    <% }); %>
+                                </div>
+                            </div>
+
+                            <div id="content-legal" class="tab-content hidden">
+                                <h3 class="text-xl font-bold mb-4">Base Legal</h3>
+                                <div class="bg-gray-50 rounded-lg p-6">
+                                    <h4 class="font-bold text-lg mb-2"><%= resultado.baseLegal.titulo %></h4>
+                                    <p class="mb-2"><strong>Artigo:</strong> <%= resultado.baseLegal.artigo %></p>
+                                    <p class="text-gray-600"><%= resultado.baseLegal.descricao %></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <div class="bg-white rounded-lg shadow-md p-12 text-center">
+                        <i class="fas fa-calculator text-gray-300 text-6xl mb-4"></i>
+                        <p class="text-gray-600">Preencha os dados para calcular</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.tab-button').forEach(b => {
+                b.classList.remove('active', 'border-primary-red', 'text-primary-red');
+                b.classList.add('border-transparent', 'text-gray-500');
+            });
+            document.getElementById('content-' + tab).classList.remove('hidden');
+            const btn = document.getElementById('tab-' + tab);
+            btn.classList.add('active', 'border-primary-red', 'text-primary-red');
+        }
+    </script>
+</body>
+</html>
+

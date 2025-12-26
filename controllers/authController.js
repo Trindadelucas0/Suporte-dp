@@ -1,0 +1,141 @@
+/**
+ * CONTROLLER: AuthController
+ * Gerencia autenticação e sessões
+ */
+
+const User = require('../models/User');
+const { validationResult } = require('express-validator');
+
+class AuthController {
+  static async login(req, res) {
+    if (req.method === 'GET') {
+      return res.render('auth/login', {
+        title: 'Login - Suporte DP',
+        error: null
+      });
+    }
+
+    const { email, senha } = req.body;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.render('auth/login', {
+        title: 'Login - Suporte DP',
+        error: 'Por favor, preencha todos os campos corretamente.'
+      });
+    }
+
+    try {
+      const user = await User.findByEmail(email);
+      
+      if (!user) {
+        return res.render('auth/login', {
+          title: 'Login - Suporte DP',
+          error: 'Email ou senha incorretos.'
+        });
+      }
+
+      const senhaValida = await User.verifyPassword(senha, user.senha_hash);
+      
+      if (!senhaValida) {
+        return res.render('auth/login', {
+          title: 'Login - Suporte DP',
+          error: 'Email ou senha incorretos.'
+        });
+      }
+
+      // Cria sessão
+      req.session.user = {
+        id: user.id,
+        nome: user.nome,
+        email: user.email,
+        is_admin: user.is_admin
+      };
+
+      const returnTo = req.session.returnTo || '/dashboard';
+      delete req.session.returnTo;
+      
+      res.redirect(returnTo);
+    } catch (error) {
+      console.error('Erro no login:', error);
+      res.render('auth/login', {
+        title: 'Login - Suporte DP',
+        error: 'Erro ao fazer login. Tente novamente.'
+      });
+    }
+  }
+
+  static async register(req, res) {
+    if (req.method === 'GET') {
+      return res.render('auth/register', {
+        title: 'Cadastro - Suporte DP',
+        error: null
+      });
+    }
+
+    const { nome, email, senha, confirmarSenha } = req.body;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.render('auth/register', {
+        title: 'Cadastro - Suporte DP',
+        error: 'Por favor, preencha todos os campos corretamente.'
+      });
+    }
+
+    if (senha !== confirmarSenha) {
+      return res.render('auth/register', {
+        title: 'Cadastro - Suporte DP',
+        error: 'As senhas não coincidem.'
+      });
+    }
+
+    if (senha.length < 6) {
+      return res.render('auth/register', {
+        title: 'Cadastro - Suporte DP',
+        error: 'A senha deve ter pelo menos 6 caracteres.'
+      });
+    }
+
+    try {
+      const userExistente = await User.findByEmail(email);
+      
+      if (userExistente) {
+        return res.render('auth/register', {
+          title: 'Cadastro - Suporte DP',
+          error: 'Este email já está cadastrado.'
+        });
+      }
+
+      const user = await User.create(nome, email, senha, false);
+      
+      // Login automático após cadastro
+      req.session.user = {
+        id: user.id,
+        nome: user.nome,
+        email: user.email,
+        is_admin: user.is_admin
+      };
+
+      res.redirect('/dashboard');
+    } catch (error) {
+      console.error('Erro no cadastro:', error);
+      res.render('auth/register', {
+        title: 'Cadastro - Suporte DP',
+        error: 'Erro ao criar conta. Tente novamente.'
+      });
+    }
+  }
+
+  static logout(req, res) {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Erro ao fazer logout:', err);
+      }
+      res.redirect('/login');
+    });
+  }
+}
+
+module.exports = AuthController;
+

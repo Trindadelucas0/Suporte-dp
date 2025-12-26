@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { red: '#DC2626', yellow: '#FBBF24' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <% if (typeof user !== 'undefined' && user) { %>
+        <%- include('../partials/navbar') %>
+    <% } %>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p class="mt-2 text-gray-600">Bem-vindo ao Suporte DP!</p>
+        </div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Card INSS -->
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary-red">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm">Cálculos de INSS</p>
+                <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.calculosInss %></p>
+            </div>
+            <i class="fas fa-percent text-primary-red text-4xl"></i>
+        </div>
+        <a href="/inss" class="text-primary-red hover:underline text-sm mt-4 inline-block">
+            Ver calculadora <i class="fas fa-arrow-right ml-1"></i>
+        </a>
+    </div>
+
+    <!-- Card IRRF -->
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary-yellow">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm">Cálculos de IRRF</p>
+                <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.calculosIrrf %></p>
+            </div>
+            <i class="fas fa-file-invoice-dollar text-primary-yellow text-4xl"></i>
+        </div>
+        <a href="/irrf" class="text-primary-yellow hover:underline text-sm mt-4 inline-block">
+            Ver calculadora <i class="fas fa-arrow-right ml-1"></i>
+        </a>
+    </div>
+
+    <!-- Card FGTS -->
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary-red">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm">Cálculos de FGTS</p>
+                <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.calculosFgts %></p>
+            </div>
+            <i class="fas fa-piggy-bank text-primary-red text-4xl"></i>
+        </div>
+        <a href="/fgts" class="text-primary-red hover:underline text-sm mt-4 inline-block">
+            Ver calculadora <i class="fas fa-arrow-right ml-1"></i>
+        </a>
+    </div>
+
+    <!-- Card Checklists -->
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary-yellow">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600 text-sm">Checklists</p>
+                <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.checklists %></p>
+            </div>
+            <i class="fas fa-check-square text-primary-yellow text-4xl"></i>
+        </div>
+        <a href="/checklist" class="text-primary-yellow hover:underline text-sm mt-4 inline-block">
+            Ver checklists <i class="fas fa-arrow-right ml-1"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Acesso Rápido -->
+<div class="bg-white rounded-lg shadow-md p-6 mb-8">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">
+        <i class="fas fa-bolt text-primary-yellow mr-2"></i>Acesso Rápido
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <a href="/inss" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
+            <i class="fas fa-percent text-primary-red text-2xl mr-3"></i>
+            <div>
+                <p class="font-semibold text-gray-900">Calculadora de INSS</p>
+                <p class="text-sm text-gray-600">Cálculo progressivo</p>
+            </div>
+        </a>
+        <a href="/irrf" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
+            <i class="fas fa-file-invoice-dollar text-primary-yellow text-2xl mr-3"></i>
+            <div>
+                <p class="font-semibold text-gray-900">Calculadora de IRRF</p>
+                <p class="text-sm text-gray-600">Imposto de Renda</p>
+            </div>
+        </a>
+        <a href="/fgts" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
+            <i class="fas fa-piggy-bank text-primary-red text-2xl mr-3"></i>
+            <div>
+                <p class="font-semibold text-gray-900">Calculadora de FGTS</p>
+                <p class="text-sm text-gray-600">Fundo de Garantia</p>
+            </div>
+        </a>
+        <a href="/avos" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
+            <i class="fas fa-calendar-alt text-primary-yellow text-2xl mr-3"></i>
+            <div>
+                <p class="font-semibold text-gray-900">Calculadora de Avos</p>
+                <p class="text-sm text-gray-600">Férias e 13º</p>
+            </div>
+        </a>
+        <a href="/calendario" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
+            <i class="fas fa-calendar text-primary-red text-2xl mr-3"></i>
+            <div>
+                <p class="font-semibold text-gray-900">Calendário</p>
+                <p class="text-sm text-gray-600">Dias úteis e feriados</p>
+            </div>
+        </a>
+        <a href="/custo" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
+            <i class="fas fa-calculator text-primary-yellow text-2xl mr-3"></i>
+            <div>
+                <p class="font-semibold text-gray-900">Custo do Funcionário</p>
+                <p class="text-sm text-gray-600">Simulador completo</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Últimos Cálculos -->
+<% if (ultimosCalculos && ultimosCalculos.length > 0) { %>
+<div class="bg-white rounded-lg shadow-md p-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-4">
+        <i class="fas fa-history text-primary-red mr-2"></i>Últimos Cálculos
+    </h2>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <% ultimosCalculos.forEach(calc => { %>
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                            <%= calc.tipo === 'INSS' ? 'bg-red-100 text-red-800' : 
+                                calc.tipo === 'IRRF' ? 'bg-yellow-100 text-yellow-800' : 
+                                'bg-blue-100 text-blue-800' %>">
+                            <%= calc.tipo %>
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                        R$ <%= parseFloat(calc.valor).toFixed(2) %>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <%= new Date(calc.created_at).toLocaleDateString('pt-BR') %>
+                    </td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+</div>
+<% } %>
+    </main>
+</body>
+</html>
+

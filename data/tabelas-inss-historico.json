@@ -1,0 +1,237 @@
+{
+  "2001": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2002": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2003": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2004": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2005": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2006": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2007": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2008": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2009": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2010": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2011": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2012": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2013": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2014": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2015": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2016": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2017": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2018": {
+    "faixas": [
+      { "limite": 200.00, "aliquota": 7.65 },
+      { "limite": 400.00, "aliquota": 8.65 },
+      { "limite": 800.00, "aliquota": 9.65 },
+      { "limite": 1200.00, "aliquota": 11.0 }
+    ],
+    "teto": 1200.00
+  },
+  "2019": {
+    "faixas": [
+      { "limite": 998.00, "aliquota": 7.5 },
+      { "limite": 1666.68, "aliquota": 9.0 },
+      { "limite": 2778.66, "aliquota": 12.0 },
+      { "limite": 5531.31, "aliquota": 14.0 }
+    ],
+    "teto": 5531.31
+  },
+  "2020": {
+    "faixas": [
+      { "limite": 1045.00, "aliquota": 7.5 },
+      { "limite": 2089.60, "aliquota": 9.0 },
+      { "limite": 3134.40, "aliquota": 12.0 },
+      { "limite": 6101.06, "aliquota": 14.0 }
+    ],
+    "teto": 6101.06
+  },
+  "2021": {
+    "faixas": [
+      { "limite": 1100.00, "aliquota": 7.5 },
+      { "limite": 2203.48, "aliquota": 9.0 },
+      { "limite": 3305.22, "aliquota": 12.0 },
+      { "limite": 6433.57, "aliquota": 14.0 }
+    ],
+    "teto": 6433.57
+  },
+  "2022": {
+    "faixas": [
+      { "limite": 1212.00, "aliquota": 7.5 },
+      { "limite": 2427.35, "aliquota": 9.0 },
+      { "limite": 3641.03, "aliquota": 12.0 },
+      { "limite": 7087.22, "aliquota": 14.0 }
+    ],
+    "teto": 7087.22
+  },
+  "2023": {
+    "faixas": [
+      { "limite": 1320.00, "aliquota": 7.5 },
+      { "limite": 2571.29, "aliquota": 9.0 },
+      { "limite": 3856.94, "aliquota": 12.0 },
+      { "limite": 7507.49, "aliquota": 14.0 }
+    ],
+    "teto": 7507.49
+  },
+  "2024": {
+    "faixas": [
+      { "limite": 1412.00, "aliquota": 7.5 },
+      { "limite": 2666.68, "aliquota": 9.0 },
+      { "limite": 4000.03, "aliquota": 12.0 },
+      { "limite": 7786.02, "aliquota": 14.0 }
+    ],
+    "teto": 7786.02
+  },
+  "2025": {
+    "faixas": [
+      { "limite": 1518.00, "aliquota": 7.5 },
+      { "limite": 2793.88, "aliquota": 9.0 },
+      { "limite": 4190.83, "aliquota": 12.0 },
+      { "limite": 8157.41, "aliquota": 14.0 }
+    ],
+    "teto": 8157.41
+  },
+  "2026": {
+    "faixas": [
+      { "limite": 1621.00, "aliquota": 7.5 },
+      { "limite": 2985.00, "aliquota": 9.0 },
+      { "limite": 4480.00, "aliquota": 12.0 },
+      { "limite": 8537.55, "aliquota": 14.0 }
+    ],
+    "teto": 8537.55
+  }
+}
+
