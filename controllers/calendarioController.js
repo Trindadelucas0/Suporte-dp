@@ -6,12 +6,36 @@
 const CalendarioService = require('../services/calendarioService');
 
 class CalendarioController {
+  /**
+   * Exibe o calendário mensal com obrigações trabalhistas
+   * GERA AUTOMATICAMENTE as obrigações ao carregar o calendário
+   * 
+   * REGRAS DE OBRIGAÇÕES AUTOMÁTICAS:
+   * - FGTS: até dia 20 do mês seguinte à competência (ajusta se fim de semana/feriado)
+   * - INSS: até dia 20 do mês seguinte à competência (ajusta se fim de semana/feriado)
+   * - IRRF: até dia 20 do mês seguinte à competência (ajusta se fim de semana/feriado)
+   * - DCTFWeb: último dia útil do mês da competência
+   * - EFD-Reinf: dia 15 do mês da competência (ajusta se fim de semana/feriado)
+   */
   static async index(req, res) {
     const userId = req.session.user.id;
     const ano = parseInt(req.query.ano) || new Date().getFullYear();
     const mes = parseInt(req.query.mes) || new Date().getMonth() + 1;
 
     try {
+      // GERA AUTOMATICAMENTE as obrigações trabalhistas para o mês visualizado
+      // Isso garante que o calendário sempre tenha as obrigações corretas
+      // A função evita duplicatas automaticamente
+      try {
+        await CalendarioService.gerarObrigacoesAutomaticas(userId, ano, mes);
+        console.log(`✅ Obrigações automáticas geradas para ${mes}/${ano}`);
+      } catch (gerarError) {
+        // Se der erro ao gerar, continua mesmo assim (não quebra o calendário)
+        // Isso permite que o calendário funcione mesmo se houver problema na geração
+        console.warn('⚠️ Aviso ao gerar obrigações automáticas:', gerarError.message);
+      }
+
+      // Busca o calendário mensal com todas as obrigações, feriados e anotações
       const calendario = await CalendarioService.getCalendarioMensal(userId, ano, mes);
       
       // Debug: verifica se calendário tem dados

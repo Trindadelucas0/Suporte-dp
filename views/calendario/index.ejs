@@ -100,9 +100,9 @@
                                     <% if (dia.obrigacoes && dia.obrigacoes.length > 0) { %>
                                         <div class="space-y-1 mt-1">
                                             <% dia.obrigacoes.slice(0, 2).forEach(obrigacao => { %>
-                                                <div class="text-xs <%= obrigacao.tipo === 'dctfweb' ? 'text-blue-700 bg-blue-100' : obrigacao.tipo === 'inss' ? 'text-green-700 bg-green-100' : obrigacao.tipo === 'irrf' ? 'text-purple-700 bg-purple-100' : 'text-orange-700 bg-orange-100' %> px-1 py-0.5 rounded truncate" 
+                                                <div class="text-xs <%= obrigacao.tipo === 'fgts' ? 'text-orange-700 bg-orange-100' : obrigacao.tipo === 'inss' ? 'text-green-700 bg-green-100' : obrigacao.tipo === 'irrf' ? 'text-purple-700 bg-purple-100' : obrigacao.tipo === 'dctfweb' ? 'text-blue-700 bg-blue-100' : obrigacao.tipo === 'efd_reinf' ? 'text-indigo-700 bg-indigo-100' : 'text-gray-700 bg-gray-100' %> px-1 py-0.5 rounded truncate" 
                                                      title="<%= obrigacao.descricao %>">
-                                                    <i class="fas fa-<%= obrigacao.tipo === 'dctfweb' ? 'file-invoice' : obrigacao.tipo === 'inss' ? 'shield-alt' : obrigacao.tipo === 'irrf' ? 'receipt' : 'calendar-check' %> mr-1"></i>
+                                                    <i class="fas fa-<%= obrigacao.tipo === 'fgts' ? 'wallet' : obrigacao.tipo === 'inss' ? 'shield-alt' : obrigacao.tipo === 'irrf' ? 'receipt' : obrigacao.tipo === 'dctfweb' ? 'file-invoice' : obrigacao.tipo === 'efd_reinf' ? 'file-alt' : 'calendar-check' %> mr-1"></i>
                                                     <%= obrigacao.descricao %>
                                                 </div>
                                             <% }); %>
@@ -248,10 +248,11 @@
                         <div>
                             <label class="block text-sm font-medium mb-1">Tipo de Obrigação</label>
                             <select id="tipoObrigacao" class="w-full px-3 py-2 border rounded">
-                                <option value="dctfweb">DCTFWeb</option>
+                                <option value="fgts">FGTS</option>
                                 <option value="inss">INSS</option>
                                 <option value="irrf">IRRF</option>
-                                <option value="fgts">FGTS</option>
+                                <option value="dctfweb">DCTFWeb</option>
+                                <option value="efd_reinf">EFD-Reinf</option>
                                 <option value="esocial">eSocial</option>
                                 <option value="outro">Outro</option>
                             </select>
@@ -357,12 +358,13 @@
             }
             
             lista.innerHTML = obrigacoesAtuais.map(obrigacao => {
-                const cores = {
-                    'dctfweb': 'bg-blue-100 text-blue-700 border-blue-300',
+                    const cores = {
+                    'fgts': 'bg-orange-100 text-orange-700 border-orange-300',
                     'inss': 'bg-green-100 text-green-700 border-green-300',
                     'irrf': 'bg-purple-100 text-purple-700 border-purple-300',
-                    'fgts': 'bg-orange-100 text-orange-700 border-orange-300',
-                    'esocial': 'bg-indigo-100 text-indigo-700 border-indigo-300',
+                    'dctfweb': 'bg-blue-100 text-blue-700 border-blue-300',
+                    'efd_reinf': 'bg-indigo-100 text-indigo-700 border-indigo-300',
+                    'esocial': 'bg-teal-100 text-teal-700 border-teal-300',
                     'outro': 'bg-gray-100 text-gray-700 border-gray-300'
                 };
                 const cor = cores[obrigacao.tipo] || cores['outro'];

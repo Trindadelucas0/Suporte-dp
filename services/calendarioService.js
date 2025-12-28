@@ -260,6 +260,301 @@ class CalendarioService {
     );
     return result.rows;
   }
+
+  /**
+   * Verifica se uma data é dia útil (não é sábado, domingo nem feriado)
+   * 
+   * REGRA: Dia útil = Segunda a Sexta, exceto feriados
+   * 
+   * @param {moment.Moment} data - Data a verificar usando moment.js
+   * @param {Array} feriados - Array de objetos feriados do banco de dados
+   * @returns {boolean} true se for dia útil, false caso contrário
+   */
+  static isDiaUtil(data, feriados = []) {
+    const diaSemana = data.day(); // 0 = domingo, 6 = sábado
+    
+    // Verifica se é fim de semana
+    if (diaSemana === 0 || diaSemana === 6) {
+      return false; // Não é dia útil (sábado ou domingo)
+    }
+
+    // Verifica se é feriado
+    const dataStr = data.format('YYYY-MM-DD');
+    // Feriados podem vir como objeto com propriedade 'data' (Date) ou string
+    const feriadosSet = new Set(feriados.map(f => {
+      if (typeof f === 'string') {
+        return f;
+      }
+      // Se for objeto, pega a propriedade data
+      const dataFeriado = f.data || f;
+      return moment(dataFeriado).format('YYYY-MM-DD');
+    }));
+    
+    if (feriadosSet.has(dataStr)) {
+      return false; // Não é dia útil (é feriado)
+    }
+
+    return true; // É dia útil (segunda a sexta e não é feriado)
+  }
+
+  /**
+   * Ajusta data para o último dia útil anterior se cair em fim de semana ou feriado
+   * 
+   * REGRA: Quando vencimento cai em sábado/domingo ou feriado, antecipa-se para o último dia útil anterior
+   * Usado para: FGTS, INSS, IRRF (vencimento dia 20)
+   * 
+   * @param {moment.Moment} data - Data original que precisa ser ajustada
+   * @param {Array} feriados - Array de feriados para verificação
+   * @returns {moment.Moment} Data ajustada para o último dia útil anterior
+   */
+  static ajustarParaUltimoDiaUtilAnterior(data, feriados = []) {
+    let dataAjustada = data.clone();
+    let tentativas = 0;
+    const maxTentativas = 10; // Evita loop infinito (segurança)
+
+    // Retrocede dia a dia até encontrar um dia útil
+    while (!this.isDiaUtil(dataAjustada, feriados) && tentativas < maxTentativas) {
+      dataAjustada.subtract(1, 'day');
+      tentativas++;
+    }
+
+    return dataAjustada;
+  }
+
+  /**
+   * Ajusta data para o primeiro dia útil subsequente se cair em fim de semana ou feriado
+   * 
+   * REGRA: Quando vencimento cai em sábado/domingo ou feriado, adia-se para o primeiro dia útil subsequente
+   * Usado para: EFD-Reinf (vencimento dia 15)
+   * 
+   * @param {moment.Moment} data - Data original que precisa ser ajustada
+   * @param {Array} feriados - Array de feriados para verificação
+   * @returns {moment.Moment} Data ajustada para o primeiro dia útil subsequente
+   */
+  static ajustarParaPrimeiroDiaUtilSubsequente(data, feriados = []) {
+    let dataAjustada = data.clone();
+    let tentativas = 0;
+    const maxTentativas = 10; // Evita loop infinito (segurança)
+
+    // Avança dia a dia até encontrar um dia útil
+    while (!this.isDiaUtil(dataAjustada, feriados) && tentativas < maxTentativas) {
+      dataAjustada.add(1, 'day');
+      tentativas++;
+    }
+
+    return dataAjustada;
+  }
+
+  /**
+   * Calcula o último dia útil do mês
+   * 
+   * REGRA: Último dia útil = último dia do mês que não seja sábado, domingo ou feriado
+   * Usado para: DCTFWeb (vencimento no último dia útil do mês)
+   * 
+   * @param {number} ano - Ano (ex: 2025)
+   * @param {number} mes - Mês (1-12)
+   * @param {Array} feriados - Array de feriados para verificação
+   * @returns {moment.Moment} Último dia útil do mês
+   */
+  static calcularUltimoDiaUtilMes(ano, mes, feriados = []) {
+    // Pega o último dia do mês
+    const ultimoDiaMes = moment(`${ano}-${String(mes).padStart(2, '0')}-01`).endOf('month');
+    // Ajusta para o último dia útil anterior (caso o último dia não seja útil)
+    return this.ajustarParaUltimoDiaUtilAnterior(ultimoDiaMes, feriados);
+  }
+
+  /**
+   * GERA AUTOMATICAMENTE as obrigações trabalhistas para um mês de competência
+   * 
+   * Esta função é chamada automaticamente quando o calendário é carregado.
+   * Ela cria as obrigações no banco de dados seguindo as regras legais:
+   * 
+   * REGRAS DE VENCIMENTO:
+   * 1. FGTS: até dia 20 do mês seguinte à competência
+   *    - Se cair em sábado/domingo/feriado → antecipa para último dia útil anterior
+   * 
+   * 2. INSS: até dia 20 do mês seguinte à competência
+   *    - Se cair em sábado/domingo/feriado → antecipa para último dia útil anterior
+   * 
+   * 3. IRRF: até dia 20 do mês seguinte à competência
+   *    - Se cair em sábado/domingo/feriado → antecipa para último dia útil anterior
+   * 
+   * 4. DCTFWeb: último dia útil do mês da competência
+   *    - Sempre o último dia útil, mesmo que seja dia 28, 29, 30 ou 31
+   * 
+   * 5. EFD-Reinf: dia 15 do mês da competência
+   *    - Se cair em sábado/domingo/feriado → adia para primeiro dia útil subsequente
+   * 
+   * IMPORTANTE: A função evita duplicatas - se já existe obrigação do mesmo tipo na mesma data,
+   * não cria novamente. Isso permite chamar a função múltiplas vezes sem problemas.
+   * 
+   * @param {number} userId - ID do usuário (UUID)
+   * @param {number} ano - Ano da competência (ex: 2025)
+   * @param {number} mes - Mês da competência (1-12)
+   * @returns {Promise<Array>} Array de obrigações criadas (pode estar vazio se já existirem)
+   */
+  static async gerarObrigacoesAutomaticas(userId, ano, mes) {
+    // Cria objeto moment para a competência (mês que está sendo visualizado)
+    const competencia = moment(`${ano}-${String(mes).padStart(2, '0')}-01`);
+    
+    // Calcula o mês seguinte (onde ficam os vencimentos de FGTS, INSS, IRRF)
+    const mesSeguinte = competencia.clone().add(1, 'month');
+    
+    // Busca feriados do ano da competência e do mês seguinte
+    // Isso é necessário porque os vencimentos podem estar em meses diferentes
+    const feriados = await Feriado.findAll(ano);
+    const feriadosMesSeguinte = await Feriado.findAll(mesSeguinte.year());
+    
+    // Combina todos os feriados para verificação completa
+    const todosFeriados = [...feriados, ...feriadosMesSeguinte];
+
+    // Array que armazenará todas as obrigações a serem criadas
+    const obrigacoes = [];
+
+    // ============================================
+    // 1. FGTS - Recolhimento da folha de pagamento
+    // ============================================
+    // REGRA: até dia 20 do mês seguinte à competência
+    const vencimentoFGTS = moment(`${mesSeguinte.year()}-${String(mesSeguinte.month() + 1).padStart(2, '0')}-20`);
+    
+    // Verifica se o dia 20 é dia útil
+    if (!this.isDiaUtil(vencimentoFGTS, todosFeriados)) {
+      // Se não for, ajusta para o último dia útil anterior
+      const vencimentoAjustado = this.ajustarParaUltimoDiaUtilAnterior(vencimentoFGTS, todosFeriados);
+      obrigacoes.push({
+        data: vencimentoAjustado.format('YYYY-MM-DD'),
+        tipo: 'fgts',
+        descricao: 'FGTS - Recolhimento da folha de pagamento',
+        observacao: `Competência: ${competencia.format('MM/YYYY')}. Vencimento original: ${vencimentoFGTS.format('DD/MM/YYYY')} (ajustado para ${vencimentoAjustado.format('DD/MM/YYYY')} por ser ${vencimentoFGTS.day() === 0 ? 'domingo' : vencimentoFGTS.day() === 6 ? 'sábado' : 'feriado'})`
+      });
+    } else {
+      // Se for dia útil, usa a data original
+      obrigacoes.push({
+        data: vencimentoFGTS.format('YYYY-MM-DD'),
+        tipo: 'fgts',
+        descricao: 'FGTS - Recolhimento da folha de pagamento',
+        observacao: `Competência: ${competencia.format('MM/YYYY')}`
+      });
+    }
+
+    // ============================================
+    // 2. INSS - Contribuições previdenciárias
+    // ============================================
+    // REGRA: até dia 20 do mês seguinte à competência
+    const vencimentoINSS = moment(`${mesSeguinte.year()}-${String(mesSeguinte.month() + 1).padStart(2, '0')}-20`);
+    
+    if (!this.isDiaUtil(vencimentoINSS, todosFeriados)) {
+      const vencimentoAjustado = this.ajustarParaUltimoDiaUtilAnterior(vencimentoINSS, todosFeriados);
+      obrigacoes.push({
+        data: vencimentoAjustado.format('YYYY-MM-DD'),
+        tipo: 'inss',
+        descricao: 'INSS - Contribuições previdenciárias',
+        observacao: `Competência: ${competencia.format('MM/YYYY')}. Vencimento original: ${vencimentoINSS.format('DD/MM/YYYY')} (ajustado para ${vencimentoAjustado.format('DD/MM/YYYY')} por ser ${vencimentoINSS.day() === 0 ? 'domingo' : vencimentoINSS.day() === 6 ? 'sábado' : 'feriado'})`
+      });
+    } else {
+      obrigacoes.push({
+        data: vencimentoINSS.format('YYYY-MM-DD'),
+        tipo: 'inss',
+        descricao: 'INSS - Contribuições previdenciárias',
+        observacao: `Competência: ${competencia.format('MM/YYYY')}`
+      });
+    }
+
+    // ============================================
+    // 3. IRRF - Imposto de Renda Retido na Fonte
+    // ============================================
+    // REGRA: até dia 20 do mês seguinte à competência
+    const vencimentoIRRF = moment(`${mesSeguinte.year()}-${String(mesSeguinte.month() + 1).padStart(2, '0')}-20`);
+    
+    if (!this.isDiaUtil(vencimentoIRRF, todosFeriados)) {
+      const vencimentoAjustado = this.ajustarParaUltimoDiaUtilAnterior(vencimentoIRRF, todosFeriados);
+      obrigacoes.push({
+        data: vencimentoAjustado.format('YYYY-MM-DD'),
+        tipo: 'irrf',
+        descricao: 'IRRF - Imposto de Renda Retido na Fonte',
+        observacao: `Competência: ${competencia.format('MM/YYYY')}. Vencimento original: ${vencimentoIRRF.format('DD/MM/YYYY')} (ajustado para ${vencimentoAjustado.format('DD/MM/YYYY')} por ser ${vencimentoIRRF.day() === 0 ? 'domingo' : vencimentoIRRF.day() === 6 ? 'sábado' : 'feriado'})`
+      });
+    } else {
+      obrigacoes.push({
+        data: vencimentoIRRF.format('YYYY-MM-DD'),
+        tipo: 'irrf',
+        descricao: 'IRRF - Imposto de Renda Retido na Fonte',
+        observacao: `Competência: ${competencia.format('MM/YYYY')}`
+      });
+    }
+
+    // ============================================
+    // 4. DCTFWeb - Empresas/Equiparadas
+    // ============================================
+    // REGRA: último dia útil do mês da competência
+    const ultimoDiaUtil = this.calcularUltimoDiaUtilMes(competencia.year(), competencia.month() + 1, feriados);
+    obrigacoes.push({
+      data: ultimoDiaUtil.format('YYYY-MM-DD'),
+      tipo: 'dctfweb',
+      descricao: 'DCTFWeb - Empresas/Equiparadas',
+      observacao: `Competência: ${competencia.format('MM/YYYY')}. Último dia útil do mês.`
+    });
+
+    // ============================================
+    // 5. EFD-Reinf - Empresas/Equiparadas
+    // ============================================
+    // REGRA: dia 15 do mês da competência
+    const vencimentoReinf = moment(`${competencia.year()}-${String(competencia.month() + 1).padStart(2, '0')}-15`);
+    
+    if (!this.isDiaUtil(vencimentoReinf, feriados)) {
+      // Se não for dia útil, adia para o primeiro dia útil subsequente
+      const vencimentoAjustado = this.ajustarParaPrimeiroDiaUtilSubsequente(vencimentoReinf, feriados);
+      obrigacoes.push({
+        data: vencimentoAjustado.format('YYYY-MM-DD'),
+        tipo: 'efd_reinf',
+        descricao: 'EFD-Reinf - Empresas/Equiparadas',
+        observacao: `Competência: ${competencia.format('MM/YYYY')}. Vencimento original: ${vencimentoReinf.format('DD/MM/YYYY')} (ajustado para ${vencimentoAjustado.format('DD/MM/YYYY')} por ser ${vencimentoReinf.day() === 0 ? 'domingo' : vencimentoReinf.day() === 6 ? 'sábado' : 'feriado'})`
+      });
+    } else {
+      obrigacoes.push({
+        data: vencimentoReinf.format('YYYY-MM-DD'),
+        tipo: 'efd_reinf',
+        descricao: 'EFD-Reinf - Empresas/Equiparadas',
+        observacao: `Competência: ${competencia.format('MM/YYYY')}`
+      });
+    }
+
+    // ============================================
+    // SALVA AS OBRIGAÇÕES NO BANCO DE DADOS
+    // ============================================
+    // IMPORTANTE: Evita duplicatas verificando se já existe obrigação do mesmo tipo na mesma data
+    const obrigacoesCriadas = [];
+    
+    for (const obrigacao of obrigacoes) {
+      try {
+        // Verifica se já existe obrigação do mesmo tipo na mesma data para este usuário
+        const existe = await db.query(
+          `SELECT id FROM calendario_obrigacoes 
+           WHERE user_id = $1 AND data = $2 AND tipo = $3`,
+          [userId, obrigacao.data, obrigacao.tipo]
+        );
+
+        // Se não existir, cria a obrigação
+        if (existe.rows.length === 0) {
+          const resultado = await this.saveObrigacao(
+            userId,
+            obrigacao.data,
+            obrigacao.tipo,
+            obrigacao.descricao,
+            obrigacao.observacao
+          );
+          obrigacoesCriadas.push(resultado);
+        }
+        // Se já existir, não faz nada (evita duplicatas)
+      } catch (error) {
+        // Se der erro ao salvar uma obrigação específica, registra mas continua com as outras
+        console.error(`Erro ao salvar obrigação ${obrigacao.tipo} para ${obrigacao.data}:`, error);
+      }
+    }
+
+    // Retorna apenas as obrigações que foram criadas (não as que já existiam)
+    return obrigacoesCriadas;
+  }
 }
 
 module.exports = CalendarioService;
