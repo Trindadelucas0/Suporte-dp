@@ -1,23 +1,37 @@
 /**
  * SERVICE: ContratoExperienciaService
- * Cálculo de quebra de contrato de experiência
+ * Cálculo de MULTA de quebra de contrato de experiência
  * 
- * BASE LEGAL: CLT Art. 445 a Art. 451
+ * BASE LEGAL: CLT Art. 479 e Art. 480
+ * 
+ * IMPORTANTE: Este módulo calcula APENAS a multa de quebra, não verbas rescisórias
+ * 
+ * Art. 479 - Quebra pelo EMPREGADOR:
+ * - Multa de 50% sobre o valor dos salários correspondentes ao período que faltava
+ * 
+ * Art. 480 - Quebra pelo EMPREGADO:
+ * - Desconto máximo de 50% sobre o valor dos salários correspondentes ao período que faltava
+ * - O desconto nunca pode ser maior que o valor calculado no Art. 479
  */
 
 const moment = require('moment');
 
 class ContratoExperienciaService {
   /**
-   * Calcula quebra de contrato de experiência
+   * Calcula MULTA de quebra de contrato de experiência
+   * 
+   * REGRA LEGAL:
+   * - Art. 479: Quebra pelo empregador → multa de 50% sobre salários restantes
+   * - Art. 480: Quebra pelo empregado → desconto máximo de 50% sobre salários restantes
+   * 
    * @param {Date} dataInicio - Data de início do contrato
    * @param {Date} dataFimPrevisto - Data prevista de término do contrato
-   * @param {Date} dataEncerramento - Data real de encerramento
-   * @param {number} salarioBase - Salário base
-   * @param {number} valorMedias - Valor das médias
-   * @returns {Object}
+   * @param {Date} dataEncerramento - Data real de encerramento (quebra)
+   * @param {number} salarioBase - Salário base do funcionário
+   * @param {string} quemQuebrou - 'empregador' ou 'empregado'
+   * @returns {Object} Resultado com valor da multa, base de cálculo, artigo aplicado
    */
-  static calcular(dataInicio, dataFimPrevisto, dataEncerramento, salarioBase, valorMedias = 0) {
+  static calcular(dataInicio, dataFimPrevisto, dataEncerramento, salarioBase, quemQuebrou = 'empregador') {
     const inicio = moment(dataInicio);
     const fimPrevisto = moment(dataFimPrevisto);
     const encerramento = moment(dataEncerramento);
@@ -26,7 +40,7 @@ class ContratoExperienciaService {
 
     memoria.push({
       passo: 1,
-      descricao: `Data de Início: ${inicio.format('DD/MM/YYYY')}`,
+      descricao: `Data de Início do Contrato: ${inicio.format('DD/MM/YYYY')}`,
       valor: inicio.format('DD/MM/YYYY')
     });
 
@@ -38,168 +52,139 @@ class ContratoExperienciaService {
 
     memoria.push({
       passo: 3,
-      descricao: `Data Real de Encerramento: ${encerramento.format('DD/MM/YYYY')}`,
+      descricao: `Data Real de Encerramento (Quebra): ${encerramento.format('DD/MM/YYYY')}`,
       valor: encerramento.format('DD/MM/YYYY')
     });
 
-    // Duração prevista do contrato
-    const diasPrevistos = fimPrevisto.diff(inicio, 'days') + 1;
-    const diasTrabalhados = encerramento.diff(inicio, 'days') + 1;
-    const diasAntecipados = fimPrevisto.diff(encerramento, 'days');
+    // Determina quem quebrou o contrato baseado no parâmetro informado pelo usuário
+    // O usuário informa explicitamente quem quebrou, mas validamos com as datas
+    const quebradoPeloEmpregador = quemQuebrou === 'empregador';
+    const quebradoPeloEmpregado = quemQuebrou === 'empregado';
+    
+    // Calcula quantos dias faltavam até o fim do contrato
+    // IMPORTANTE: Só há dias restantes se o encerramento ocorreu ANTES da data prevista
+    let diasRestantes = 0;
+    if (encerramento.isBefore(fimPrevisto, 'day')) {
+      // Se encerrou antes do previsto, calcula os dias que faltavam
+      diasRestantes = fimPrevisto.diff(encerramento, 'days');
+    } else {
+      // Se encerrou na ou após a data prevista, não há dias restantes
+      diasRestantes = 0;
+    }
 
     memoria.push({
       passo: 4,
-      descricao: `Duração Prevista: ${diasPrevistos} dias`,
-      calculo: `De ${inicio.format('DD/MM/YYYY')} até ${fimPrevisto.format('DD/MM/YYYY')}`
+      descricao: `Análise da Quebra`,
+      calculo: quebradoPeloEmpregador 
+        ? `Quebra pelo EMPREGADOR (Art. 479) → Multa de 50% sobre salários restantes`
+        : `Quebra pelo EMPREGADO (Art. 480) → Desconto máximo de 50% sobre salários restantes`,
+      valor: quebradoPeloEmpregador ? 'Art. 479' : 'Art. 480'
     });
 
     memoria.push({
       passo: 5,
-      descricao: `Dias Trabalhados: ${diasTrabalhados} dias`,
-      calculo: `De ${inicio.format('DD/MM/YYYY')} até ${encerramento.format('DD/MM/YYYY')}`
+      descricao: `Dias Restantes do Contrato`,
+      calculo: quebradoPeloEmpregador
+        ? `De ${encerramento.format('DD/MM/YYYY')} até ${fimPrevisto.format('DD/MM/YYYY')} = ${diasRestantes} dias`
+        : `Encerramento na ou após data prevista → 0 dias restantes`,
+      valor: `${diasRestantes} dias`
     });
 
-    // Verifica quem quebrou o contrato
-    const quebradoPeloEmpregador = encerramento.isBefore(fimPrevisto);
-    const quebradoPeloEmpregado = encerramento.isAfter(fimPrevisto) || encerramento.isSame(fimPrevisto, 'day');
+    // Base de cálculo: valor dos salários correspondentes aos dias restantes
+    // Salário diário = salário base / 30
+    const salarioDiario = salarioBase / 30;
+    const valorSalariosRestantes = salarioDiario * diasRestantes;
 
     memoria.push({
       passo: 6,
-      descricao: `Análise da Quebra`,
-      calculo: quebradoPeloEmpregador 
-        ? `Encerramento ANTES da data prevista = Quebra pelo EMPREGADOR`
-        : `Encerramento NA ou APÓS a data prevista = Quebra pelo EMPREGADO`,
-      valor: quebradoPeloEmpregador ? 'Quebra pelo Empregador' : 'Quebra pelo Empregado'
-    });
-
-    // Base de cálculo
-    const baseCalculo = salarioBase + valorMedias;
-    
-    if (valorMedias > 0) {
-      memoria.push({
-        passo: 7,
-        descricao: `Base de Cálculo: Salário + Médias`,
-        calculo: `R$ ${salarioBase.toFixed(2)} + R$ ${valorMedias.toFixed(2)} = R$ ${baseCalculo.toFixed(2)}`,
-        valor: `R$ ${baseCalculo.toFixed(2)}`
-      });
-    }
-
-    // Cálculo das verbas rescisórias
-    let valorAvisoPrevio = 0;
-    let valorFgts = 0;
-    let valorMultaFgts = 0;
-    let valor13Proporcional = 0;
-    let valorFeriasProporcionais = 0;
-    let valorTercoFerias = 0;
-    let valorTotal = 0;
-
-    // Aviso prévio proporcional (se quebrado pelo empregador)
-    if (quebradoPeloEmpregador) {
-      const mesesTrabalhados = encerramento.diff(inicio, 'months', true);
-      valorAvisoPrevio = (baseCalculo / 30) * 30; // 30 dias de aviso prévio
-      
-      memoria.push({
-        passo: 8,
-        descricao: `Aviso Prévio: 30 dias`,
-        calculo: `(R$ ${baseCalculo.toFixed(2)} ÷ 30) × 30 dias = R$ ${valorAvisoPrevio.toFixed(2)}`,
-        valor: `R$ ${valorAvisoPrevio.toFixed(2)}`
-      });
-    }
-
-    // 13º proporcional
-    const meses13 = Math.floor(encerramento.diff(inicio, 'months', true));
-    valor13Proporcional = (baseCalculo / 12) * meses13;
-    
-    memoria.push({
-      passo: 9,
-      descricao: `13º Salário Proporcional: ${meses13} avos`,
-      calculo: `(R$ ${baseCalculo.toFixed(2)} ÷ 12) × ${meses13} = R$ ${valor13Proporcional.toFixed(2)}`,
-      valor: `R$ ${valor13Proporcional.toFixed(2)}`
-    });
-
-    // Férias proporcionais
-    const mesesFerias = Math.floor(encerramento.diff(inicio, 'months', true));
-    const diasFerias = Math.floor((30 / 12) * mesesFerias);
-    valorFeriasProporcionais = (baseCalculo / 30) * diasFerias;
-    valorTercoFerias = valorFeriasProporcionais / 3;
-    
-    memoria.push({
-      passo: 10,
-      descricao: `Férias Proporcionais: ${diasFerias} dias`,
-      calculo: `(R$ ${baseCalculo.toFixed(2)} ÷ 30) × ${diasFerias} = R$ ${valorFeriasProporcionais.toFixed(2)}`,
-      valor: `R$ ${valorFeriasProporcionais.toFixed(2)}`
+      descricao: `Base de Cálculo: Valor dos Salários Restantes`,
+      calculo: `Salário diário: R$ ${salarioBase.toFixed(2)} ÷ 30 = R$ ${salarioDiario.toFixed(2)}/dia`,
+      valor: `R$ ${salarioDiario.toFixed(2)}/dia`
     });
 
     memoria.push({
-      passo: 11,
-      descricao: `1/3 Constitucional sobre Férias`,
-      calculo: `R$ ${valorFeriasProporcionais.toFixed(2)} ÷ 3 = R$ ${valorTercoFerias.toFixed(2)}`,
-      valor: `R$ ${valorTercoFerias.toFixed(2)}`
-    });
-
-    // FGTS (8% sobre salário)
-    valorFgts = baseCalculo * 0.08;
-    
-    memoria.push({
-      passo: 12,
-      descricao: `FGTS: 8% sobre base de cálculo`,
-      calculo: `R$ ${baseCalculo.toFixed(2)} × 8% = R$ ${valorFgts.toFixed(2)}`,
-      valor: `R$ ${valorFgts.toFixed(2)}`
-    });
-
-    // Multa de 40% sobre FGTS (se quebrado pelo empregador)
-    if (quebradoPeloEmpregador) {
-      valorMultaFgts = valorFgts * 0.40;
-      
-      memoria.push({
-        passo: 13,
-        descricao: `Multa de 40% sobre FGTS`,
-        calculo: `R$ ${valorFgts.toFixed(2)} × 40% = R$ ${valorMultaFgts.toFixed(2)}`,
-        valor: `R$ ${valorMultaFgts.toFixed(2)}`
-      });
-    }
-
-    // Total
-    valorTotal = valorAvisoPrevio + valor13Proporcional + valorFeriasProporcionais + 
-                 valorTercoFerias + valorFgts + valorMultaFgts;
-
-    memoria.push({
-      passo: 14,
-      descricao: `VALOR TOTAL DAS VERBAS RESCISÓRIAS: R$ ${valorTotal.toFixed(2)}`,
-      calculo: `Aviso: R$ ${valorAvisoPrevio.toFixed(2)} + 13º: R$ ${valor13Proporcional.toFixed(2)} + Férias: R$ ${valorFeriasProporcionais.toFixed(2)} + 1/3: R$ ${valorTercoFerias.toFixed(2)} + FGTS: R$ ${valorFgts.toFixed(2)} + Multa FGTS: R$ ${valorMultaFgts.toFixed(2)}`,
-      valor: `R$ ${valorTotal.toFixed(2)}`,
+      passo: 7,
+      descricao: `Valor dos Salários Restantes`,
+      calculo: `R$ ${salarioDiario.toFixed(2)} × ${diasRestantes} dias = R$ ${valorSalariosRestantes.toFixed(2)}`,
+      valor: `R$ ${valorSalariosRestantes.toFixed(2)}`,
       destaque: true
     });
+
+    // Calcula a multa conforme o artigo aplicável
+    let valorMulta = 0;
+    let artigoAplicado = '';
+    let descricaoArtigo = '';
+
+    if (quebradoPeloEmpregador) {
+      // Art. 479 - Quebra pelo EMPREGADOR
+      // Multa de 50% sobre o valor dos salários restantes
+      valorMulta = valorSalariosRestantes * 0.50;
+      artigoAplicado = 'Art. 479';
+      descricaoArtigo = 'Quebra pelo Empregador: Multa de 50% sobre o valor dos salários correspondentes ao período que faltava para o término do contrato.';
+
+      memoria.push({
+        passo: 8,
+        descricao: `Multa (Art. 479): 50% sobre salários restantes`,
+        calculo: `R$ ${valorSalariosRestantes.toFixed(2)} × 50% = R$ ${valorMulta.toFixed(2)}`,
+        valor: `R$ ${valorMulta.toFixed(2)}`,
+        destaque: true
+      });
+    } else {
+      // Art. 480 - Quebra pelo EMPREGADO
+      // Desconto máximo de 50% sobre o valor dos salários restantes
+      // IMPORTANTE: Se não há dias restantes (encerrou no ou após o previsto), não há multa
+      if (diasRestantes > 0) {
+        // Calcula o desconto de 50% sobre os salários restantes
+        valorMulta = valorSalariosRestantes * 0.50;
+        artigoAplicado = 'Art. 480';
+        descricaoArtigo = 'Quebra pelo Empregado: Desconto máximo de 50% sobre o valor dos salários correspondentes ao período que faltava. O desconto nunca pode ser maior que o valor calculado no Art. 479.';
+
+        memoria.push({
+          passo: 8,
+          descricao: `Desconto Máximo (Art. 480): 50% sobre salários restantes`,
+          calculo: `R$ ${valorSalariosRestantes.toFixed(2)} × 50% = R$ ${valorMulta.toFixed(2)}`,
+          valor: `R$ ${valorMulta.toFixed(2)} (máximo legal de desconto)`,
+          destaque: true
+        });
+      } else {
+        // Se encerrou na ou após a data prevista, não há dias restantes, portanto não há multa
+        valorMulta = 0;
+        artigoAplicado = 'Art. 480';
+        descricaoArtigo = 'Quebra pelo Empregado: Como o encerramento ocorreu na ou após a data prevista, não há dias restantes e, portanto, não há multa a ser descontada do empregado.';
+
+        memoria.push({
+          passo: 8,
+          descricao: `Sem Multa (Art. 480)`,
+          calculo: `Encerramento na ou após data prevista → 0 dias restantes → Multa = R$ 0,00`,
+          valor: `R$ 0,00`,
+          destaque: true
+        });
+      }
+    }
 
     return {
       dataInicio: inicio.format('YYYY-MM-DD'),
       dataFimPrevisto: fimPrevisto.format('YYYY-MM-DD'),
       dataEncerramento: encerramento.format('YYYY-MM-DD'),
-      salarioBase,
-      valorMedias,
-      baseCalculo: parseFloat(baseCalculo.toFixed(2)),
-      diasPrevistos,
-      diasTrabalhados,
-      diasAntecipados,
+      salarioBase: parseFloat(salarioBase.toFixed(2)),
+      salarioDiario: parseFloat(salarioDiario.toFixed(2)),
+      diasRestantes,
+      valorSalariosRestantes: parseFloat(valorSalariosRestantes.toFixed(2)),
       quebradoPeloEmpregador,
       quebradoPeloEmpregado,
-      mesesTrabalhados: parseFloat(meses13.toFixed(2)),
-      valorAvisoPrevio: parseFloat(valorAvisoPrevio.toFixed(2)),
-      valor13Proporcional: parseFloat(valor13Proporcional.toFixed(2)),
-      valorFeriasProporcionais: parseFloat(valorFeriasProporcionais.toFixed(2)),
-      valorTercoFerias: parseFloat(valorTercoFerias.toFixed(2)),
-      valorFgts: parseFloat(valorFgts.toFixed(2)),
-      valorMultaFgts: parseFloat(valorMultaFgts.toFixed(2)),
-      valorTotal: parseFloat(valorTotal.toFixed(2)),
+      artigoAplicado,
+      valorMulta: parseFloat(valorMulta.toFixed(2)),
       memoria,
       baseLegal: {
         titulo: 'Consolidação das Leis do Trabalho - CLT',
-        artigo: 'Art. 445 a Art. 451',
-        descricao: 'Contrato de experiência pode ser prorrogado por até 90 dias. Quebra antecipada gera direito a verbas rescisórias proporcionais.'
+        artigo: artigoAplicado,
+        descricao: descricaoArtigo,
+        textoCompleto: artigoAplicado === 'Art. 479' 
+          ? 'Art. 479. Nos contratos que tenham termo estipulado, o empregador que, sem justa causa, despedir o empregado, ou este der motivo justo para rescisão, pagará, por metade, os salários do tempo de serviço que faltarem para a expiração do contrato.'
+          : 'Art. 480. Nos contratos que tenham termo estipulado, o empregado que, sem justa causa, despedir-se, ou der motivo justo para rescisão, pagará, por metade, os salários do tempo de serviço que faltarem para a expiração do contrato, não podendo, porém, o desconto exceder a metade dos salários do tempo de serviço que faltarem.'
       }
     };
   }
 }
 
 module.exports = ContratoExperienciaService;
-

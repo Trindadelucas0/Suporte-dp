@@ -27,16 +27,20 @@
         <div class="mb-6">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">
                 <i class="fas fa-file-contract text-primary-yellow mr-2"></i>
-                Quebra de Contrato de Experiência
+                Multa de Quebra de Contrato de Experiência
             </h1>
             <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
                 <p class="text-gray-700 mb-2">
                     <i class="fas fa-info-circle text-blue-500 mr-2"></i>
-                    <strong>O que é Contrato de Experiência?</strong>
+                    <strong>O que é a Multa de Quebra?</strong>
+                </p>
+                <p class="text-sm text-gray-600 mb-2">
+                    Contrato de experiência pode durar até 90 dias, prorrogável por mais 90 dias (CLT Art. 445 a 451).
                 </p>
                 <p class="text-sm text-gray-600">
-                    Contrato de experiência pode durar até 90 dias, prorrogável por mais 90 dias. 
-                    Quebra antecipada gera direito a verbas rescisórias proporcionais conforme CLT Art. 445 a 451.
+                    <strong>Art. 479:</strong> Se o empregador quebrar o contrato → multa de 50% sobre salários restantes.
+                    <br>
+                    <strong>Art. 480:</strong> Se o empregado quebrar → desconto máximo de 50% sobre salários restantes.
                 </p>
             </div>
         </div>
@@ -70,24 +74,27 @@
                             <label class="block text-sm font-medium mb-2">Data Real de Encerramento *</label>
                             <input type="date" name="dataEncerramento" required
                                 class="w-full px-4 py-2 border rounded-md">
-                            <p class="text-xs text-gray-500 mt-1">Quando encerrou</p>
+                            <p class="text-xs text-gray-500 mt-1">Quando o contrato foi quebrado</p>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium mb-2">Salário Base (R$) *</label>
                             <input type="number" name="salarioBase" step="0.01" required
                                 class="w-full px-4 py-2 border rounded-md">
+                            <p class="text-xs text-gray-500 mt-1">Salário mensal do funcionário</p>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium mb-2">Valor das Médias (R$)</label>
-                            <input type="number" name="valorMedias" step="0.01" value="0"
-                                class="w-full px-4 py-2 border rounded-md">
-                            <p class="text-xs text-gray-500 mt-1">Médias de horas extras, comissões, etc.</p>
+                            <label class="block text-sm font-medium mb-2">Quem Quebrou o Contrato *</label>
+                            <select name="quemQuebrou" required class="w-full px-4 py-2 border rounded-md">
+                                <option value="empregador">Empregador (Art. 479)</option>
+                                <option value="empregado">Empregado (Art. 480)</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Quem rompeu o contrato antecipadamente</p>
                         </div>
 
                         <button type="submit" class="w-full bg-gradient-to-r from-primary-red to-primary-yellow text-white py-3 rounded-md font-semibold">
-                            Calcular
+                            Calcular Multa
                         </button>
                     </form>
                 </div>
@@ -96,42 +103,31 @@
             <div class="lg:col-span-2">
                 <% if (resultado) { %>
                     <div class="bg-white rounded-lg shadow-md p-6">
-                        <div class="bg-gradient-to-r from-primary-yellow via-primary-red to-primary-yellow rounded-lg p-6 text-white mb-6">
-                            <h3 class="text-2xl font-bold mb-4">Valor Total das Verbas Rescisórias</h3>
-                            <p class="text-4xl font-bold">R$ <%= resultado.valorTotal.toFixed(2) %></p>
+                        <div class="bg-gradient-to-r <%= resultado.quebradoPeloEmpregador ? 'from-red-500 to-red-700' : 'from-yellow-500 to-yellow-700' %> rounded-lg p-6 text-white mb-6">
+                            <h3 class="text-2xl font-bold mb-4">
+                                <%= resultado.artigoAplicado %> - Multa de Quebra
+                            </h3>
+                            <p class="text-4xl font-bold">R$ <%= resultado.valorMulta.toFixed(2) %></p>
                             <p class="text-sm opacity-90 mt-2">
-                                <% if (resultado.quebradoPeloEmpregador) { %>
-                                    Quebra pelo Empregador
-                                <% } else { %>
-                                    Quebra pelo Empregado
-                                <% } %>
+                                <%= resultado.quebradoPeloEmpregador ? 'Quebra pelo Empregador' : 'Quebra pelo Empregado' %>
                             </p>
                         </div>
 
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                             <div class="bg-blue-50 rounded-lg p-4">
-                                <p class="text-sm text-gray-600">Aviso Prévio</p>
-                                <p class="text-xl font-bold">R$ <%= resultado.valorAvisoPrevio.toFixed(2) %></p>
+                                <p class="text-sm text-gray-600">Dias Restantes</p>
+                                <p class="text-xl font-bold"><%= resultado.diasRestantes %> dias</p>
+                                <p class="text-xs text-gray-500 mt-1">Período que faltava</p>
                             </div>
                             <div class="bg-green-50 rounded-lg p-4">
-                                <p class="text-sm text-gray-600">13º Proporcional</p>
-                                <p class="text-xl font-bold">R$ <%= resultado.valor13Proporcional.toFixed(2) %></p>
-                            </div>
-                            <div class="bg-yellow-50 rounded-lg p-4">
-                                <p class="text-sm text-gray-600">Férias Proporcionais</p>
-                                <p class="text-xl font-bold">R$ <%= resultado.valorFeriasProporcionais.toFixed(2) %></p>
+                                <p class="text-sm text-gray-600">Valor dos Salários Restantes</p>
+                                <p class="text-xl font-bold">R$ <%= resultado.valorSalariosRestantes.toFixed(2) %></p>
+                                <p class="text-xs text-gray-500 mt-1">Base de cálculo</p>
                             </div>
                             <div class="bg-purple-50 rounded-lg p-4">
-                                <p class="text-sm text-gray-600">1/3 Férias</p>
-                                <p class="text-xl font-bold">R$ <%= resultado.valorTercoFerias.toFixed(2) %></p>
-                            </div>
-                            <div class="bg-orange-50 rounded-lg p-4">
-                                <p class="text-sm text-gray-600">FGTS</p>
-                                <p class="text-xl font-bold">R$ <%= resultado.valorFgts.toFixed(2) %></p>
-                            </div>
-                            <div class="bg-red-50 rounded-lg p-4">
-                                <p class="text-sm text-gray-600">Multa FGTS (40%)</p>
-                                <p class="text-xl font-bold">R$ <%= resultado.valorMultaFgts.toFixed(2) %></p>
+                                <p class="text-sm text-gray-600">Artigo Aplicado</p>
+                                <p class="text-xl font-bold"><%= resultado.artigoAplicado %></p>
+                                <p class="text-xs text-gray-500 mt-1">CLT</p>
                             </div>
                         </div>
 
@@ -150,11 +146,26 @@
                                 </div>
                             <% }); %>
                         </div>
+
+                        <div class="mt-6 bg-gray-50 rounded-lg p-6 border-t-4 border-primary-red">
+                            <h4 class="font-bold mb-2">Base Legal</h4>
+                            <p class="font-semibold"><%= resultado.baseLegal.titulo %></p>
+                            <p class="text-sm text-gray-700 mb-3">
+                                <strong>Artigo:</strong> <%= resultado.baseLegal.artigo %>
+                            </p>
+                            <% if (resultado.baseLegal.textoCompleto) { %>
+                                <div class="mt-4 text-sm text-gray-700 leading-relaxed bg-white rounded p-4 border whitespace-pre-line">
+                                    <%= resultado.baseLegal.textoCompleto %>
+                                </div>
+                            <% } else { %>
+                                <p class="text-sm text-gray-600"><%= resultado.baseLegal.descricao %></p>
+                            <% } %>
+                        </div>
                     </div>
                 <% } else { %>
                     <div class="bg-white rounded-lg shadow-md p-12 text-center">
                         <i class="fas fa-calculator text-gray-300 text-6xl mb-4"></i>
-                        <p class="text-gray-600">Preencha os dados para calcular</p>
+                        <p class="text-gray-600">Preencha os dados para calcular a multa</p>
                     </div>
                 <% } %>
             </div>
@@ -162,4 +173,3 @@
     </main>
 </body>
 </html>
-
