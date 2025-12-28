@@ -379,8 +379,9 @@ class CalendarioService {
    * 3. IRRF: até dia 20 do mês seguinte à competência
    *    - Se cair em sábado/domingo/feriado → antecipa para último dia útil anterior
    * 
-   * 4. DCTFWeb: último dia útil do mês da competência
-   *    - Sempre o último dia útil, mesmo que seja dia 28, 29, 30 ou 31
+   * 4. DCTFWeb: último dia útil do mês seguinte à competência (CORRIGIDO)
+   *    - Referente ao mês anterior, assim como FGTS, INSS e IRRF
+   *    - Sempre o último dia útil do mês seguinte, mesmo que seja dia 28, 29, 30 ou 31
    * 
    * 5. EFD-Reinf: dia 15 do mês da competência
    *    - Se cair em sábado/domingo/feriado → adia para primeiro dia útil subsequente
@@ -486,13 +487,15 @@ class CalendarioService {
     // ============================================
     // 4. DCTFWeb - Empresas/Equiparadas
     // ============================================
-    // REGRA: último dia útil do mês da competência
-    const ultimoDiaUtil = this.calcularUltimoDiaUtilMes(competencia.year(), competencia.month() + 1, feriados);
+    // CORREÇÃO: DCTFWeb é referente ao mês ANTERIOR (mesmo que FGTS, INSS, IRRF)
+    // REGRA: último dia útil do mês seguinte à competência
+    // Exemplo: Se competência é 01/2025, DCTFWeb vence no último dia útil de 02/2025
+    const ultimoDiaUtil = this.calcularUltimoDiaUtilMes(mesSeguinte.year(), mesSeguinte.month() + 1, todosFeriados);
     obrigacoes.push({
       data: ultimoDiaUtil.format('YYYY-MM-DD'),
       tipo: 'dctfweb',
       descricao: 'DCTFWeb - Empresas/Equiparadas',
-      observacao: `Competência: ${competencia.format('MM/YYYY')}. Último dia útil do mês.`
+      observacao: `Competência: ${competencia.format('MM/YYYY')}. Último dia útil do mês seguinte (${mesSeguinte.format('MM/YYYY')}).`
     });
 
     // ============================================

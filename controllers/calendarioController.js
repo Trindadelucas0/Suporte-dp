@@ -14,7 +14,7 @@ class CalendarioController {
    * - FGTS: até dia 20 do mês seguinte à competência (ajusta se fim de semana/feriado)
    * - INSS: até dia 20 do mês seguinte à competência (ajusta se fim de semana/feriado)
    * - IRRF: até dia 20 do mês seguinte à competência (ajusta se fim de semana/feriado)
-   * - DCTFWeb: último dia útil do mês da competência
+   * - DCTFWeb: último dia útil do mês seguinte à competência (referente ao mês anterior)
    * - EFD-Reinf: dia 15 do mês da competência (ajusta se fim de semana/feriado)
    */
   static async index(req, res) {
