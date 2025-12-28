@@ -106,6 +106,31 @@
                                 class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-yellow">
                         </div>
 
+                        <div class="flex items-center">
+                            <input type="checkbox" id="proLabore" name="proLabore" value="true"
+                                class="h-4 w-4 text-primary-yellow focus:ring-primary-yellow border-gray-300 rounded">
+                            <label for="proLabore" class="ml-2 block text-sm text-gray-700">
+                                Pró-labore (alíquota fixa de 11% no INSS)
+                            </label>
+                        </div>
+
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                            <div class="flex items-start">
+                                <input type="checkbox" id="deducaoSimplificada" name="deducaoSimplificada" value="true"
+                                    class="mt-1 h-4 w-4 text-primary-yellow focus:ring-primary-yellow border-gray-300 rounded">
+                                <div class="ml-3">
+                                    <label for="deducaoSimplificada" class="block text-sm font-semibold text-gray-900 cursor-pointer">
+                                        Dedução Simplificada (Lei 15.191/2025 e MP 1.294/2025)
+                                    </label>
+                                    <p class="text-xs text-gray-600 mt-1">
+                                        Valor fixo mensal de <strong>R$ 607,20</strong>. 
+                                        <strong>Substitui</strong> todas as deduções legais (dependentes, pensão, etc.).
+                                        Aplica-se exclusivamente ao IRRF mensal.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         <button type="submit"
                             class="w-full bg-gradient-to-r from-primary-yellow to-primary-red text-white py-3 rounded-md font-semibold hover:opacity-90">
                             <i class="fas fa-calculator mr-2"></i>Calcular
@@ -148,8 +173,20 @@
                                             <p class="text-xl">R$ <%= calculoINSS.valorINSS.toFixed(2) %></p>
                                         </div>
                                         <div>
-                                            <p class="text-sm opacity-90">(-) Dependentes</p>
-                                            <p class="text-xl">R$ <%= (resultado.dependentes * 189.59).toFixed(2) %></p>
+                                            <p class="text-sm opacity-90">
+                                                <% if (resultado.deducaoSimplificada) { %>
+                                                    (-) Dedução Simplificada
+                                                <% } else { %>
+                                                    (-) Dependentes
+                                                <% } %>
+                                            </p>
+                                            <p class="text-xl">
+                                                <% if (resultado.deducaoSimplificada) { %>
+                                                    R$ <%= resultado.valorDeducaoSimplificada.toFixed(2) %>
+                                                <% } else { %>
+                                                    R$ <%= (resultado.dependentes * 189.59).toFixed(2) %>
+                                                <% } %>
+                                            </p>
                                         </div>
                                         <div>
                                             <p class="text-sm opacity-90">Base de Cálculo</p>

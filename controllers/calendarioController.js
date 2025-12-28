@@ -14,12 +14,16 @@ class CalendarioController {
     try {
       const calendario = await CalendarioService.getCalendarioMensal(userId, ano, mes);
       
+      // Debug: verifica se calendário tem dados
+      console.log(`Calendário ${ano}/${mes}: ${calendario.length} dias`);
+      
       res.render('calendario/index', {
         title: 'Calendário de Obrigações - Suporte DP',
-        calendario,
+        calendario: calendario || [],
         ano,
         mes,
-        mesNome: new Date(ano, mes - 1).toLocaleString('pt-BR', { month: 'long' })
+        mesNome: new Date(ano, mes - 1).toLocaleString('pt-BR', { month: 'long' }),
+        user: req.session.user
       });
     } catch (error) {
       console.error('Erro no calendário:', error);
@@ -28,7 +32,8 @@ class CalendarioController {
         calendario: [],
         ano,
         mes,
-        mesNome: new Date(ano, mes - 1).toLocaleString('pt-BR', { month: 'long' })
+        mesNome: new Date(ano, mes - 1).toLocaleString('pt-BR', { month: 'long' }),
+        user: req.session.user
       });
     }
   }
@@ -76,6 +81,45 @@ class CalendarioController {
     } catch (error) {
       console.error('Erro ao buscar anotação:', error);
       res.status(500).json({ error: 'Erro ao buscar anotação' });
+    }
+  }
+
+  static async getObrigacoes(req, res) {
+    const userId = req.session.user.id;
+    const { data } = req.query;
+
+    try {
+      const obrigacoes = await CalendarioService.getObrigacoes(userId, data);
+      res.json({ success: true, data: obrigacoes });
+    } catch (error) {
+      console.error('Erro ao buscar obrigações:', error);
+      res.status(500).json({ error: 'Erro ao buscar obrigações' });
+    }
+  }
+
+  static async salvarObrigacao(req, res) {
+    const userId = req.session.user.id;
+    const { data, tipo, descricao, observacao } = req.body;
+
+    try {
+      const resultado = await CalendarioService.saveObrigacao(userId, data, tipo, descricao, observacao);
+      res.json({ success: true, data: resultado });
+    } catch (error) {
+      console.error('Erro ao salvar obrigação:', error);
+      res.status(500).json({ error: 'Erro ao salvar obrigação' });
+    }
+  }
+
+  static async removerObrigacao(req, res) {
+    const userId = req.session.user.id;
+    const { id } = req.params;
+
+    try {
+      const resultado = await CalendarioService.removeObrigacao(userId, id);
+      res.json({ success: true, data: resultado });
+    } catch (error) {
+      console.error('Erro ao remover obrigação:', error);
+      res.status(500).json({ error: 'Erro ao remover obrigação' });
     }
   }
 }

@@ -57,6 +57,16 @@
                         </div>
 
                         <div>
+                            <label class="block text-sm font-medium mb-2">Regime Tributário</label>
+                            <select name="regimeTributario" class="w-full px-4 py-2 border rounded-md">
+                                <option value="simples_nacional">Simples Nacional</option>
+                                <option value="lucro_presumido">Lucro Presumido</option>
+                                <option value="lucro_real">Lucro Real</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Para cálculo de impostos sobre folha</p>
+                        </div>
+
+                        <div>
                             <label class="block text-sm font-medium mb-2">Benefícios (R$)</label>
                             <input type="number" name="beneficios" step="0.01" value="0"
                                 class="w-full px-4 py-2 border rounded-md"
@@ -99,6 +109,18 @@
                                 <span>Salário Bruto</span>
                                 <span class="font-semibold">R$ <%= resultado.salarioBruto.toFixed(2) %></span>
                             </div>
+                            <% if (resultado.inssPatronal) { %>
+                                <div class="flex justify-between border-b pb-2">
+                                    <span>INSS Patronal (20%)</span>
+                                    <span class="font-semibold">R$ <%= resultado.inssPatronal.toFixed(2) %></span>
+                                </div>
+                            <% } %>
+                            <% if (resultado.impostosRegime) { %>
+                                <div class="flex justify-between border-b pb-2">
+                                    <span>Impostos - <%= resultado.regimeTributario.replace('_', ' ').toUpperCase() %></span>
+                                    <span class="font-semibold">R$ <%= resultado.impostosRegime.toFixed(2) %></span>
+                                </div>
+                            <% } %>
                             <div class="flex justify-between border-b pb-2">
                                 <span>Férias Proporcionais (1/12 + 1/3)</span>
                                 <span class="font-semibold">R$ <%= resultado.valorFeriasMensal.toFixed(2) %></span>

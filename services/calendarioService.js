@@ -117,37 +117,148 @@ class CalendarioService {
   }
 
   /**
-   * Obtém calendário mensal com anotações
+   * Obtém calendário mensal com anotações (OTIMIZADO)
    */
   static async getCalendarioMensal(userId, ano, mes) {
-    const inicio = moment(`${ano}-${mes}-01`);
+    const inicio = moment(`${ano}-${String(mes).padStart(2, '0')}-01`);
     const fim = inicio.clone().endOf('month');
-    const feriados = await Feriado.findAll(ano);
+    
+    // Busca tudo de uma vez (otimizado)
+    // CORREÇÃO: Tratamento de erro caso a tabela calendario_obrigacoes não exista
+    let obrigacoes = { rows: [] };
+    try {
+      obrigacoes = await db.query(
+        `SELECT data, tipo, descricao, observacao, id FROM calendario_obrigacoes 
+         WHERE user_id = $1 AND data >= $2 AND data <= $3`,
+        [userId, inicio.format('YYYY-MM-DD'), fim.format('YYYY-MM-DD')]
+      );
+    } catch (error) {
+      // Se a tabela não existir, continua sem obrigações (não quebra o calendário)
+      console.warn('Tabela calendario_obrigacoes não encontrada. Criando tabela...');
+      // Tenta criar a tabela
+      try {
+        await db.query(`
+          CREATE TABLE IF NOT EXISTS calendario_obrigacoes (
+            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+            user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            data DATE NOT NULL,
+            tipo VARCHAR(50) NOT NULL,
+            descricao VARCHAR(255) NOT NULL,
+            observacao TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+          CREATE INDEX IF NOT EXISTS idx_calendario_obrigacoes_user_data ON calendario_obrigacoes(user_id, data);
+          CREATE INDEX IF NOT EXISTS idx_calendario_obrigacoes_tipo ON calendario_obrigacoes(tipo);
+        `);
+        obrigacoes = { rows: [] };
+      } catch (createError) {
+        console.error('Erro ao criar tabela calendario_obrigacoes:', createError);
+        obrigacoes = { rows: [] };
+      }
+    }
+
+    const [feriados, anotacoes] = await Promise.all([
+      Feriado.findAll(ano),
+      db.query(
+        `SELECT data, anotacao FROM calendario_anotacoes 
+         WHERE user_id = $1 AND data >= $2 AND data <= $3`,
+        [userId, inicio.format('YYYY-MM-DD'), fim.format('YYYY-MM-DD')]
+      )
+    ]);
+
+    // Cria mapas para busca rápida
+    const feriadosMap = new Map();
+    feriados.forEach(f => {
+      const dataStr = moment(f.data).format('YYYY-MM-DD');
+      feriadosMap.set(dataStr, f);
+    });
+
+    const anotacoesMap = new Map();
+    anotacoes.rows.forEach(a => {
+      anotacoesMap.set(a.data, a.anotacao);
+    });
+
+    const obrigacoesMap = new Map();
+    obrigacoes.rows.forEach(o => {
+      // Garante que a data está no formato correto
+      const dataStr = moment(o.data).format('YYYY-MM-DD');
+      if (!obrigacoesMap.has(dataStr)) {
+        obrigacoesMap.set(dataStr, []);
+      }
+      obrigacoesMap.get(dataStr).push(o);
+    });
     
     const calendario = [];
     let current = inicio.clone();
 
     while (current.isSameOrBefore(fim)) {
       const dataStr = current.format('YYYY-MM-DD');
-      const feriado = feriados.find(f => 
-        moment(f.data).format('YYYY-MM-DD') === dataStr
-      );
-
-      const anotacao = await this.getAnotacao(userId, dataStr);
-
+      const feriado = feriadosMap.get(dataStr);
+      
       calendario.push({
         data: dataStr,
         dia: current.date(),
         diaSemana: current.day(),
         isFeriado: !!feriado,
         feriadoNome: feriado?.nome || null,
-        anotacao: anotacao?.anotacao || null
+        anotacao: anotacoesMap.get(dataStr) || null,
+        obrigacoes: obrigacoesMap.get(dataStr) || []
       });
 
       current.add(1, 'day');
     }
 
     return calendario;
+  }
+
+  /**
+   * Obtém obrigações para uma data
+   */
+  static async getObrigacoes(userId, data) {
+    const result = await db.query(
+      'SELECT * FROM calendario_obrigacoes WHERE user_id = $1 AND data = $2 ORDER BY tipo',
+      [userId, data]
+    );
+    return result.rows;
+  }
+
+  /**
+   * Salva ou atualiza obrigação
+   */
+  static async saveObrigacao(userId, data, tipo, descricao, observacao = null) {
+    const result = await db.query(
+      `INSERT INTO calendario_obrigacoes (user_id, data, tipo, descricao, observacao)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [userId, data, tipo, descricao, observacao]
+    );
+    return result.rows[0];
+  }
+
+  /**
+   * Remove obrigação
+   */
+  static async removeObrigacao(userId, obrigacaoId) {
+    const result = await db.query(
+      'DELETE FROM calendario_obrigacoes WHERE id = $1 AND user_id = $2 RETURNING *',
+      [obrigacaoId, userId]
+    );
+    return result.rows[0];
+  }
+
+  /**
+   * Obtém todas as obrigações do mês
+   */
+  static async getObrigacoesMes(userId, ano, mes) {
+    const inicio = moment(`${ano}-${mes}-01`).format('YYYY-MM-DD');
+    const fim = moment(`${ano}-${mes}-01`).endOf('month').format('YYYY-MM-DD');
+    
+    const result = await db.query(
+      'SELECT * FROM calendario_obrigacoes WHERE user_id = $1 AND data >= $2 AND data <= $3 ORDER BY data, tipo',
+      [userId, inicio, fim]
+    );
+    return result.rows;
   }
 }
 

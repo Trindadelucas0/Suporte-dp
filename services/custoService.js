@@ -20,7 +20,8 @@ class CustoService {
       tipoRegistro = 'clt_geral',
       proLabore = false,
       beneficios = 0,
-      encargosAdicionais = 0
+      encargosAdicionais = 0,
+      regimeTributario = 'simples_nacional' // simples_nacional, lucro_presumido, lucro_real
     } = dados;
 
     const memoria = [];
@@ -70,12 +71,59 @@ class CustoService {
     });
     custoMensal += valorFGTSService;
 
-    // 5. Encargos Previdenciários (INSS patronal - se aplicável)
-    // Nota: INSS do funcionário já está descontado do salário bruto
-    // Aqui consideramos apenas encargos adicionais se houver
+    // 5. Encargos Previdenciários (INSS patronal - 20% sobre folha)
+    // INSS Patronal é calculado sobre a mesma base do INSS do funcionário, mas com alíquota de 20%
+    const calculoINSS = INSSService.calcular(salarioBruto, proLabore);
+    // Base de cálculo do INSS (pode ser limitada pelo teto)
+    const baseINSS = Math.min(salarioBruto, calculoINSS.teto || 8157.41);
+    const inssPatronal = baseINSS * 0.20; // 20% sobre a base
+    
+    memoria.push({
+      passo: 5,
+      descricao: 'INSS Patronal (20% sobre folha)',
+      calculo: `Base INSS: R$ ${baseINSS.toFixed(2)} × 20% = R$ ${inssPatronal.toFixed(2)}`,
+      valor: inssPatronal.toFixed(2),
+      tipo: 'encargo'
+    });
+    custoMensal += inssPatronal;
+
+    // 6. Impostos conforme Regime Tributário
+    let impostosRegime = 0;
+    let descricaoImpostos = '';
+    
+    if (regimeTributario === 'simples_nacional') {
+      // Simples Nacional: alíquota variável conforme faixa de receita
+      // Estimativa: 6% a 15% sobre folha (depende da receita bruta anual)
+      // Usando média de 8% para cálculo estimado
+      impostosRegime = salarioBruto * 0.08;
+      descricaoImpostos = 'Simples Nacional (estimado 8% sobre folha - varia conforme receita)';
+    } else if (regimeTributario === 'lucro_presumido') {
+      // Lucro Presumido: PIS (0,65%), COFINS (3%), CSLL (1,08%), IRPJ (1,2%)
+      // Total aproximado: 5,93% sobre folha
+      impostosRegime = salarioBruto * 0.0593;
+      descricaoImpostos = 'Lucro Presumido: PIS (0,65%) + COFINS (3%) + CSLL (1,08%) + IRPJ (1,2%) = 5,93%';
+    } else if (regimeTributario === 'lucro_real') {
+      // Lucro Real: PIS (1,65%), COFINS (7,6%), CSLL (9%), IRPJ (15% sobre lucro)
+      // Estimativa: 10% sobre folha (varia conforme lucro)
+      impostosRegime = salarioBruto * 0.10;
+      descricaoImpostos = 'Lucro Real: PIS (1,65%) + COFINS (7,6%) + CSLL (9%) + IRPJ (varia) = estimado 10%';
+    }
+
+    if (impostosRegime > 0) {
+      memoria.push({
+        passo: 6,
+        descricao: `Impostos - ${regimeTributario.replace('_', ' ').toUpperCase()}`,
+        calculo: `${descricaoImpostos} sobre R$ ${salarioBruto.toFixed(2)}`,
+        valor: impostosRegime.toFixed(2),
+        tipo: 'imposto'
+      });
+      custoMensal += impostosRegime;
+    }
+
+    // 7. Encargos Adicionais (se houver)
     if (encargosAdicionais > 0) {
       memoria.push({
-        passo: 5,
+        passo: memoria.length + 1,
         descricao: 'Encargos Previdenciários Adicionais',
         valor: encargosAdicionais.toFixed(2),
         tipo: 'encargo'
@@ -83,10 +131,10 @@ class CustoService {
       custoMensal += encargosAdicionais;
     }
 
-    // 6. Benefícios
+    // 8. Benefícios
     if (beneficios > 0) {
       memoria.push({
-        passo: 6,
+        passo: memoria.length + 1,
         descricao: 'Benefícios (VT, VR, Plano de Saúde, etc.)',
         valor: beneficios.toFixed(2),
         tipo: 'beneficio'
@@ -124,9 +172,12 @@ class CustoService {
     return {
       salarioBruto: parseFloat(salarioBruto.toFixed(2)),
       tipoRegistro,
+      regimeTributario,
       valorFeriasMensal: parseFloat(valorFeriasMensal.toFixed(2)),
       valorDecimoTerceiroMensal: parseFloat(valorDecimoTerceiroMensal.toFixed(2)),
       valorFGTS: parseFloat(valorFGTSService.toFixed(2)),
+      inssPatronal: parseFloat(inssPatronal.toFixed(2)),
+      impostosRegime: parseFloat(impostosRegime.toFixed(2)),
       encargosAdicionais: parseFloat(encargosAdicionais.toFixed(2)),
       beneficios: parseFloat(beneficios.toFixed(2)),
       custoMensal: parseFloat(custoMensal.toFixed(2)),
@@ -140,7 +191,7 @@ class CustoService {
       memoria,
       baseLegal: {
         titulo: 'CLT e Legislação Trabalhista',
-        descricao: 'Custo total do funcionário inclui salário bruto, encargos sociais (FGTS, férias, 13º) e benefícios. Esses valores devem ser considerados no planejamento financeiro da empresa.'
+        descricao: 'Custo total do funcionário inclui salário bruto, encargos sociais (FGTS, férias, 13º, INSS patronal), impostos conforme regime tributário e benefícios. Esses valores devem ser considerados no planejamento financeiro da empresa.'
       }
     };
   }

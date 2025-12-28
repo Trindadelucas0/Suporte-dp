@@ -19,12 +19,14 @@ class IRRFController {
 
   static async calcular(req, res) {
     const userId = req.session.user.id;
-    const { salarioBruto, dependentes, pensaoAlimenticia, ano } = req.body;
+    const { salarioBruto, dependentes, pensaoAlimenticia, deducaoSimplificada, proLabore, ano } = req.body;
 
     try {
       const salario = parseFloat(salarioBruto);
       const numDependentes = parseInt(dependentes) || 0;
       const pensao = parseFloat(pensaoAlimenticia) || 0;
+      const usarDeducaoSimplificada = deducaoSimplificada === 'true' || deducaoSimplificada === true;
+      const usarProLabore = proLabore === 'true' || proLabore === true;
       const anoSelecionado = ano ? parseInt(ano) : null;
 
       if (isNaN(salario) || salario <= 0) {
@@ -35,8 +37,11 @@ class IRRFController {
         });
       }
 
-      // Calcula INSS primeiro (usa o mesmo ano)
-      const calculoINSS = INSSService.calcular(salario, false, anoSelecionado);
+      // Calcula INSS primeiro (usa o mesmo ano e pró-labore se marcado)
+      const calculoINSS = INSSService.calcular(salario, usarProLabore, anoSelecionado);
+      
+      // Obtém mês atual para verificar vigência da tabela
+      const mesAtual = new Date().getMonth() + 1;
       
       // Calcula IRRF
       const resultado = IRRFService.calcular(
@@ -44,7 +49,9 @@ class IRRFController {
         calculoINSS.valorINSS,
         numDependentes,
         pensao,
-        anoSelecionado
+        usarDeducaoSimplificada,
+        anoSelecionado,
+        mesAtual
       );
 
       // Carrega lei completa
@@ -53,7 +60,11 @@ class IRRFController {
       try {
         const leisPath = path.join(__dirname, '..', 'data', 'leis-completas.json');
         const leis = JSON.parse(fs.readFileSync(leisPath, 'utf8'));
-        if (leis.irrf) {
+        if (usarDeducaoSimplificada && leis.irrf_deducao_simplificada) {
+          resultado.baseLegal.textoCompleto = leis.irrf_deducao_simplificada.textoCompleto;
+          resultado.baseLegal.titulo = leis.irrf_deducao_simplificada.titulo;
+          resultado.baseLegal.artigo = leis.irrf_deducao_simplificada.artigo;
+        } else if (leis.irrf) {
           resultado.baseLegal.textoCompleto = leis.irrf.textoCompleto;
         }
       } catch (e) {

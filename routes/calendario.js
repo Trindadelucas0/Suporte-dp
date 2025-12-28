@@ -11,6 +11,9 @@ router.get('/', requireAuth, CalendarioController.index);
 router.get('/calcular', requireAuth, CalendarioController.calcular);
 router.post('/anotacao', requireAuth, CalendarioController.salvarAnotacao);
 router.get('/anotacao/:data', requireAuth, CalendarioController.getAnotacao);
+router.get('/obrigacoes', requireAuth, CalendarioController.getObrigacoes);
+router.post('/obrigacao', requireAuth, CalendarioController.salvarObrigacao);
+router.delete('/obrigacao/:id', requireAuth, CalendarioController.removerObrigacao);
 
 module.exports = router;
 

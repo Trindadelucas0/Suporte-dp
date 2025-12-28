@@ -35,9 +35,17 @@ class IRRFService {
   /**
    * Obtém a tabela do ano
    */
-  static getTabela(ano = null) {
+  static getTabela(ano = null, mes = null) {
     if (!ano) {
       ano = new Date().getFullYear();
+    }
+    if (!mes) {
+      mes = new Date().getMonth() + 1;
+    }
+    
+    // Verifica se há tabela específica para maio/2025 em diante
+    if (ano === 2025 && mes >= 5 && this.TABELAS[2025] && this.TABELAS[2025].dataVigencia) {
+      return this.TABELAS[2025];
     }
     
     if (!this.TABELAS[ano]) {
@@ -54,11 +62,13 @@ class IRRFService {
    * @param {number} valorINSS 
    * @param {number} dependentes 
    * @param {number} pensaoAlimenticia 
+   * @param {boolean} deducaoSimplificada - Usa dedução simplificada (20% do salário, limitado a R$ 16.754,34 em 2024)
    * @param {number} ano - Ano da tabela (opcional)
+   * @param {number} mes - Mês para verificar vigência (opcional)
    * @returns {Object}
    */
-  static calcular(salarioBruto, valorINSS, dependentes = 0, pensaoAlimenticia = 0, ano = null) {
-    const tabela = this.getTabela(ano);
+  static calcular(salarioBruto, valorINSS, dependentes = 0, pensaoAlimenticia = 0, deducaoSimplificada = false, ano = null, mes = null) {
+    const tabela = this.getTabela(ano, mes);
     const FAIXAS = tabela.faixas;
     const VALOR_DEPENDENTE = tabela.valorDependente;
     const anoUsado = ano || new Date().getFullYear();
@@ -72,43 +82,69 @@ class IRRFService {
 
     memoria.push({
       passo: 2,
-      descricao: `(-) INSS: R$ ${valorINSS.toFixed(2)}`,
-      valor: `-${valorINSS.toFixed(2)}`
-    });
-
-    memoria.push({
-      passo: 3,
       descricao: `Tabela de IRRF ${anoUsado}`,
       valor: `Ano ${anoUsado}`
     });
 
-    // Dedução de dependentes
-    const valorDependentes = dependentes * VALOR_DEPENDENTE;
-    if (dependentes > 0) {
-      memoria.push({
-        passo: 4,
-        descricao: `(-) Dependentes (${dependentes} × R$ ${VALOR_DEPENDENTE.toFixed(2)}): R$ ${valorDependentes.toFixed(2)}`,
-        calculo: `${dependentes} × R$ ${VALOR_DEPENDENTE.toFixed(2)} = R$ ${valorDependentes.toFixed(2)}`,
-        valor: `-${valorDependentes.toFixed(2)}`
-      });
-    }
+    let valorDependentes = 0;
+    let valorDeducaoSimplificada = 0;
+    let baseCalculo;
+    let calculoBase = '';
 
-    // Dedução de pensão alimentícia
-    if (pensaoAlimenticia > 0) {
+    // CORREÇÃO CRÍTICA: Dedução Simplificada substitui TUDO (INSS, dependentes, pensão)
+    // Lei 15.191/2025 e MP 1.294/2025: Valor fixo de R$ 607,20 mensal
+    if (deducaoSimplificada) {
+      // Valor fixo conforme Lei 15.191/2025 e MP 1.294/2025
+      valorDeducaoSimplificada = 607.20;
+      
       memoria.push({
-        passo: memoria.length + 1,
-        descricao: `(-) Pensão Alimentícia: R$ ${pensaoAlimenticia.toFixed(2)}`,
-        valor: `-${pensaoAlimenticia.toFixed(2)}`
+        passo: 3,
+        descricao: `(-) Dedução Simplificada: R$ 607,20 (fixo)`,
+        calculo: `Valor fixo mensal conforme Lei 15.191/2025 e MP 1.294/2025`,
+        valor: `-${valorDeducaoSimplificada.toFixed(2)}`,
+        observacao: 'Lei 15.191/2025 e MP 1.294/2025 - Dedução simplificada substitui TODAS as deduções legais (INSS, dependentes, pensão)'
       });
-    }
 
-    // Base de cálculo
-    const baseCalculo = salarioBruto - valorINSS - valorDependentes - pensaoAlimenticia;
+      // IMPORTANTE: Com dedução simplificada, NÃO deduz INSS, dependentes nem pensão
+      // A dedução simplificada substitui tudo
+      baseCalculo = salarioBruto - valorDeducaoSimplificada;
+      calculoBase = `R$ ${salarioBruto.toFixed(2)} - R$ ${valorDeducaoSimplificada.toFixed(2)} = R$ ${baseCalculo.toFixed(2)}`;
+    } else {
+      // Dedução normal: INSS + dependentes + pensão
+      memoria.push({
+        passo: 3,
+        descricao: `(-) INSS: R$ ${valorINSS.toFixed(2)}`,
+        valor: `-${valorINSS.toFixed(2)}`
+      });
+
+      // Dedução por dependentes
+      valorDependentes = dependentes * VALOR_DEPENDENTE;
+      if (dependentes > 0) {
+        memoria.push({
+          passo: 4,
+          descricao: `(-) Dependentes (${dependentes} × R$ ${VALOR_DEPENDENTE.toFixed(2)}): R$ ${valorDependentes.toFixed(2)}`,
+          calculo: `${dependentes} × R$ ${VALOR_DEPENDENTE.toFixed(2)} = R$ ${valorDependentes.toFixed(2)}`,
+          valor: `-${valorDependentes.toFixed(2)}`
+        });
+      }
+
+      // Dedução de pensão alimentícia
+      if (pensaoAlimenticia > 0) {
+        memoria.push({
+          passo: memoria.length + 1,
+          descricao: `(-) Pensão Alimentícia: R$ ${pensaoAlimenticia.toFixed(2)}`,
+          valor: `-${pensaoAlimenticia.toFixed(2)}`
+        });
+      }
+
+      baseCalculo = salarioBruto - valorINSS - valorDependentes - pensaoAlimenticia;
+      calculoBase = `R$ ${salarioBruto.toFixed(2)} - R$ ${valorINSS.toFixed(2)} - R$ ${valorDependentes.toFixed(2)} - R$ ${pensaoAlimenticia.toFixed(2)} = R$ ${baseCalculo.toFixed(2)}`;
+    }
 
     memoria.push({
       passo: memoria.length + 1,
       descricao: `Base de Cálculo do IR: R$ ${baseCalculo.toFixed(2)}`,
-      calculo: `R$ ${salarioBruto.toFixed(2)} - R$ ${valorINSS.toFixed(2)} - R$ ${valorDependentes.toFixed(2)} - R$ ${pensaoAlimenticia.toFixed(2)} = R$ ${baseCalculo.toFixed(2)}`,
+      calculo: calculoBase,
       valor: baseCalculo.toFixed(2),
       destaque: true
     });
@@ -174,6 +210,8 @@ class IRRFService {
       valorINSS,
       dependentes,
       pensaoAlimenticia,
+      deducaoSimplificada,
+      valorDeducaoSimplificada: parseFloat(valorDeducaoSimplificada.toFixed(2)),
       baseCalculo: parseFloat(baseCalculo.toFixed(2)),
       aliquota: faixaAplicavel.aliquota,
       valorIRRF: parseFloat(Math.max(0, valorIRRF).toFixed(2)),
@@ -182,9 +220,15 @@ class IRRFService {
       valorDependente: VALOR_DEPENDENTE,
       memoria,
       baseLegal: {
-        titulo: 'Instrução Normativa RFB nº 1500/2014',
-        artigo: 'Art. 1º e Anexo I',
-        descricao: `Tabela progressiva do Imposto de Renda Retido na Fonte ${anoUsado}, com dedução por dependente de R$ ${VALOR_DEPENDENTE.toFixed(2)}.`
+        titulo: deducaoSimplificada 
+          ? 'Lei nº 13.670/2018 e Instrução Normativa RFB nº 1500/2014'
+          : 'Instrução Normativa RFB nº 1500/2014',
+        artigo: deducaoSimplificada 
+          ? 'Lei 13.670/2018 - Art. 1º e IN RFB 1500/2014 - Art. 1º'
+          : 'Art. 1º e Anexo I',
+        descricao: deducaoSimplificada
+          ? `Dedução simplificada: Valor fixo mensal de R$ 607,20 (Lei 15.191/2025 e MP 1.294/2025). Substitui todas as deduções legais (INSS, dependentes, pensão). Aplica-se exclusivamente ao IRRF mensal.`
+          : `Tabela progressiva do Imposto de Renda Retido na Fonte ${anoUsado}, com dedução por dependente de R$ ${VALOR_DEPENDENTE.toFixed(2)}.`
       }
     };
   }

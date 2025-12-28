@@ -33,6 +33,19 @@ class FGTSController {
 
       const resultado = FGTSService.calcular(salario, tipo);
 
+      // Carrega lei completa
+      const fs = require('fs');
+      const path = require('path');
+      try {
+        const leisPath = path.join(__dirname, '..', 'data', 'leis-completas.json');
+        const leis = JSON.parse(fs.readFileSync(leisPath, 'utf8'));
+        if (leis.fgts) {
+          resultado.baseLegal.textoCompleto = leis.fgts.textoCompleto;
+        }
+      } catch (e) {
+        console.warn('Erro ao carregar lei completa:', e.message);
+      }
+
       // Salva no histórico
       await db.query(
         `INSERT INTO calculos_fgts (user_id, salario_bruto, tipo_registro, percentual_fgts, valor_fgts, memoria_calculo)

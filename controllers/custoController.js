@@ -17,13 +17,14 @@ class CustoController {
 
   static async calcular(req, res) {
     const userId = req.session.user.id;
-    const { salarioBruto, tipoRegistro, beneficios, encargosAdicionais, proLabore } = req.body;
+    const { salarioBruto, tipoRegistro, beneficios, encargosAdicionais, proLabore, regimeTributario } = req.body;
 
     try {
       const salario = parseFloat(salarioBruto);
       const beneficiosVal = parseFloat(beneficios) || 0;
       const encargosVal = parseFloat(encargosAdicionais) || 0;
       const tipo = tipoRegistro || 'clt_geral';
+      const regime = regimeTributario || 'simples_nacional';
 
       if (isNaN(salario) || salario <= 0) {
         return res.render('custo/index', {
@@ -38,7 +39,8 @@ class CustoController {
         tipoRegistro: tipo,
         beneficios: beneficiosVal,
         encargosAdicionais: encargosVal,
-        proLabore: proLabore === 'true'
+        proLabore: proLabore === 'true',
+        regimeTributario: regime
       });
 
       // Salva no histórico

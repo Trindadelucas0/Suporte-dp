@@ -17,24 +17,26 @@ class PericulosidadeController {
 
   static async calcular(req, res) {
     const userId = req.session.user.id;
-    const { tipo, salarioBase, grauInsalubridade } = req.body;
+    const { tipo, ano, grauInsalubridade } = req.body;
 
     try {
+      // Valida se o ano foi informado
+      const anoSelecionado = ano ? parseInt(ano) : null;
+      if (!anoSelecionado || ![2024, 2025, 2026].includes(anoSelecionado)) {
+        return res.render('periculosidade/index', {
+          title: 'Calculadora de Periculosidade/Insalubridade - Suporte DP',
+          resultado: null,
+          error: 'Ano é obrigatório. Selecione 2024, 2025 ou 2026.'
+        });
+      }
+
       let resultado;
 
       if (tipo === 'periculosidade') {
-        const salario = parseFloat(salarioBase);
-        if (isNaN(salario) || salario <= 0) {
-          return res.render('periculosidade/index', {
-            title: 'Calculadora de Periculosidade/Insalubridade - Suporte DP',
-            resultado: null,
-            error: 'Salário base inválido'
-          });
-        }
-        resultado = PericulosidadeService.calcularPericulosidade(salario);
+        resultado = PericulosidadeService.calcularPericulosidade(anoSelecionado);
       } else if (tipo === 'insalubridade') {
         const grau = grauInsalubridade || 'medio';
-        resultado = PericulosidadeService.calcularInsalubridade(grau);
+        resultado = PericulosidadeService.calcularInsalubridade(grau, anoSelecionado);
       } else {
         return res.render('periculosidade/index', {
           title: 'Calculadora de Periculosidade/Insalubridade - Suporte DP',
@@ -50,7 +52,7 @@ class PericulosidadeController {
         [
           userId,
           tipo,
-          resultado.salarioBase || resultado.baseCalculo,
+          resultado.salarioMinimo || 0,
           resultado.percentual,
           resultado.valorAdicional,
           JSON.stringify(resultado.memoria)

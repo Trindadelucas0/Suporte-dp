@@ -26,76 +26,128 @@
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="mb-6">
             <h1 class="text-3xl font-bold text-gray-900">Calendário de Obrigações</h1>
-            <p class="mt-2 text-gray-600">Dias úteis, feriados e anotações</p>
+            <p class="mt-2 text-gray-600">Gerencie feriados, obrigações fiscais e anotações</p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Calendário Principal -->
+            <div class="lg:col-span-3">
                 <div class="bg-white rounded-lg shadow-md p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold"><%= mesNome %> <%= ano %></h2>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold capitalize"><%= mesNome %> <%= ano %></h2>
                         <div class="flex space-x-2">
-                            <a href="?ano=<%= ano %>&mes=<%= mes - 1 %>" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
-                                <i class="fas fa-chevron-left"></i>
+                            <a href="?ano=<%= mes === 1 ? ano - 1 : ano %>&mes=<%= mes === 1 ? 12 : mes - 1 %>" 
+                               class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+                                <i class="fas fa-chevron-left"></i> Anterior
                             </a>
-                            <a href="?ano=<%= ano %>&mes=<%= mes + 1 %>" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
-                                <i class="fas fa-chevron-right"></i>
+                            <a href="?ano=<%= mes === 12 ? ano + 1 : ano %>&mes=<%= mes === 12 ? 1 : mes + 1 %>" 
+                               class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+                                Próximo <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <a href="?ano=<%= new Date().getFullYear() %>&mes=<%= new Date().getMonth() + 1 %>" 
+                               class="px-4 py-2 bg-primary-red text-white rounded hover:bg-red-700">
+                                Hoje
                             </a>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-7 gap-2">
-                        <div class="text-center font-semibold text-gray-700 py-2">Dom</div>
-                        <div class="text-center font-semibold text-gray-700 py-2">Seg</div>
-                        <div class="text-center font-semibold text-gray-700 py-2">Ter</div>
-                        <div class="text-center font-semibold text-gray-700 py-2">Qua</div>
-                        <div class="text-center font-semibold text-gray-700 py-2">Qui</div>
-                        <div class="text-center font-semibold text-gray-700 py-2">Sex</div>
-                        <div class="text-center font-semibold text-gray-700 py-2">Sáb</div>
+                    <!-- Cabeçalho dos dias da semana -->
+                    <div class="grid grid-cols-7 gap-2 mb-2">
+                        <div class="text-center font-bold text-gray-700 py-2 bg-gray-100 rounded">Dom</div>
+                        <div class="text-center font-bold text-gray-700 py-2 bg-gray-100 rounded">Seg</div>
+                        <div class="text-center font-bold text-gray-700 py-2 bg-gray-100 rounded">Ter</div>
+                        <div class="text-center font-bold text-gray-700 py-2 bg-gray-100 rounded">Qua</div>
+                        <div class="text-center font-bold text-gray-700 py-2 bg-gray-100 rounded">Qui</div>
+                        <div class="text-center font-bold text-gray-700 py-2 bg-gray-100 rounded">Sex</div>
+                        <div class="text-center font-bold text-gray-700 py-2 bg-gray-100 rounded">Sáb</div>
+                    </div>
 
+                    <!-- Dias do mês -->
+                    <div class="grid grid-cols-7 gap-2">
                         <% 
                         const primeiroDia = new Date(ano, mes - 1, 1).getDay();
                         for (let i = 0; i < primeiroDia; i++) {
                         %>
-                            <div class="h-16"></div>
+                            <div class="h-24"></div>
                         <% } %>
 
-                        <% calendario.forEach(dia => { %>
-                            <div onclick="abrirModal('<%= dia.data %>')" 
-                                class="h-16 border rounded p-1 cursor-pointer hover:bg-gray-50
-                                    <%= dia.isFeriado ? 'bg-red-100 border-red-300' : 
-                                        dia.diaSemana === 0 ? 'bg-gray-100' : 
-                                        dia.anotacao ? 'bg-yellow-50 border-yellow-300' : '' %>">
-                                <div class="text-sm font-semibold <%= dia.isFeriado ? 'text-red-700' : '' %>">
-                                    <%= dia.dia %>
+                        <% if (typeof calendario !== 'undefined' && calendario && calendario.length > 0) { %>
+                            <% calendario.forEach(dia => { %>
+                                <div onclick="abrirModal('<%= dia.data %>')" 
+                                    class="min-h-24 border-2 rounded-lg p-2 cursor-pointer transition-all hover:shadow-lg
+                                        <%= dia.isFeriado ? 'bg-red-50 border-red-400' : 
+                                            dia.diaSemana === 0 ? 'bg-gray-100 border-gray-300' : 
+                                            dia.diaSemana === 6 ? 'bg-gray-50 border-gray-200' :
+                                            dia.anotacao || (dia.obrigacoes && dia.obrigacoes.length > 0) ? 'bg-yellow-50 border-yellow-400' : 
+                                            'bg-white border-gray-200 hover:border-primary-red' %>">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="text-lg font-bold <%= dia.isFeriado ? 'text-red-700' : dia.diaSemana === 0 ? 'text-gray-500' : 'text-gray-900' %>">
+                                            <%= typeof dia.dia !== 'undefined' ? dia.dia : '' %>
+                                        </span>
+                                        <% if (dia.obrigacoes && dia.obrigacoes.length > 0) { %>
+                                            <span class="text-xs bg-primary-yellow text-white px-1 rounded font-bold">
+                                                <%= dia.obrigacoes.length %>
+                                            </span>
+                                        <% } %>
+                                    </div>
+                                    
+                                    <% if (dia.isFeriado) { %>
+                                        <div class="text-xs text-red-700 font-semibold truncate" title="<%= dia.feriadoNome %>">
+                                            <i class="fas fa-calendar-times mr-1"></i><%= dia.feriadoNome %>
+                                        </div>
+                                    <% } %>
+                                    
+                                    <% if (dia.obrigacoes && dia.obrigacoes.length > 0) { %>
+                                        <div class="space-y-1 mt-1">
+                                            <% dia.obrigacoes.slice(0, 2).forEach(obrigacao => { %>
+                                                <div class="text-xs <%= obrigacao.tipo === 'dctfweb' ? 'text-blue-700 bg-blue-100' : obrigacao.tipo === 'inss' ? 'text-green-700 bg-green-100' : obrigacao.tipo === 'irrf' ? 'text-purple-700 bg-purple-100' : 'text-orange-700 bg-orange-100' %> px-1 py-0.5 rounded truncate" 
+                                                     title="<%= obrigacao.descricao %>">
+                                                    <i class="fas fa-<%= obrigacao.tipo === 'dctfweb' ? 'file-invoice' : obrigacao.tipo === 'inss' ? 'shield-alt' : obrigacao.tipo === 'irrf' ? 'receipt' : 'calendar-check' %> mr-1"></i>
+                                                    <%= obrigacao.descricao %>
+                                                </div>
+                                            <% }); %>
+                                            <% if (dia.obrigacoes.length > 2) { %>
+                                                <div class="text-xs text-gray-600">
+                                                    +<%= dia.obrigacoes.length - 2 %> mais
+                                                </div>
+                                            <% } %>
+                                        </div>
+                                    <% } %>
+                                    
+                                    <% if (dia.anotacao) { %>
+                                        <div class="text-xs text-yellow-700 mt-1 truncate" title="<%= dia.anotacao %>">
+                                            <i class="fas fa-sticky-note mr-1"></i>Anotação
+                                        </div>
+                                    <% } %>
                                 </div>
-                                <% if (dia.isFeriado) { %>
-                                    <div class="text-xs text-red-600 truncate" title="<%= dia.feriadoNome %>">
-                                        <%= dia.feriadoNome %>
-                                    </div>
-                                <% } %>
-                                <% if (dia.anotacao) { %>
-                                    <div class="text-xs text-yellow-700 truncate" title="<%= dia.anotacao %>">
-                                        <i class="fas fa-sticky-note"></i>
-                                    </div>
-                                <% } %>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="col-span-7 text-center py-8 text-gray-500">
+                                <i class="fas fa-calendar-times text-4xl mb-2"></i>
+                                <p>Carregando calendário...</p>
+                                <p class="text-xs mt-2">Se os dias não aparecerem, verifique o console do servidor</p>
                             </div>
-                        <% }); %>
+                        <% } %>
                     </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                    <h3 class="text-lg font-bold mb-4">Calcular Dias Úteis</h3>
+            <!-- Painel Lateral -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Calcular Dias Úteis -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-bold mb-4">
+                        <i class="fas fa-calculator text-primary-red mr-2"></i>
+                        Calcular Dias Úteis
+                    </h3>
                     <form id="formDiasUteis" class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium mb-2">Data Início</label>
-                            <input type="date" id="dataInicio" class="w-full px-3 py-2 border rounded">
+                            <input type="date" id="dataInicio" class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary-red">
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-2">Data Fim</label>
-                            <input type="date" id="dataFim" class="w-full px-3 py-2 border rounded">
+                            <input type="date" id="dataFim" class="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-primary-red">
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-2">Tipo de Semana</label>
@@ -104,15 +156,45 @@
                                 <option value="segunda_sabado">Segunda a Sábado</option>
                             </select>
                         </div>
-                        <button type="submit" class="w-full bg-primary-red text-white py-2 rounded hover:bg-red-700">
-                            Calcular
+                        <button type="submit" class="w-full bg-primary-red text-white py-2 rounded hover:bg-red-700 font-semibold">
+                            <i class="fas fa-calculator mr-2"></i>Calcular
                         </button>
                     </form>
                     <div id="resultadoDiasUteis" class="mt-4 hidden"></div>
                 </div>
 
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <h4 class="font-bold mb-2">DSR - Descanso Semanal Remunerado</h4>
+                <!-- Legenda -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-bold mb-4">
+                        <i class="fas fa-info-circle text-primary-yellow mr-2"></i>
+                        Legenda
+                    </h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-red-50 border-2 border-red-400 rounded mr-2"></div>
+                            <span>Feriado</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-yellow-50 border-2 border-yellow-400 rounded mr-2"></div>
+                            <span>Obrigação/Anotação</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-gray-100 border-2 border-gray-300 rounded mr-2"></div>
+                            <span>Domingo</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-white border-2 border-gray-200 rounded mr-2"></div>
+                            <span>Dia Útil</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DSR -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-4">
+                    <h4 class="font-bold mb-2 text-yellow-900">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        DSR - Descanso Semanal Remunerado
+                    </h4>
                     <p class="text-sm text-yellow-800">
                         O DSR é calculado sobre horas extras e comissões. 
                         Considere domingos e feriados no cálculo.
@@ -122,38 +204,241 @@
         </div>
     </main>
 
-    <!-- Modal de Anotação -->
-    <div id="modalAnotacao" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 class="text-xl font-bold mb-4">Anotação</h3>
-            <p class="text-sm text-gray-600 mb-4" id="modalData"></p>
-            <textarea id="modalTexto" class="w-full px-3 py-2 border rounded mb-4" rows="4"></textarea>
-            <div class="flex justify-end space-x-2">
-                <button onclick="fecharModal()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancelar</button>
-                <button onclick="salvarAnotacao()" class="px-4 py-2 bg-primary-red text-white rounded hover:bg-red-700">Salvar</button>
+    <!-- Modal de Anotação e Obrigações -->
+    <div id="modalAnotacao" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Data: <span id="modalData"></span></h3>
+                <button onclick="fecharModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <!-- Abas -->
+            <div class="border-b mb-4">
+                <nav class="flex -mb-px">
+                    <button type="button" onclick="mostrarAba('anotacao')" id="tab-anotacao" 
+                            class="px-4 py-2 border-b-2 border-primary-red text-primary-red font-semibold">
+                        <i class="fas fa-sticky-note mr-2"></i>Anotação
+                    </button>
+                    <button type="button" onclick="mostrarAba('obrigacoes')" id="tab-obrigacoes" 
+                            class="px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-calendar-check mr-2"></i>Obrigações
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Aba Anotação -->
+            <div id="content-anotacao" class="tab-content">
+                <textarea id="modalTexto" class="w-full px-3 py-2 border rounded mb-4" rows="4" 
+                          placeholder="Digite sua anotação para esta data..."></textarea>
+                <div class="flex justify-end space-x-2">
+                    <button onclick="fecharModal()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancelar</button>
+                    <button onclick="salvarAnotacao()" class="px-4 py-2 bg-primary-red text-white rounded hover:bg-red-700">
+                        <i class="fas fa-save mr-2"></i>Salvar Anotação
+                    </button>
+                </div>
+            </div>
+
+            <!-- Aba Obrigações -->
+            <div id="content-obrigacoes" class="tab-content hidden">
+                <div class="mb-4 bg-gray-50 p-4 rounded">
+                    <h4 class="font-bold mb-3">Adicionar Nova Obrigação</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Tipo de Obrigação</label>
+                            <select id="tipoObrigacao" class="w-full px-3 py-2 border rounded">
+                                <option value="dctfweb">DCTFWeb</option>
+                                <option value="inss">INSS</option>
+                                <option value="irrf">IRRF</option>
+                                <option value="fgts">FGTS</option>
+                                <option value="esocial">eSocial</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Descrição</label>
+                            <input type="text" id="descricaoObrigacao" placeholder="Ex: Vencimento DCTFWeb" 
+                                   class="w-full px-3 py-2 border rounded">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Observação (opcional)</label>
+                            <textarea id="observacaoObrigacao" placeholder="Observações adicionais..." 
+                                      class="w-full px-3 py-2 border rounded" rows="2"></textarea>
+                        </div>
+                        <button onclick="adicionarObrigacao()" 
+                                class="w-full bg-primary-yellow text-white py-2 rounded hover:bg-yellow-600 font-semibold">
+                            <i class="fas fa-plus mr-2"></i>Adicionar Obrigação
+                        </button>
+                    </div>
+                </div>
+
+                <div id="listaObrigacoes" class="space-y-2 mb-4">
+                    <p class="text-sm text-gray-500 text-center py-4">Carregando obrigações...</p>
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="fecharModal()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Fechar</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         let dataSelecionada = '';
+        let obrigacoesAtuais = [];
         
         function abrirModal(data) {
             dataSelecionada = data;
-            document.getElementById('modalData').textContent = 'Data: ' + new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
+            const dataFormatada = new Date(data + 'T00:00:00').toLocaleDateString('pt-BR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('modalData').textContent = dataFormatada;
             document.getElementById('modalAnotacao').classList.remove('hidden');
+            mostrarAba('anotacao');
             
+            // Carrega anotação
             fetch('/calendario/anotacao/' + data)
                 .then(r => r.json())
-                .then(data => {
-                    if (data.data && data.data.anotacao) {
-                        document.getElementById('modalTexto').value = data.data.anotacao;
+                .then(result => {
+                    if (result.data && result.data.anotacao) {
+                        document.getElementById('modalTexto').value = result.data.anotacao;
+                    } else {
+                        document.getElementById('modalTexto').value = '';
                     }
+                })
+                .catch(() => {
+                    document.getElementById('modalTexto').value = '';
                 });
+            
+            // Carrega obrigações
+            carregarObrigacoes(data);
         }
         
         function fecharModal() {
             document.getElementById('modalAnotacao').classList.add('hidden');
+            obrigacoesAtuais = [];
+        }
+        
+        function mostrarAba(aba) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('[id^="tab-"]').forEach(b => {
+                b.classList.remove('border-primary-red', 'text-primary-red', 'font-semibold');
+                b.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            document.getElementById('content-' + aba).classList.remove('hidden');
+            const btn = document.getElementById('tab-' + aba);
+            btn.classList.add('border-primary-red', 'text-primary-red', 'font-semibold');
+            btn.classList.remove('border-transparent', 'text-gray-500');
+        }
+        
+        function carregarObrigacoes(data) {
+            fetch(`/calendario/obrigacoes?data=${data}`)
+                .then(r => r.json())
+                .then(result => {
+                    obrigacoesAtuais = result.data || [];
+                    atualizarListaObrigacoes();
+                })
+                .catch(() => {
+                    obrigacoesAtuais = [];
+                    atualizarListaObrigacoes();
+                });
+        }
+        
+        function atualizarListaObrigacoes() {
+            const lista = document.getElementById('listaObrigacoes');
+            if (obrigacoesAtuais.length === 0) {
+                lista.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Nenhuma obrigação cadastrada para esta data</p>';
+                return;
+            }
+            
+            lista.innerHTML = obrigacoesAtuais.map(obrigacao => {
+                const cores = {
+                    'dctfweb': 'bg-blue-100 text-blue-700 border-blue-300',
+                    'inss': 'bg-green-100 text-green-700 border-green-300',
+                    'irrf': 'bg-purple-100 text-purple-700 border-purple-300',
+                    'fgts': 'bg-orange-100 text-orange-700 border-orange-300',
+                    'esocial': 'bg-indigo-100 text-indigo-700 border-indigo-300',
+                    'outro': 'bg-gray-100 text-gray-700 border-gray-300'
+                };
+                const cor = cores[obrigacao.tipo] || cores['outro'];
+                
+                return `
+                    <div class="border rounded p-3 ${cor}">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <p class="font-semibold text-sm">${obrigacao.descricao}</p>
+                                <p class="text-xs opacity-75 mt-1">${obrigacao.tipo.toUpperCase()}</p>
+                                ${obrigacao.observacao ? `<p class="text-xs mt-2 opacity-90">${obrigacao.observacao}</p>` : ''}
+                            </div>
+                            <button onclick="removerObrigacao('${obrigacao.id}')" 
+                                    class="text-red-600 hover:text-red-800 ml-2">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function adicionarObrigacao() {
+            const tipo = document.getElementById('tipoObrigacao').value;
+            const descricao = document.getElementById('descricaoObrigacao').value.trim();
+            const observacao = document.getElementById('observacaoObrigacao').value.trim();
+            
+            if (!descricao) {
+                alert('Digite uma descrição para a obrigação');
+                return;
+            }
+            
+            fetch('/calendario/obrigacao', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    data: dataSelecionada, 
+                    tipo, 
+                    descricao, 
+                    observacao: observacao || null 
+                })
+            })
+            .then(r => r.json())
+            .then(result => {
+                if (result.success) {
+                    document.getElementById('descricaoObrigacao').value = '';
+                    document.getElementById('observacaoObrigacao').value = '';
+                    carregarObrigacoes(dataSelecionada);
+                } else {
+                    alert('Erro ao adicionar obrigação: ' + (result.error || 'Erro desconhecido'));
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao adicionar obrigação. Tente novamente.');
+            });
+        }
+        
+        function removerObrigacao(id) {
+            if (!confirm('Deseja remover esta obrigação?')) return;
+            
+            fetch(`/calendario/obrigacao/${id}`, {
+                method: 'DELETE'
+            })
+            .then(r => r.json())
+            .then(result => {
+                if (result.success) {
+                    carregarObrigacoes(dataSelecionada);
+                } else {
+                    alert('Erro ao remover obrigação');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao remover obrigação. Tente novamente.');
+            });
         }
         
         function salvarAnotacao() {
@@ -164,9 +449,17 @@
                 body: JSON.stringify({ data: dataSelecionada, anotacao: texto })
             })
             .then(r => r.json())
-            .then(() => {
-                fecharModal();
-                location.reload();
+            .then(result => {
+                if (result.success) {
+                    fecharModal();
+                    location.reload();
+                } else {
+                    alert('Erro ao salvar anotação');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao salvar anotação. Tente novamente.');
             });
         }
         
@@ -176,22 +469,41 @@
             const fim = document.getElementById('dataFim').value;
             const tipo = document.getElementById('tipoSemana').value;
             
+            if (!inicio || !fim) {
+                alert('Preencha ambas as datas');
+                return;
+            }
+            
             fetch(`/calendario/calcular?dataInicio=${inicio}&dataFim=${fim}&tipoSemana=${tipo}`)
                 .then(r => r.json())
                 .then(data => {
+                    if (data.error) {
+                        alert('Erro: ' + data.error);
+                        return;
+                    }
+                    
                     const div = document.getElementById('resultadoDiasUteis');
                     div.classList.remove('hidden');
                     div.innerHTML = `
                         <div class="bg-green-50 border border-green-200 rounded p-4">
-                            <p class="font-bold">Dias Úteis: ${data.diasUteis}</p>
-                            <p class="text-sm">Total: ${data.totalDias} dias</p>
-                            <p class="text-sm">Domingos: ${data.domingos}</p>
-                            <p class="text-sm">Feriados: ${data.feriados}</p>
+                            <p class="font-bold text-green-800 mb-2">
+                                <i class="fas fa-check-circle mr-2"></i>Resultado
+                            </p>
+                            <p class="text-lg font-bold text-green-700">${data.diasUteis} dias úteis</p>
+                            <div class="mt-2 text-sm text-green-700 space-y-1">
+                                <p>Total: ${data.totalDias} dias</p>
+                                <p>Domingos: ${data.domingos}</p>
+                                <p>Sábados: ${data.sabados}</p>
+                                <p>Feriados: ${data.feriados}</p>
+                            </div>
                         </div>
                     `;
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao calcular dias úteis');
                 });
         });
     </script>
 </body>
 </html>
-

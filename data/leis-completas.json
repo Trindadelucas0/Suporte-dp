@@ -11,8 +11,13 @@
   },
   "fgts": {
     "titulo": "Lei nº 8.036, de 11 de maio de 1990",
-    "artigo": "Art. 15",
-    "textoCompleto": "Art. 15. O depósito será efetuado mensalmente, até o dia 7 (sete) do mês subsequente ao da competência, na conta vinculada do trabalhador, no valor correspondente a 8% (oito por cento) do salário do trabalhador, observado o limite máximo do salário-de-contribuição do Regime Geral de Previdência Social. Parágrafo único. O depósito de que trata este artigo será efetuado pelo empregador, que responderá pelos valores depositados, inclusive em caso de falência ou concordata. Para os trabalhadores domésticos, além do depósito de 8% (oito por cento), será efetuado depósito adicional de 3,2% (três vírgula dois por cento) para o seguro-desemprego do trabalhador doméstico. Para os jovens aprendizes, o percentual de depósito é de 2% (dois por cento) sobre o salário, conforme previsto na Lei nº 10.097, de 19 de dezembro de 2000."
+    "artigo": "Art. 15 e Art. 2º",
+    "textoCompleto": "Art. 2º O Fundo de Garantia do Tempo de Serviço - FGTS é um fundo de natureza contábil, formado pelas contribuições dos empregadores, destinado a constituir uma poupança compulsória do trabalhador, que poderá ser sacada nas hipóteses previstas nesta Lei. Art. 15. O depósito será efetuado mensalmente, até o dia 7 (sete) do mês subsequente ao da competência, na conta vinculada do trabalhador, no valor correspondente a 8% (oito por cento) do salário do trabalhador, observado o limite máximo do salário-de-contribuição do Regime Geral de Previdência Social. Parágrafo único. O depósito de que trata este artigo será efetuado pelo empregador, que responderá pelos valores depositados, inclusive em caso de falência ou concordata. Art. 18-A. Além do depósito de que trata o art. 15, será efetuado depósito adicional de 3,2% (três vírgula dois por cento) sobre a remuneração do trabalhador doméstico, destinado ao seguro-desemprego do trabalhador doméstico. Para os jovens aprendizes, o percentual de depósito é de 2% (dois por cento) sobre o salário, conforme previsto na Lei nº 10.097, de 19 de dezembro de 2000, Art. 428, § 1º, inciso II."
+  },
+  "irrf_deducao_simplificada": {
+    "titulo": "Lei nº 15.191/2025 e MP nº 1.294/2025",
+    "artigo": "Art. 1º",
+    "textoCompleto": "Art. 1º Fica instituída a dedução simplificada do Imposto sobre a Renda da Pessoa Física Retido na Fonte (IRRF), incidente sobre os rendimentos do trabalho assalariado, no valor fixo mensal de R$ 607,20 (seiscentos e sete reais e vinte centavos). Parágrafo único. A dedução simplificada substitui todas as deduções legais permitidas, inclusive as relativas a dependentes, pensão alimentícia, despesas médicas e com instrução, e contribuições previdenciárias. Esta dedução aplica-se exclusivamente ao IRRF mensal, não se confundindo com o IRPF anual."
   },
   "decimo_terceiro": {
     "titulo": "Lei nº 4.090, de 13 de julho de 1962",

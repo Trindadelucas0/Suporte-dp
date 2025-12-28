@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { red: '#DC2626', yellow: '#FBBF24' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <% if (typeof user !== 'undefined' && user) { %>
+        <%- include('../partials/navbar') %>
+    <% } %>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                <i class="fas fa-exclamation-triangle text-primary-yellow mr-2"></i>
+                Multa da Data Base
+            </h1>
+            <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                <p class="text-gray-700 mb-2">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    <strong>O que é o Período de Risco?</strong>
+                </p>
+                <p class="text-sm text-gray-600">
+                    O período de risco é de 30 dias após a data base do contrato. 
+                    Se a rescisão ocorrer dentro deste período, o empregador deve pagar multa de 50% sobre o salário (Art. 477 da CLT).
+                </p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-bold mb-4">Dados de Entrada</h2>
+                    
+                    <% if (error) { %>
+                        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+                            <%= error %>
+                        </div>
+                    <% } %>
+
+                    <form method="POST" action="/risco-multa/calcular" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Data Base *</label>
+                            <input type="date" name="dataBase" required
+                                class="w-full px-4 py-2 border rounded-md">
+                            <p class="text-xs text-gray-500 mt-1">Data base do contrato</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Data da Rescisão *</label>
+                            <input type="date" name="dataRescisao" required
+                                class="w-full px-4 py-2 border rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Salário Base (R$) *</label>
+                            <input type="number" name="salarioBase" step="0.01" required
+                                class="w-full px-4 py-2 border rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Valor das Médias (R$)</label>
+                            <input type="number" name="valorMedias" step="0.01" value="0"
+                                class="w-full px-4 py-2 border rounded-md">
+                            <p class="text-xs text-gray-500 mt-1">Médias de horas extras, comissões, etc.</p>
+                        </div>
+
+                        <button type="submit" class="w-full bg-gradient-to-r from-primary-red to-primary-yellow text-white py-3 rounded-md font-semibold">
+                            Calcular
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Histórico de Cálculos -->
+                <% if (typeof historico !== 'undefined' && historico && historico.length > 0) { %>
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-bold mb-4">
+                            <i class="fas fa-history text-primary-red mr-2"></i>
+                            Histórico
+                        </h2>
+                        <div class="space-y-3 max-h-96 overflow-y-auto">
+                            <% historico.forEach(calc => { %>
+                                <div class="border border-gray-200 rounded p-3 hover:bg-gray-50 cursor-pointer"
+                                     onclick="preencherFormulario('<%= calc.data_base %>', '<%= calc.data_rescisao %>', '<%= calc.salario_base %>', '<%= calc.valor_medias || 0 %>')">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div>
+                                            <p class="text-sm font-semibold text-gray-900">
+                                                <%= new Date(calc.data_base + 'T00:00:00').toLocaleDateString('pt-BR') %>
+                                            </p>
+                                            <p class="text-xs text-gray-600">
+                                                Rescisão: <%= new Date(calc.data_rescisao + 'T00:00:00').toLocaleDateString('pt-BR') %>
+                                            </p>
+                                        </div>
+                                        <span class="px-2 py-1 text-xs rounded <%= calc.esta_no_risco ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' %>">
+                                            <%= calc.esta_no_risco ? 'Com Multa' : 'Sem Multa' %>
+                                        </span>
+                                    </div>
+                                    <p class="text-sm font-bold text-primary-red">
+                                        R$ <%= parseFloat(calc.valor_multa).toFixed(2) %>
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        <%= new Date(calc.created_at).toLocaleString('pt-BR') %>
+                                    </p>
+                                </div>
+                            <% }); %>
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+
+            <div class="lg:col-span-2">
+                <% if (resultado) { %>
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="bg-gradient-to-r <%= resultado.estaNoRisco ? 'from-red-500 to-red-700' : 'from-green-500 to-green-700' %> rounded-lg p-6 text-white mb-6">
+                            <h3 class="text-2xl font-bold mb-4">
+                                <%= resultado.estaNoRisco ? 'DENTRO DO PERÍODO DE RISCO' : 'FORA DO PERÍODO DE RISCO' %>
+                            </h3>
+                            <% if (resultado.estaNoRisco) { %>
+                                <p class="text-xl font-bold">Multa: R$ <%= resultado.valorMulta.toFixed(2) %></p>
+                                <p class="text-sm opacity-90 mt-2">50% sobre a base de cálculo</p>
+                            <% } else { %>
+                                <p class="text-xl font-bold">Sem multa</p>
+                                <p class="text-sm opacity-90 mt-2">Rescisão após o período de risco</p>
+                            <% } %>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <p class="text-sm text-gray-600">Data Base</p>
+                                <p class="text-lg font-bold"><%= new Date(resultado.dataBase + 'T00:00:00').toLocaleDateString('pt-BR') %></p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <p class="text-sm text-gray-600">Fim do Período de Risco</p>
+                                <p class="text-lg font-bold"><%= new Date(resultado.dataFimRisco + 'T00:00:00').toLocaleDateString('pt-BR') %></p>
+                            </div>
+                        </div>
+
+                        <h4 class="text-xl font-bold mb-4">Memória de Cálculo</h4>
+                        <div class="space-y-3">
+                            <% resultado.memoria.forEach(passo => { %>
+                                <div class="bg-gray-50 rounded-lg p-4 border-l-4 <%= passo.destaque ? 'border-primary-yellow bg-yellow-50' : 'border-gray-300' %>">
+                                    <p class="font-semibold"><%= passo.descricao %></p>
+                                    <% if (passo.calculo) { %>
+                                        <p class="text-sm text-gray-600 mt-1"><%= passo.calculo %></p>
+                                    <% } %>
+                                    <% if (passo.valor) { %>
+                                        <p class="text-primary-red font-bold mt-2"><%= passo.valor %></p>
+                                    <% } %>
+                                </div>
+                            <% }); %>
+                        </div>
+                    </div>
+                <% else { %>
+                    <div class="bg-white rounded-lg shadow-md p-12 text-center">
+                        <i class="fas fa-calculator text-gray-300 text-6xl mb-4"></i>
+                        <p class="text-gray-600">Preencha os dados para calcular</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function preencherFormulario(dataBase, dataRescisao, salarioBase, valorMedias) {
+            document.querySelector('input[name="dataBase"]').value = dataBase;
+            document.querySelector('input[name="dataRescisao"]').value = dataRescisao;
+            document.querySelector('input[name="salarioBase"]').value = salarioBase;
+            document.querySelector('input[name="valorMedias"]').value = valorMedias || 0;
+            
+            // Scroll para o formulário
+            document.querySelector('form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    </script>
+</body>
+</html>
+

@@ -113,8 +113,14 @@
                                 <h3 class="text-xl font-bold mb-4">Base Legal</h3>
                                 <div class="bg-gray-50 rounded-lg p-6">
                                     <h4 class="font-bold text-lg mb-2"><%= resultado.baseLegal.titulo %></h4>
-                                    <p class="mb-2"><strong>Artigo:</strong> <%= resultado.baseLegal.artigo %></p>
-                                    <p class="text-gray-600"><%= resultado.baseLegal.descricao %></p>
+                                    <p class="mb-4"><strong>Artigo:</strong> <%= resultado.baseLegal.artigo %></p>
+                                    <% if (resultado.baseLegal.textoCompleto) { %>
+                                        <div class="text-gray-700 leading-relaxed whitespace-pre-line bg-white rounded p-4 border">
+                                            <%= resultado.baseLegal.textoCompleto %>
+                                        </div>
+                                    <% } else { %>
+                                        <p class="text-gray-600"><%= resultado.baseLegal.descricao %></p>
+                                    <% } %>
                                 </div>
                             </div>
                         </div>

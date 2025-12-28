@@ -3,74 +3,108 @@
  * Cálculo de adicionais de periculosidade e insalubridade
  * 
  * BASE LEGAL: CLT - Art. 193 (Periculosidade) e Art. 189 (Insalubridade)
+ * 
+ * REGRA CRÍTICA: Ambos os cálculos são feitos sobre o SALÁRIO MÍNIMO, não sobre o salário do funcionário
  */
 
 class PericulosidadeService {
-  // Valores atualizados (ajustar conforme salário mínimo)
-  static SALARIO_MINIMO_2024 = 1412.00;
+  // Salários mínimos por ano (conforme legislação brasileira)
+  static SALARIOS_MINIMOS = {
+    2024: 1412.00,
+    2025: 1518.00,  // Valor oficial para 2025
+    2026: 1621.00   // Projeção estimada para 2026
+  };
+
+  /**
+   * Obtém o salário mínimo do ano
+   * @param {number} ano - Ano (2024, 2025 ou 2026)
+   * @returns {number} Salário mínimo do ano
+   */
+  static getSalarioMinimo(ano = null) {
+    if (!ano) {
+      ano = new Date().getFullYear();
+    }
+    
+    if (!this.SALARIOS_MINIMOS[ano]) {
+      // Se o ano não estiver na lista, usa o mais recente disponível
+      const anosDisponiveis = Object.keys(this.SALARIOS_MINIMOS).map(Number).sort((a, b) => b - a);
+      ano = anosDisponiveis[0];
+    }
+    
+    return this.SALARIOS_MINIMOS[ano];
+  }
 
   /**
    * Calcula adicional de periculosidade
-   * @param {number} salarioBase 
+   * CORREÇÃO: Calcula sobre o SALÁRIO MÍNIMO, não sobre o salário do funcionário
+   * @param {number} ano - Ano para usar o salário mínimo correto (2024, 2025 ou 2026)
    * @returns {Object}
    */
-  static calcularPericulosidade(salarioBase) {
-    const percentual = 30;
-    const valorAdicional = (salarioBase * percentual) / 100;
-    const salarioTotal = salarioBase + valorAdicional;
+  static calcularPericulosidade(ano = null) {
+    // Valida se o ano foi informado
+    if (!ano) {
+      throw new Error('Ano é obrigatório para calcular periculosidade. Informe 2024, 2025 ou 2026.');
+    }
+
+    const salarioMinimo = this.getSalarioMinimo(ano);
+    const percentual = 30; // 30% conforme CLT Art. 193
+    const valorAdicional = (salarioMinimo * percentual) / 100;
 
     const memoria = [
       {
         passo: 1,
-        descricao: `Salário Base: R$ ${salarioBase.toFixed(2)}`,
-        valor: salarioBase.toFixed(2)
+        descricao: `Salário Mínimo ${ano}: R$ ${salarioMinimo.toFixed(2)}`,
+        valor: salarioMinimo.toFixed(2),
+        observacao: 'Base de cálculo para periculosidade é sempre o salário mínimo'
       },
       {
         passo: 2,
         descricao: `Percentual de Periculosidade: ${percentual}%`,
-        valor: `${percentual}%`
+        valor: `${percentual}%`,
+        observacao: 'Conforme CLT Art. 193'
       },
       {
         passo: 3,
-        descricao: `Cálculo do Adicional: R$ ${salarioBase.toFixed(2)} × ${percentual}%`,
-        calculo: `R$ ${salarioBase.toFixed(2)} × ${percentual}% = R$ ${valorAdicional.toFixed(2)}`,
-        valor: valorAdicional.toFixed(2)
-      },
-      {
-        passo: 4,
-        descricao: `Salário Total: R$ ${salarioTotal.toFixed(2)}`,
-        calculo: `R$ ${salarioBase.toFixed(2)} + R$ ${valorAdicional.toFixed(2)} = R$ ${salarioTotal.toFixed(2)}`,
-        valor: salarioTotal.toFixed(2),
+        descricao: `Cálculo do Adicional: R$ ${salarioMinimo.toFixed(2)} × ${percentual}%`,
+        calculo: `R$ ${salarioMinimo.toFixed(2)} × ${percentual}% = R$ ${valorAdicional.toFixed(2)}`,
+        valor: valorAdicional.toFixed(2),
         destaque: true
       }
     ];
 
     return {
       tipo: 'periculosidade',
-      salarioBase,
+      ano,
+      salarioMinimo: parseFloat(salarioMinimo.toFixed(2)),
       percentual,
       valorAdicional: parseFloat(valorAdicional.toFixed(2)),
-      salarioTotal: parseFloat(salarioTotal.toFixed(2)),
       memoria,
       educacao: {
-        titulo: 'Periculosidade vs Insalubridade',
-        descricao: 'Periculosidade: risco à vida (30% sobre salário base). Insalubridade: risco à saúde (percentual sobre salário mínimo).',
-        comparacao: 'Periculosidade é calculada sobre o salário base, enquanto insalubridade é calculada sobre o salário mínimo.'
+        titulo: 'Periculosidade: Base de Cálculo',
+        descricao: 'O adicional de periculosidade é calculado sobre o SALÁRIO MÍNIMO, não sobre o salário do funcionário. Isso é diferente de outros adicionais que podem usar o salário base.',
+        observacao: 'O percentual de 30% é fixo e aplicado sempre sobre o salário mínimo vigente no ano.'
       },
       baseLegal: {
         titulo: 'CLT - Art. 193',
         artigo: 'Art. 193',
-        descricao: 'São consideradas atividades ou operações perigosas aquelas que, por sua natureza ou métodos de trabalho, impliquem risco acentuado em virtude de exposição permanente a inflamáveis, explosivos ou energia elétrica. O adicional é de 30% sobre o salário base.'
+        descricao: 'São consideradas atividades ou operações perigosas aquelas que, por sua natureza ou métodos de trabalho, impliquem risco acentuado em virtude de exposição permanente a inflamáveis, explosivos ou energia elétrica. O adicional é de 30% sobre o salário mínimo.'
       }
     };
   }
 
   /**
    * Calcula adicional de insalubridade
+   * CORREÇÃO: Calcula sobre o SALÁRIO MÍNIMO, não sobre o salário do funcionário
    * @param {string} grau - 'minimo', 'medio', 'maximo'
+   * @param {number} ano - Ano para usar o salário mínimo correto (2024, 2025 ou 2026)
    * @returns {Object}
    */
-  static calcularInsalubridade(grau = 'medio') {
+  static calcularInsalubridade(grau = 'medio', ano = null) {
+    // Valida se o ano foi informado
+    if (!ano) {
+      throw new Error('Ano é obrigatório para calcular insalubridade. Informe 2024, 2025 ou 2026.');
+    }
+
     const graus = {
       minimo: {
         nome: 'Mínimo',
@@ -94,24 +128,26 @@ class PericulosidadeService {
       throw new Error('Grau de insalubridade inválido');
     }
 
-    const baseCalculo = this.SALARIO_MINIMO_2024;
-    const valorAdicional = (baseCalculo * config.percentual) / 100;
+    const salarioMinimo = this.getSalarioMinimo(ano);
+    const valorAdicional = (salarioMinimo * config.percentual) / 100;
 
     const memoria = [
       {
         passo: 1,
-        descricao: `Salário Mínimo (Base de Cálculo): R$ ${baseCalculo.toFixed(2)}`,
-        valor: baseCalculo.toFixed(2)
+        descricao: `Salário Mínimo ${ano} (Base de Cálculo): R$ ${salarioMinimo.toFixed(2)}`,
+        valor: salarioMinimo.toFixed(2),
+        observacao: 'Base de cálculo para insalubridade é sempre o salário mínimo'
       },
       {
         passo: 2,
         descricao: `Grau de Insalubridade: ${config.nome} (${config.percentual}%)`,
-        valor: `${config.percentual}%`
+        valor: `${config.percentual}%`,
+        observacao: config.descricao
       },
       {
         passo: 3,
-        descricao: `Cálculo do Adicional: R$ ${baseCalculo.toFixed(2)} × ${config.percentual}%`,
-        calculo: `R$ ${baseCalculo.toFixed(2)} × ${config.percentual}% = R$ ${valorAdicional.toFixed(2)}`,
+        descricao: `Cálculo do Adicional: R$ ${salarioMinimo.toFixed(2)} × ${config.percentual}%`,
+        calculo: `R$ ${salarioMinimo.toFixed(2)} × ${config.percentual}% = R$ ${valorAdicional.toFixed(2)}`,
         valor: valorAdicional.toFixed(2),
         destaque: true
       }
@@ -119,14 +155,15 @@ class PericulosidadeService {
 
     return {
       tipo: 'insalubridade',
+      ano,
       grau: config.nome,
       percentual: config.percentual,
-      baseCalculo: parseFloat(baseCalculo.toFixed(2)),
+      salarioMinimo: parseFloat(salarioMinimo.toFixed(2)),
       valorAdicional: parseFloat(valorAdicional.toFixed(2)),
       memoria,
       educacao: {
         titulo: 'Insalubridade: Base de Cálculo',
-        descricao: 'Diferente da periculosidade, a insalubridade é calculada sobre o salário mínimo, não sobre o salário base do funcionário.',
+        descricao: 'A insalubridade é calculada sobre o SALÁRIO MÍNIMO, não sobre o salário do funcionário. O percentual varia conforme o grau determinado pelo LTCAT.',
         observacao: 'O grau de insalubridade é determinado por laudo técnico de periculosidade e insalubridade (LTCAT).'
       },
       baseLegal: {

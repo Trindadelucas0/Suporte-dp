@@ -54,6 +54,24 @@ CREATE TABLE IF NOT EXISTS calendario_anotacoes (
 CREATE INDEX idx_calendario_user_data ON calendario_anotacoes(user_id, data);
 
 -- ============================================
+-- TABELA: calendario_obrigacoes (Obrigações fiscais e trabalhistas)
+-- ============================================
+CREATE TABLE IF NOT EXISTS calendario_obrigacoes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    data DATE NOT NULL,
+    tipo VARCHAR(50) NOT NULL, -- dctfweb, inss, irrf, fgts, eSocial, etc.
+    descricao VARCHAR(255) NOT NULL,
+    observacao TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índice para busca por usuário e data
+CREATE INDEX idx_calendario_obrigacoes_user_data ON calendario_obrigacoes(user_id, data);
+CREATE INDEX idx_calendario_obrigacoes_tipo ON calendario_obrigacoes(tipo);
+
+-- ============================================
 -- TABELA: calculos_inss (Histórico de cálculos de INSS)
 -- ============================================
 CREATE TABLE IF NOT EXISTS calculos_inss (
@@ -250,4 +268,44 @@ CREATE TRIGGER update_checklists_updated_at BEFORE UPDATE ON checklists
 
 CREATE TRIGGER update_checklist_itens_updated_at BEFORE UPDATE ON checklist_itens
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- TABELA: calculos_data_base (Histórico de cálculos de Multa da Data Base)
+-- ============================================
+CREATE TABLE IF NOT EXISTS calculos_data_base (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    data_base DATE NOT NULL,
+    data_rescisao DATE NOT NULL,
+    salario_base DECIMAL(10,2) NOT NULL,
+    valor_medias DECIMAL(10,2) DEFAULT 0,
+    base_calculo DECIMAL(10,2) NOT NULL,
+    esta_no_risco BOOLEAN NOT NULL,
+    valor_multa DECIMAL(10,2) NOT NULL,
+    memoria_calculo JSONB NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índice para histórico do usuário
+CREATE INDEX IF NOT EXISTS idx_calculos_data_base_user ON calculos_data_base(user_id, created_at DESC);
+
+-- ============================================
+-- TABELA: calculos_contrato_experiencia (Histórico de cálculos de quebra de contrato)
+-- ============================================
+CREATE TABLE IF NOT EXISTS calculos_contrato_experiencia (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    data_inicio DATE NOT NULL,
+    data_fim_previsto DATE NOT NULL,
+    data_encerramento DATE NOT NULL,
+    salario_base DECIMAL(10,2) NOT NULL,
+    valor_medias DECIMAL(10,2) DEFAULT 0,
+    quebrado_pelo_empregador BOOLEAN NOT NULL,
+    valor_total DECIMAL(10,2) NOT NULL,
+    memoria_calculo JSONB NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índice para histórico do usuário
+CREATE INDEX IF NOT EXISTS idx_calculos_contrato_user ON calculos_contrato_experiencia(user_id, created_at DESC);
 

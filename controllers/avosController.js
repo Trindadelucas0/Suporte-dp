@@ -9,7 +9,7 @@ const db = require('../config/database');
 class AvosController {
   static async index(req, res) {
     res.render('avos/index', {
-      title: 'Calculadora de Avos - Suporte DP',
+      title: 'Calculadora de 13º Salário - Suporte DP',
       resultado: null,
       error: null
     });
