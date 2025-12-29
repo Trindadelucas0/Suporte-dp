@@ -364,6 +364,39 @@ class CalendarioService {
   }
 
   /**
+   * Limpa obrigações automáticas antigas que possam estar com regras incorretas
+   * Útil para corrigir o banco de dados após mudanças nas regras
+   * 
+   * @param {number} userId - ID do usuário (UUID)
+   * @param {number} ano - Ano para limpar (opcional, se não informado limpa todos)
+   * @returns {Promise<number>} Número de obrigações removidas
+   */
+  static async limparObrigacoesAntigas(userId, ano = null) {
+    try {
+      let query = `
+        DELETE FROM calendario_obrigacoes 
+        WHERE user_id = $1 
+        AND tipo IN ('fgts', 'inss', 'irrf', 'dctfweb', 'efd_reinf')
+        AND observacao LIKE '%Competência:%'
+      `;
+      const params = [userId];
+      
+      if (ano) {
+        // Se ano foi informado, limpa apenas obrigações daquele ano
+        query += ` AND observacao LIKE $2`;
+        params.push(`%/${ano}%`);
+      }
+      
+      const result = await db.query(query, params);
+      console.log(`🧹 Limpeza: ${result.rowCount} obrigações antigas removidas${ano ? ` para o ano ${ano}` : ''}`);
+      return result.rowCount;
+    } catch (error) {
+      console.error('Erro ao limpar obrigações antigas:', error);
+      throw error;
+    }
+  }
+
+  /**
    * GERA AUTOMATICAMENTE as obrigações trabalhistas para um mês de competência
    * 
    * Esta função é chamada automaticamente quando o calendário é carregado.
@@ -383,7 +416,7 @@ class CalendarioService {
    *    - Referente ao mês anterior, assim como FGTS, INSS e IRRF
    *    - Sempre o último dia útil do mês seguinte, mesmo que seja dia 28, 29, 30 ou 31
    * 
-   * 5. EFD-Reinf: dia 15 do mês da competência
+   * 5. EFD-Reinf: dia 15 do mês seguinte à competência
    *    - Se cair em sábado/domingo/feriado → adia para primeiro dia útil subsequente
    * 
    * IMPORTANTE: A função evita duplicatas - se já existe obrigação do mesmo tipo na mesma data,
@@ -501,12 +534,13 @@ class CalendarioService {
     // ============================================
     // 5. EFD-Reinf - Empresas/Equiparadas
     // ============================================
-    // REGRA: dia 15 do mês da competência
-    const vencimentoReinf = moment(`${competencia.year()}-${String(competencia.month() + 1).padStart(2, '0')}-15`);
+    // REGRA: dia 15 do mês seguinte à competência
+    // Exemplo: Se competência é 01/2025, EFD-Reinf vence dia 15/02/2025
+    const vencimentoReinf = moment(`${mesSeguinte.year()}-${String(mesSeguinte.month() + 1).padStart(2, '0')}-15`);
     
-    if (!this.isDiaUtil(vencimentoReinf, feriados)) {
+    if (!this.isDiaUtil(vencimentoReinf, todosFeriados)) {
       // Se não for dia útil, adia para o primeiro dia útil subsequente
-      const vencimentoAjustado = this.ajustarParaPrimeiroDiaUtilSubsequente(vencimentoReinf, feriados);
+      const vencimentoAjustado = this.ajustarParaPrimeiroDiaUtilSubsequente(vencimentoReinf, todosFeriados);
       obrigacoes.push({
         data: vencimentoAjustado.format('YYYY-MM-DD'),
         tipo: 'efd_reinf',
@@ -525,37 +559,49 @@ class CalendarioService {
     // ============================================
     // SALVA AS OBRIGAÇÕES NO BANCO DE DADOS
     // ============================================
-    // IMPORTANTE: Evita duplicatas verificando se já existe obrigação do mesmo tipo na mesma data
+    // CORREÇÃO: Remove obrigações antigas com regras incorretas antes de criar as novas
+    // Primeiro, remove todas as obrigações automáticas da competência atual que possam estar com regras erradas
+    const competenciaStr = competencia.format('MM/YYYY');
+    
+    try {
+      // Remove obrigações automáticas antigas da mesma competência
+      // Verifica pela observação que contém "Competência: MM/YYYY"
+      const deleteResult = await db.query(
+        `DELETE FROM calendario_obrigacoes 
+         WHERE user_id = $1 
+         AND tipo IN ('fgts', 'inss', 'irrf', 'dctfweb', 'efd_reinf')
+         AND observacao LIKE $2`,
+        [userId, `%Competência: ${competenciaStr}%`]
+      );
+      
+      if (deleteResult.rowCount > 0) {
+        console.log(`🗑️ Removidas ${deleteResult.rowCount} obrigações antigas com regras incorretas para competência ${competenciaStr}`);
+      }
+    } catch (error) {
+      console.warn('Erro ao remover obrigações antigas (pode ser normal se não houver):', error.message);
+    }
+
+    // Agora cria todas as obrigações corretas
     const obrigacoesCriadas = [];
     
     for (const obrigacao of obrigacoes) {
       try {
-        // Verifica se já existe obrigação do mesmo tipo na mesma data para este usuário
-        const existe = await db.query(
-          `SELECT id FROM calendario_obrigacoes 
-           WHERE user_id = $1 AND data = $2 AND tipo = $3`,
-          [userId, obrigacao.data, obrigacao.tipo]
+        // Cria a obrigação (já removemos as antigas acima)
+        const resultado = await this.saveObrigacao(
+          userId,
+          obrigacao.data,
+          obrigacao.tipo,
+          obrigacao.descricao,
+          obrigacao.observacao
         );
-
-        // Se não existir, cria a obrigação
-        if (existe.rows.length === 0) {
-          const resultado = await this.saveObrigacao(
-            userId,
-            obrigacao.data,
-            obrigacao.tipo,
-            obrigacao.descricao,
-            obrigacao.observacao
-          );
-          obrigacoesCriadas.push(resultado);
-        }
-        // Se já existir, não faz nada (evita duplicatas)
+        obrigacoesCriadas.push(resultado);
       } catch (error) {
         // Se der erro ao salvar uma obrigação específica, registra mas continua com as outras
         console.error(`Erro ao salvar obrigação ${obrigacao.tipo} para ${obrigacao.data}:`, error);
       }
     }
 
-    // Retorna apenas as obrigações que foram criadas (não as que já existiam)
+    // Retorna as obrigações criadas
     return obrigacoesCriadas;
   }
 }

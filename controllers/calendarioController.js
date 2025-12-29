@@ -15,7 +15,7 @@ class CalendarioController {
    * - INSS: até dia 20 do mês seguinte à competência (ajusta se fim de semana/feriado)
    * - IRRF: até dia 20 do mês seguinte à competência (ajusta se fim de semana/feriado)
    * - DCTFWeb: último dia útil do mês seguinte à competência (referente ao mês anterior)
-   * - EFD-Reinf: dia 15 do mês da competência (ajusta se fim de semana/feriado)
+   * - EFD-Reinf: dia 15 do mês seguinte à competência (ajusta se fim de semana/feriado)
    */
   static async index(req, res) {
     const userId = req.session.user.id;
@@ -23,12 +23,19 @@ class CalendarioController {
     const mes = parseInt(req.query.mes) || new Date().getMonth() + 1;
 
     try {
-      // GERA AUTOMATICAMENTE as obrigações trabalhistas para o mês visualizado
-      // Isso garante que o calendário sempre tenha as obrigações corretas
-      // A função evita duplicatas automaticamente
+      // GERA AUTOMATICAMENTE as obrigações trabalhistas
+      // 1. Para a competência do mês visualizado (obrigações que vencem no mês seguinte)
+      // 2. Para a competência do mês anterior (obrigações que vencem no mês atual)
       try {
+        // Gera obrigações para competência do mês visualizado
         await CalendarioService.gerarObrigacoesAutomaticas(userId, ano, mes);
-        console.log(`✅ Obrigações automáticas geradas para ${mes}/${ano}`);
+        console.log(`✅ Obrigações automáticas geradas para competência ${mes}/${ano}`);
+        
+        // Gera obrigações para competência do mês anterior (que vencem no mês atual)
+        const mesAnterior = mes === 1 ? 12 : mes - 1;
+        const anoAnterior = mes === 1 ? ano - 1 : ano;
+        await CalendarioService.gerarObrigacoesAutomaticas(userId, anoAnterior, mesAnterior);
+        console.log(`✅ Obrigações automáticas geradas para competência ${mesAnterior}/${anoAnterior} (vencimento em ${mes}/${ano})`);
       } catch (gerarError) {
         // Se der erro ao gerar, continua mesmo assim (não quebra o calendário)
         // Isso permite que o calendário funcione mesmo se houver problema na geração
