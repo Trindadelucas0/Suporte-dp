@@ -1,11 +1,11 @@
 /**
  * CONTROLLER: PerfilController
- * Gerencia perfil do usuário (Perfil, Configurações, Sugestões & Bugs)
+ * Gerencia perfil do usuário (dados básicos e adicionais)
  */
 
 const User = require('../models/User');
-const SugestaoBug = require('../models/SugestaoBug');
 const { validationResult } = require('express-validator');
+const bcrypt = require('bcrypt');
 
 class PerfilController {
   /**
@@ -13,131 +13,205 @@ class PerfilController {
    */
   static async index(req, res) {
     const userId = req.session.user.id;
-    const aba = req.query.aba || 'perfil';
 
     try {
-      const user = await User.findById(userId);
-      let sugestoes = [];
-
-      if (aba === 'sugestoes') {
-        sugestoes = await SugestaoBug.findByUserId(userId);
+      const user = await User.findProfileById(userId);
+      
+      if (!user) {
+        return res.status(404).render('error', {
+          title: 'Erro',
+          error: 'Usuário não encontrado'
+        });
       }
 
       res.render('perfil/index', {
         title: 'Meu Perfil - Suporte DP',
         user,
-        aba,
-        sugestoes
+        error: null,
+        success: null
       });
     } catch (error) {
       console.error('Erro ao carregar perfil:', error);
       res.render('perfil/index', {
         title: 'Meu Perfil - Suporte DP',
         user: req.session.user,
-        aba: 'perfil',
-        sugestoes: [],
-        error: 'Erro ao carregar dados do perfil'
+        error: 'Erro ao carregar dados do perfil',
+        success: null
       });
     }
   }
 
   /**
-   * Atualiza dados do perfil
+   * Atualiza dados básicos do perfil (nome, email)
    */
-  static async update(req, res) {
+  static async updateBasic(req, res) {
     const userId = req.session.user.id;
     const { nome, email } = req.body;
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      return res.json({ success: false, error: 'Dados inválidos' });
+      const user = await User.findProfileById(userId);
+      return res.render('perfil/index', {
+        title: 'Meu Perfil - Suporte DP',
+        user,
+        error: errors.array().map(e => e.msg).join(', '),
+        success: null
+      });
     }
 
     try {
-      // Verifica se email já está em uso por outro usuário
-      const userExistente = await User.findByEmail(email);
-      if (userExistente && userExistente.id !== userId) {
-        return res.json({ success: false, error: 'Este email já está em uso' });
-      }
-
-      const user = await User.update(userId, { nome, email });
+      const updatedUser = await User.update(userId, { nome, email });
       
-      // Atualiza sessão
-      req.session.user.nome = user.nome;
-      req.session.user.email = user.email;
-
-      res.json({ success: true, user });
+      if (updatedUser) {
+        // Atualiza sessão
+        req.session.user.nome = updatedUser.nome;
+        req.session.user.email = updatedUser.email;
+        
+        const user = await User.findProfileById(userId);
+        res.render('perfil/index', {
+          title: 'Meu Perfil - Suporte DP',
+          user,
+          error: null,
+          success: 'Dados básicos atualizados com sucesso!'
+        });
+      } else {
+        const user = await User.findProfileById(userId);
+        res.render('perfil/index', {
+          title: 'Meu Perfil - Suporte DP',
+          user,
+          error: 'Erro ao atualizar dados',
+          success: null
+        });
+      }
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
-      res.json({ success: false, error: 'Erro ao atualizar perfil' });
+      const user = await User.findProfileById(userId);
+      res.render('perfil/index', {
+        title: 'Meu Perfil - Suporte DP',
+        user,
+        error: 'Erro interno ao atualizar dados',
+        success: null
+      });
     }
   }
 
   /**
-   * Atualiza senha
+   * Atualiza dados adicionais do perfil
+   */
+  static async updateProfile(req, res) {
+    const userId = req.session.user.id;
+    const { telefone, whatsapp, empresa, cargo, observacoes, instagram } = req.body;
+
+    try {
+      const updatedUser = await User.update(userId, {
+        telefone: telefone || null,
+        whatsapp: whatsapp || null,
+        empresa: empresa || null,
+        cargo: cargo || null,
+        observacoes: observacoes || null,
+        instagram: instagram || null
+      });
+      
+      if (updatedUser) {
+        const user = await User.findProfileById(userId);
+        res.render('perfil/index', {
+          title: 'Meu Perfil - Suporte DP',
+          user,
+          error: null,
+          success: 'Perfil atualizado com sucesso!'
+        });
+      } else {
+        const user = await User.findProfileById(userId);
+        res.render('perfil/index', {
+          title: 'Meu Perfil - Suporte DP',
+          user,
+          error: 'Erro ao atualizar perfil',
+          success: null
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error);
+      const user = await User.findProfileById(userId);
+      res.render('perfil/index', {
+        title: 'Meu Perfil - Suporte DP',
+        user,
+        error: 'Erro interno ao atualizar perfil',
+        success: null
+      });
+    }
+  }
+
+  /**
+   * Atualiza senha do usuário
    */
   static async updatePassword(req, res) {
     const userId = req.session.user.id;
-    const { senhaAtual, novaSenha, confirmarSenha } = req.body;
+    const { senhaAtual, novaSenha, confirmarNovaSenha } = req.body;
+    const errors = validationResult(req);
 
-    if (!senhaAtual || !novaSenha || !confirmarSenha) {
-      return res.json({ success: false, error: 'Todos os campos são obrigatórios' });
+    if (!errors.isEmpty()) {
+      const user = await User.findProfileById(userId);
+      return res.render('perfil/index', {
+        title: 'Meu Perfil - Suporte DP',
+        user,
+        error: errors.array().map(e => e.msg).join(', '),
+        success: null
+      });
     }
 
-    if (novaSenha.length < 6) {
-      return res.json({ success: false, error: 'A senha deve ter pelo menos 6 caracteres' });
-    }
-
-    if (novaSenha !== confirmarSenha) {
-      return res.json({ success: false, error: 'As senhas não coincidem' });
+    if (novaSenha !== confirmarNovaSenha) {
+      const user = await User.findProfileById(userId);
+      return res.render('perfil/index', {
+        title: 'Meu Perfil - Suporte DP',
+        user,
+        error: 'As novas senhas não coincidem',
+        success: null
+      });
     }
 
     try {
       const user = await User.findById(userId);
       if (!user) {
-        return res.json({ success: false, error: 'Usuário não encontrado' });
+        return res.status(404).render('error', {
+          title: 'Erro',
+          error: 'Usuário não encontrado'
+        });
       }
 
-      // Busca senha hash completa
-      const userCompleto = await User.findByEmail(user.email);
-      const senhaValida = await User.verifyPassword(senhaAtual, userCompleto.senha_hash);
-      
+      // Busca senha hash do banco
+      const userWithPassword = await User.findByEmail(user.email);
+      const senhaValida = await User.verifyPassword(senhaAtual, userWithPassword.senha_hash);
+
       if (!senhaValida) {
-        return res.json({ success: false, error: 'Senha atual incorreta' });
+        const userProfile = await User.findProfileById(userId);
+        return res.render('perfil/index', {
+          title: 'Meu Perfil - Suporte DP',
+          user: userProfile,
+          error: 'Senha atual incorreta',
+          success: null
+        });
       }
 
       await User.update(userId, { senha: novaSenha });
-      res.json({ success: true });
+      const userProfile = await User.findProfileById(userId);
+      
+      res.render('perfil/index', {
+        title: 'Meu Perfil - Suporte DP',
+        user: userProfile,
+        error: null,
+        success: 'Senha atualizada com sucesso!'
+      });
     } catch (error) {
       console.error('Erro ao atualizar senha:', error);
-      res.json({ success: false, error: 'Erro ao atualizar senha' });
-    }
-  }
-
-  /**
-   * Cria sugestão ou bug
-   */
-  static async criarSugestaoBug(req, res) {
-    const userId = req.session.user.id;
-    const { tipo, titulo, descricao } = req.body;
-
-    if (!tipo || !titulo || !descricao) {
-      return res.json({ success: false, error: 'Todos os campos são obrigatórios' });
-    }
-
-    if (!['sugestao', 'bug'].includes(tipo)) {
-      return res.json({ success: false, error: 'Tipo inválido' });
-    }
-
-    try {
-      const sugestao = await SugestaoBug.create(userId, tipo, titulo, descricao);
-      res.json({ success: true, data: sugestao });
-    } catch (error) {
-      console.error('Erro ao criar sugestão/bug:', error);
-      res.json({ success: false, error: 'Erro ao enviar sugestão/bug' });
+      const user = await User.findProfileById(userId);
+      res.render('perfil/index', {
+        title: 'Meu Perfil - Suporte DP',
+        user,
+        error: 'Erro interno ao atualizar senha',
+        success: null
+      });
     }
   }
 }
 
 module.exports = PerfilController;
-

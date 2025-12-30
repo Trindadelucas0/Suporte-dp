@@ -291,14 +291,93 @@ class User {
       fields.push(`senha_hash = $${paramCount++}`);
       values.push(senhaHash);
     }
+    // Campos de perfil
+    if (data.telefone !== undefined) {
+      fields.push(`telefone = $${paramCount++}`);
+      values.push(data.telefone || null);
+    }
+    if (data.whatsapp !== undefined) {
+      fields.push(`whatsapp = $${paramCount++}`);
+      values.push(data.whatsapp || null);
+    }
+    if (data.empresa !== undefined) {
+      fields.push(`empresa = $${paramCount++}`);
+      values.push(data.empresa || null);
+    }
+    if (data.cargo !== undefined) {
+      fields.push(`cargo = $${paramCount++}`);
+      values.push(data.cargo || null);
+    }
+    if (data.observacoes !== undefined) {
+      fields.push(`observacoes = $${paramCount++}`);
+      values.push(data.observacoes || null);
+    }
+    if (data.instagram !== undefined) {
+      fields.push(`instagram = $${paramCount++}`);
+      values.push(data.instagram || null);
+    }
 
     if (fields.length === 0) return null;
 
+    fields.push(`updated_at = CURRENT_TIMESTAMP`);
     values.push(id);
-    const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${paramCount} RETURNING id, nome, email, is_admin`;
+    
+    // Retorna todos os campos de perfil
+    const returnFields = 'id, nome, email, is_admin, telefone, whatsapp, empresa, cargo, observacoes, instagram, created_at, updated_at';
+    const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${paramCount} RETURNING ${returnFields}`;
     
     const result = await db.query(query, values);
     return result.rows[0] || null;
+  }
+
+  /**
+   * Busca perfil completo do usuário (incluindo campos adicionais)
+   */
+  static async findProfileById(id) {
+    try {
+      // Verifica quais campos existem
+      const columnsCheck = await db.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'users'
+      `);
+      
+      const existingColumns = columnsCheck.rows.map(r => r.column_name);
+      
+      let selectFields = 'id, nome, email, is_admin, created_at, updated_at';
+      const profileFields = ['telefone', 'whatsapp', 'empresa', 'cargo', 'observacoes', 'instagram', 'ativo', 'bloqueado', 'last_login'];
+      
+      profileFields.forEach(field => {
+        if (existingColumns.includes(field)) {
+          selectFields += `, ${field}`;
+        }
+      });
+
+      const result = await db.query(
+        `SELECT ${selectFields} FROM users WHERE id = $1`,
+        [id]
+      );
+      
+      if (!result.rows[0]) return null;
+
+      const user = result.rows[0];
+      // Garante valores padrão para campos que podem não existir
+      return {
+        ...user,
+        telefone: user.telefone || null,
+        whatsapp: user.whatsapp || null,
+        empresa: user.empresa || null,
+        cargo: user.cargo || null,
+        observacoes: user.observacoes || null,
+        instagram: user.instagram || null,
+        ativo: user.ativo !== undefined ? user.ativo : true,
+        bloqueado: user.bloqueado !== undefined ? user.bloqueado : false,
+        last_login: user.last_login || null
+      };
+    } catch (error) {
+      console.error('Erro ao buscar perfil do usuário:', error);
+      return null;
+    }
   }
 }
 

@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
+    <title>
+        <%= title %>
+    </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -18,68 +21,73 @@
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body class="bg-gray-50">
-    <% if (typeof user !== 'undefined' && user) { %>
+    <% if (typeof user !=='undefined' && user) { %>
         <%- include('../partials/navbar') %>
-    <% } %>
+            <% } %>
 
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">Painel Administrativo</h1>
-            <p class="mt-2 text-gray-600">Estatísticas e gerenciamento do sistema</p>
-        </div>
+                <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                    <div class="mb-6">
+                        <h1 class="text-3xl font-bold text-gray-900">Painel Administrativo</h1>
+                        <p class="mt-2 text-gray-600">Gerenciamento de usuários e sistema</p>
+                    </div>
 
-        <!-- Cards de Estatísticas -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600 text-sm">Total de Usuários</p>
-                        <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.usuarios.total || 0 %></p>
-                        <div class="mt-2 text-xs text-gray-500">
-                            <span class="text-green-600"><%= stats.usuarios.ativos || 0 %> ativos</span> | 
-                            <span class="text-red-600"><%= stats.usuarios.bloqueados || 0 %> bloqueados</span>
+                    <!-- Cards de Estatísticas -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 text-sm">Total de Usuários</p>
+                                    <p class="text-3xl font-bold text-gray-900 mt-2">
+                                        <%= stats.usuarios.total || 0 %>
+                                    </p>
+                                    <div class="mt-2 text-xs text-gray-500">
+                                        <span class="text-green-600">
+                                            <%= stats.usuarios.ativos || 0 %> ativos
+                                        </span> |
+                                        <span class="text-red-600">
+                                            <%= stats.usuarios.bloqueados || 0 %> bloqueados
+                                        </span>
+                                    </div>
+                                </div>
+                                <i class="fas fa-users text-blue-500 text-4xl"></i>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 text-sm">Total de Cálculos</p>
+                                    <p class="text-3xl font-bold text-gray-900 mt-2">
+                                        <%= stats.calculos || 0 %>
+                                    </p>
+                                    <p class="mt-2 text-xs text-gray-500">Realizados no sistema</p>
+                                </div>
+                                <i class="fas fa-calculator text-green-500 text-4xl"></i>
+                            </div>
                         </div>
                     </div>
-                    <i class="fas fa-users text-blue-500 text-4xl"></i>
-                </div>
-            </div>
 
-            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600 text-sm">Usuários Ativos</p>
-                        <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.usuarios.ativos || 0 %></p>
-                        <p class="mt-2 text-xs text-gray-500"><%= stats.usuarios.inativos || 0 %> inativos</p>
+                    <!-- Menu de Ações Rápidas -->
+                    <div class="grid grid-cols-1 md:grid-cols-1 gap-6 mb-8">
+                        <a href="/admin/usuarios"
+                            class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-l-4 border-blue-500">
+                            <div class="flex items-center">
+                                <i class="fas fa-users-cog text-blue-500 text-3xl mr-4"></i>
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-900">Gerenciar Usuários</h3>
+                                    <p class="text-sm text-gray-600 mt-1">Visualizar, bloquear, ativar e gerenciar todos
+                                        os usuários do sistema</p>
+                                </div>
+                            </div>
+                        </a>
                     </div>
-                    <i class="fas fa-user-check text-green-500 text-4xl"></i>
-                </div>
-            </div>
 
-            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary-yellow">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600 text-sm">Total de Cálculos</p>
-                        <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.calculos || 0 %></p>
-                    </div>
-                    <i class="fas fa-calculator text-primary-yellow text-4xl"></i>
-                </div>
-            </div>
+                </main>
 
-        </div>
-
-        <!-- Menu de Ações Rápidas -->
-        <div class="grid grid-cols-1 md:grid-cols-1 gap-6 mb-8">
-            <a href="/admin/usuarios" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-l-4 border-blue-500">
-                <div class="flex items-center">
-                    <i class="fas fa-users-cog text-blue-500 text-3xl mr-4"></i>
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-900">Gerenciar Usuários</h3>
-                        <p class="text-sm text-gray-600 mt-1">Visualizar, bloquear, ativar e gerenciar todos os usuários do sistema</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-    </main>
+                <%- include('../partials/footer') %>
+                    <script src="/js/loading.js"></script>
 </body>
+
 </html>

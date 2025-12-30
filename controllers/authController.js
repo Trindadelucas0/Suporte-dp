@@ -4,6 +4,7 @@
  */
 
 const User = require('../models/User');
+const db = require('../config/database');
 const { validationResult } = require('express-validator');
 
 class AuthController {
@@ -52,8 +53,13 @@ class AuthController {
         });
       }
 
-      // Atualiza último login
+      // Atualiza último login e última atividade
       await User.updateLastLogin(user.id);
+      const db = require('../config/database');
+      await db.query(
+        'UPDATE users SET ultima_atividade = CURRENT_TIMESTAMP WHERE id = $1',
+        [user.id]
+      ).catch(() => {}); // Ignora erro se campo não existir
 
       // Cria sessão
       req.session.user = {
@@ -66,7 +72,10 @@ class AuthController {
       const returnTo = req.session.returnTo || '/dashboard';
       delete req.session.returnTo;
       
-      res.redirect(returnTo);
+      // Pequeno delay para mostrar transição de loading
+      setTimeout(() => {
+        res.redirect(returnTo);
+      }, 300);
     } catch (error) {
       console.error('Erro no login:', error);
       res.render('auth/login', {

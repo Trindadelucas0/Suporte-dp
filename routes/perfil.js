@@ -9,16 +9,27 @@ const { requireAuth } = require('../middleware/auth');
 const { body } = require('express-validator');
 
 // Validações
-const updateValidation = [
-  body('nome').trim().isLength({ min: 3 }),
-  body('email').isEmail().normalizeEmail()
+const updateBasicValidation = [
+  body('nome').trim().isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
+  body('email').isEmail().normalizeEmail().withMessage('Email inválido')
+];
+
+const updatePasswordValidation = [
+  body('senhaAtual').notEmpty().withMessage('Senha atual é obrigatória'),
+  body('novaSenha').isLength({ min: 6 }).withMessage('Nova senha deve ter pelo menos 6 caracteres'),
+  body('confirmarNovaSenha').custom((value, { req }) => {
+    if (value !== req.body.novaSenha) {
+      throw new Error('As senhas não coincidem');
+    }
+    return true;
+  })
 ];
 
 // Todas as rotas requerem autenticação
 router.get('/', requireAuth, PerfilController.index);
-router.post('/update', requireAuth, updateValidation, PerfilController.update);
-router.post('/update-password', requireAuth, PerfilController.updatePassword);
-router.post('/sugestao-bug', requireAuth, PerfilController.criarSugestaoBug);
+router.post('/update-basic', requireAuth, updateBasicValidation, PerfilController.updateBasic);
+router.post('/update-profile', requireAuth, PerfilController.updateProfile);
+router.post('/update-password', requireAuth, updatePasswordValidation, PerfilController.updatePassword);
 
 module.exports = router;
 

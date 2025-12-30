@@ -38,6 +38,10 @@ app.use(
   })
 );
 
+// Middleware para rastrear atividade do usuário
+const trackActivity = require('./middleware/activityTracker');
+app.use(trackActivity);
+
 // Middleware para disponibilizar dados do usuário nas views
 app.use((req, res, next) => {
   res.locals.user = req.session.user || null;

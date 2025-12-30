@@ -1,6 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Suporte DP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { red: '#DC2626', yellow: '#FBBF24' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/loading.css">
+</head>
+<body>
 <div
-    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-red via-primary-yellow to-primary-red">
-    <div class="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
+    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-red via-primary-yellow to-primary-red p-4">
+    <div class="max-w-md w-full bg-white rounded-lg shadow-xl p-6 sm:p-8">
         <div class="text-center mb-8">
             <i class="fas fa-calculator text-primary-red text-5xl mb-4"></i>
             <h1 class="text-3xl font-bold text-gray-900">Suporte DP</h1>
@@ -49,3 +71,6 @@
                 </div>
     </div>
 </div>
+<script src="/js/loading.js"></script>
+</body>
+</html>

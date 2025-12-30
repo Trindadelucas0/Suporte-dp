@@ -184,6 +184,7 @@ async function addMissingFields() {
     
     const existingColumns = columnsCheck.rows.map(r => r.column_name);
     
+    // Campos básicos de status
     if (!existingColumns.includes('ativo')) {
       console.log('➕ Adicionando campo "ativo" na tabela users...');
       await db.query('ALTER TABLE users ADD COLUMN ativo BOOLEAN DEFAULT TRUE');
@@ -200,18 +201,41 @@ async function addMissingFields() {
       console.log('➕ Adicionando campo "last_login" na tabela users...');
       await db.query('ALTER TABLE users ADD COLUMN last_login TIMESTAMP');
     }
+
+    // Campos de perfil
+    const profileFields = [
+      { name: 'telefone', type: 'VARCHAR(20)' },
+      { name: 'whatsapp', type: 'VARCHAR(20)' },
+      { name: 'empresa', type: 'VARCHAR(255)' },
+      { name: 'cargo', type: 'VARCHAR(255)' },
+      { name: 'observacoes', type: 'TEXT' },
+      { name: 'instagram', type: 'VARCHAR(255)' },
+      { name: 'ultima_atividade', type: 'TIMESTAMP' }
+    ];
+
+    for (const field of profileFields) {
+      if (!existingColumns.includes(field.name)) {
+        console.log(`➕ Adicionando campo "${field.name}" na tabela users...`);
+        await db.query(`ALTER TABLE users ADD COLUMN ${field.name} ${field.type}`);
+      }
+    }
+
+    // Cria índice para última atividade se não existir
+    try {
+      await db.query('CREATE INDEX IF NOT EXISTS idx_users_ultima_atividade ON users(ultima_atividade DESC)');
+    } catch (idxError) {
+      // Índice pode já existir, ignora
+    }
     
     console.log('✅ Campos verificados e atualizados!');
   } catch (error) {
     console.warn('⚠️  Aviso ao verificar campos:', error.message);
     // Tenta executar a migração SQL diretamente
     try {
-      const migrationPath = path.join(__dirname, '..', 'database', 'migrations', '001_add_user_fields_and_suggestions.sql');
+      const migrationPath = path.join(__dirname, '..', 'database', 'migrations', '002_add_user_profile_fields.sql');
       if (fs.existsSync(migrationPath)) {
         const migration = fs.readFileSync(migrationPath, 'utf8');
-        // Executa apenas a parte de adicionar campos (não cria tabela de sugestões)
-        const addFieldsSQL = migration.split('-- Cria tabela de sugestões')[0];
-        await db.query(addFieldsSQL);
+        await db.query(migration);
         console.log('✅ Campos adicionados via migração SQL!');
       }
     } catch (migrationError) {

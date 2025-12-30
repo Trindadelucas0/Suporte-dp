@@ -26,7 +26,9 @@
     <main class="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
         <div class="mb-4 sm:mb-6">
             <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p class="mt-2 text-sm sm:text-base text-gray-600">Bem-vindo ao Suporte DP!</p>
+            <p class="mt-2 text-sm sm:text-base text-gray-600">
+                Bem-vindo, <span class="font-semibold text-primary-red"><%= typeof user !== 'undefined' && user ? user.nome : 'Usuário' %></span>!
+            </p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">

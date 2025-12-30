@@ -85,7 +85,8 @@ class AdminController {
   static async usuarioDetalhes(req, res) {
     try {
       const { id } = req.params;
-      const usuario = await User.findById(id);
+      // Busca perfil completo incluindo campos adicionais
+      const usuario = await User.findProfileById(id);
       
       if (!usuario) {
         return res.status(404).render('error', {
