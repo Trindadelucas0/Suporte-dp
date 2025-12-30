@@ -215,10 +215,6 @@
                             <div id="content-base-legal" class="tab-content hidden">
                                 <div class="flex justify-between items-center mb-4">
                                     <h3 class="text-xl font-bold text-gray-900">Base Legal</h3>
-                                    <button onclick="gerarPDF()" 
-                                            class="bg-primary-red text-white px-4 py-2 rounded hover:bg-red-700">
-                                        <i class="fas fa-file-pdf mr-2"></i>Gerar PDF
-                                    </button>
                                 </div>
 
                                 <!-- Tabela Completa de INSS -->
@@ -310,37 +306,6 @@
             }
         })();
 
-        function gerarPDF() {
-            <% if (typeof resultado !== 'undefined' && resultado) { %>
-                const dados = {
-                    usuario: {
-                        nome: '<%= typeof user !== 'undefined' && user ? user.nome : "Usuário" %>',
-                        email: '<%= typeof user !== 'undefined' && user ? user.email : "" %>'
-                    },
-                    salarioBruto: <%= resultado.salarioBruto %>,
-                    valorINSS: <%= resultado.valorINSS %>,
-                    ano: <%= resultado.ano || new Date().getFullYear() %>,
-                    teto: <%= resultado.teto || 8157.41 %>,
-                    memoria: <%= JSON.stringify(resultado.memoria) %>,
-                    tabelaFaixas: <%= JSON.stringify(resultado.tabelaFaixas || []) %>,
-                    baseLegal: <%= JSON.stringify(resultado.baseLegal) %>
-                };
-
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/pdf/inss';
-                form.style.display = 'none';
-
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'dados';
-                input.value = JSON.stringify(dados);
-                form.appendChild(input);
-
-                document.body.appendChild(form);
-                form.submit();
-            <% } %>
-        }
     </script>
 </body>
 </html>

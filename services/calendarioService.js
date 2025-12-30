@@ -559,34 +559,63 @@ class CalendarioService {
     // ============================================
     // SALVA AS OBRIGAÇÕES NO BANCO DE DADOS
     // ============================================
-    // CORREÇÃO: Remove obrigações antigas com regras incorretas antes de criar as novas
-    // Primeiro, remove todas as obrigações automáticas da competência atual que possam estar com regras erradas
+    // CORREÇÃO: Verifica se já existem obrigações antes de criar novas
+    // Evita duplicatas e remoções desnecessárias
     const competenciaStr = competencia.format('MM/YYYY');
     
-    try {
-      // Remove obrigações automáticas antigas da mesma competência
-      // Verifica pela observação que contém "Competência: MM/YYYY"
-      const deleteResult = await db.query(
-        `DELETE FROM calendario_obrigacoes 
-         WHERE user_id = $1 
-         AND tipo IN ('fgts', 'inss', 'irrf', 'dctfweb', 'efd_reinf')
-         AND observacao LIKE $2`,
-        [userId, `%Competência: ${competenciaStr}%`]
-      );
+    // Verifica se já existem obrigações automáticas para esta competência
+    const obrigacoesExistentesResult = await db.query(
+      `SELECT id, tipo, data FROM calendario_obrigacoes 
+       WHERE user_id = $1 
+       AND tipo IN ('fgts', 'inss', 'irrf', 'dctfweb', 'efd_reinf')
+       AND observacao LIKE $2`,
+      [userId, `%Competência: ${competenciaStr}%`]
+    );
+    
+    const obrigacoesExistentes = obrigacoesExistentesResult.rows || [];
+    
+    // Se já existem obrigações para esta competência, verifica se precisa recriar
+    if (obrigacoesExistentes.length > 0) {
+      // Verifica se as datas estão corretas (pode ter mudado por ajuste de feriados)
+      const tiposExistentes = new Set(obrigacoesExistentes.map(o => o.tipo));
+      const tiposNecessarios = new Set(obrigacoes.map(o => o.tipo));
       
-      if (deleteResult.rowCount > 0) {
-        console.log(`🗑️ Removidas ${deleteResult.rowCount} obrigações antigas com regras incorretas para competência ${competenciaStr}`);
+      // Se todos os tipos necessários já existem, não faz nada
+      if (tiposExistentes.size === tiposNecessarios.size && 
+          [...tiposNecessarios].every(t => tiposExistentes.has(t))) {
+        return obrigacoesExistentes; // Retorna as existentes
       }
-    } catch (error) {
-      console.warn('Erro ao remover obrigações antigas (pode ser normal se não houver):', error.message);
+      
+      // Se faltam tipos ou datas mudaram, remove apenas as que precisam ser recriadas
+      const tiposParaRemover = [...tiposNecessarios].filter(t => !tiposExistentes.has(t));
+      if (tiposParaRemover.length > 0) {
+        await db.query(
+          `DELETE FROM calendario_obrigacoes 
+           WHERE user_id = $1 
+           AND tipo = ANY($2)
+           AND observacao LIKE $3`,
+          [userId, tiposParaRemover, `%Competência: ${competenciaStr}%`]
+        );
+      }
     }
 
-    // Agora cria todas as obrigações corretas
+    // Agora cria todas as obrigações corretas (apenas as que não existem)
     const obrigacoesCriadas = [];
+    const obrigacoesExistentesMap = new Map(
+      obrigacoesExistentes.map(o => [`${o.tipo}-${o.data}`, o])
+    );
     
     for (const obrigacao of obrigacoes) {
       try {
-        // Cria a obrigação (já removemos as antigas acima)
+        // Verifica se já existe obrigação do mesmo tipo na mesma data
+        const key = `${obrigacao.tipo}-${obrigacao.data}`;
+        if (obrigacoesExistentesMap.has(key)) {
+          // Já existe, não cria novamente
+          obrigacoesCriadas.push(obrigacoesExistentesMap.get(key));
+          continue;
+        }
+        
+        // Cria a obrigação apenas se não existir
         const resultado = await this.saveObrigacao(
           userId,
           obrigacao.data,

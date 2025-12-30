@@ -44,6 +44,17 @@ class AuthController {
         });
       }
 
+      // Verifica se usuário está ativo e não bloqueado
+      if (user.ativo === false || user.bloqueado === true) {
+        return res.render('auth/login', {
+          title: 'Login - Suporte DP',
+          error: 'Sua conta está desativada ou bloqueada. Entre em contato com o administrador.'
+        });
+      }
+
+      // Atualiza último login
+      await User.updateLastLogin(user.id);
+
       // Cria sessão
       req.session.user = {
         id: user.id,

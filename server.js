@@ -66,7 +66,7 @@ const contratoExperienciaRoutes = require("./routes/contrato-experiencia");
 const periculosidadeRoutes = require("./routes/periculosidade");
 const custoRoutes = require("./routes/custo");
 const checklistRoutes = require("./routes/checklist");
-const pdfRoutes = require("./routes/pdf");
+const perfilRoutes = require("./routes/perfil");
 const adminRoutes = require("./routes/admin");
 
 app.use("/", authRoutes);
@@ -82,7 +82,7 @@ app.use("/contrato-experiencia", contratoExperienciaRoutes);
 app.use("/periculosidade", periculosidadeRoutes);
 app.use("/custo", custoRoutes);
 app.use("/checklist", checklistRoutes);
-app.use("/pdf", pdfRoutes);
+app.use("/perfil", perfilRoutes);
 app.use("/admin", adminRoutes);
 
 // Rota raiz - página de boas-vindas (prioriza cadastro)

@@ -27,7 +27,9 @@ async function initDatabase() {
     `);
 
     if (checkTable.rows[0].exists) {
-      console.log('✅ Tabelas já existem. Pulando criação...');
+      console.log('✅ Tabelas já existem. Verificando campos adicionais...');
+      // Verifica e adiciona campos se necessário
+      await addMissingFields();
       return;
     }
 
@@ -55,10 +57,13 @@ async function initDatabase() {
         console.warn('⚠️  Avisos do psql:', stderr);
       }
       console.log('✅ Tabelas criadas com sucesso via psql!');
+      // Adiciona campos que podem estar faltando
+      await addMissingFields();
     } catch (psqlError) {
       // Se psql não funcionar, usa método alternativo
       console.log('⚠️  psql não disponível, usando método alternativo...');
       await initDatabaseAlternative();
+      await addMissingFields();
     }
 
     // Aguarda um pouco
@@ -163,6 +168,56 @@ async function initDatabaseAlternative() {
   }
   
   console.log('✅ Tabelas criadas via método alternativo!');
+}
+
+// Adiciona campos que podem estar faltando
+async function addMissingFields() {
+  try {
+    console.log('🔍 Verificando campos adicionais na tabela users...');
+    
+    // Verifica campos da tabela users
+    const columnsCheck = await db.query(`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'users'
+    `);
+    
+    const existingColumns = columnsCheck.rows.map(r => r.column_name);
+    
+    if (!existingColumns.includes('ativo')) {
+      console.log('➕ Adicionando campo "ativo" na tabela users...');
+      await db.query('ALTER TABLE users ADD COLUMN ativo BOOLEAN DEFAULT TRUE');
+      await db.query('UPDATE users SET ativo = TRUE WHERE ativo IS NULL');
+    }
+    
+    if (!existingColumns.includes('bloqueado')) {
+      console.log('➕ Adicionando campo "bloqueado" na tabela users...');
+      await db.query('ALTER TABLE users ADD COLUMN bloqueado BOOLEAN DEFAULT FALSE');
+      await db.query('UPDATE users SET bloqueado = FALSE WHERE bloqueado IS NULL');
+    }
+    
+    if (!existingColumns.includes('last_login')) {
+      console.log('➕ Adicionando campo "last_login" na tabela users...');
+      await db.query('ALTER TABLE users ADD COLUMN last_login TIMESTAMP');
+    }
+    
+    console.log('✅ Campos verificados e atualizados!');
+  } catch (error) {
+    console.warn('⚠️  Aviso ao verificar campos:', error.message);
+    // Tenta executar a migração SQL diretamente
+    try {
+      const migrationPath = path.join(__dirname, '..', 'database', 'migrations', '001_add_user_fields_and_suggestions.sql');
+      if (fs.existsSync(migrationPath)) {
+        const migration = fs.readFileSync(migrationPath, 'utf8');
+        // Executa apenas a parte de adicionar campos (não cria tabela de sugestões)
+        const addFieldsSQL = migration.split('-- Cria tabela de sugestões')[0];
+        await db.query(addFieldsSQL);
+        console.log('✅ Campos adicionados via migração SQL!');
+      }
+    } catch (migrationError) {
+      console.warn('⚠️  Não foi possível executar migração:', migrationError.message);
+    }
+  }
 }
 
 module.exports = initDatabase;

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { red: '#DC2626', yellow: '#FBBF24' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <% if (typeof user !== 'undefined' && user) { %>
+        <%- include('../partials/navbar') %>
+    <% } %>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Detalhes do Usuário</h1>
+                <p class="mt-2 text-gray-600"><%= usuario.nome %> - <%= usuario.email %></p>
+            </div>
+            <a href="/admin/usuarios" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                <i class="fas fa-arrow-left mr-2"></i>Voltar
+            </a>
+        </div>
+
+        <!-- Informações do Usuário -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Informações do Usuário</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nome</label>
+                    <p class="mt-1 text-sm text-gray-900"><%= usuario.nome %></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                    <p class="mt-1 text-sm text-gray-900"><%= usuario.email %></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Status</label>
+                    <div class="mt-1 flex space-x-2">
+                        <% 
+                            const isBloqueado = usuario.bloqueado === true || usuario.bloqueado === 'true';
+                            const isAtivo = usuario.ativo !== false && usuario.ativo !== 'false' && usuario.ativo !== null && usuario.ativo !== undefined;
+                        %>
+                        <% if (isBloqueado) { %>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Bloqueado</span>
+                        <% } else if (!isAtivo) { %>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Inativo</span>
+                        <% } else { %>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativo</span>
+                        <% } %>
+                        <% if (usuario.is_admin) { %>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Administrador</span>
+                        <% } %>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Data de Cadastro</label>
+                    <p class="mt-1 text-sm text-gray-900"><%= usuario.created_at ? new Date(usuario.created_at).toLocaleString('pt-BR') : 'N/A' %></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Último Login</label>
+                    <p class="mt-1 text-sm text-gray-900"><%= usuario.last_login ? new Date(usuario.last_login).toLocaleString('pt-BR') : 'Nunca' %></p>
+                </div>
+            </div>
+
+            <!-- Ações Rápidas -->
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">Ações Rápidas</h3>
+                <div class="flex flex-wrap gap-2">
+                    <% 
+                        const usuarioAtivoDetalhes = isAtivo;
+                        const usuarioBloqueadoDetalhes = isBloqueado;
+                        const ativoBtnClass = usuarioAtivoDetalhes ? 'bg-gray-500' : 'bg-green-500';
+                        const bloqueadoBtnClass = usuarioBloqueadoDetalhes ? 'bg-green-500' : 'bg-red-500';
+                        const novoValorAtivoDetalhes = usuarioAtivoDetalhes ? false : true;
+                        const novoValorBloqueadoDetalhes = usuarioBloqueadoDetalhes ? false : true;
+                    %>
+                    <button onclick="toggleStatus('ativo', <%= novoValorAtivoDetalhes %>)" 
+                            class="px-4 py-2 rounded <%= ativoBtnClass %> text-white hover:opacity-90">
+                        <i class="fas fa-<%= usuarioAtivoDetalhes ? 'ban' : 'check' %> mr-2"></i><%= usuarioAtivoDetalhes ? 'Desativar' : 'Ativar' %> Conta
+                    </button>
+                    <button onclick="toggleStatus('bloqueado', <%= novoValorBloqueadoDetalhes %>)" 
+                            class="px-4 py-2 rounded <%= bloqueadoBtnClass %> text-white hover:opacity-90">
+                        <i class="fas fa-<%= usuarioBloqueadoDetalhes ? 'unlock' : 'lock' %> mr-2"></i><%= usuarioBloqueadoDetalhes ? 'Desbloquear' : 'Bloquear' %> Acesso
+                    </button>
+                    <button onclick="resetarSenha()" class="px-4 py-2 rounded bg-yellow-500 text-white hover:opacity-90">
+                        <i class="fas fa-key mr-2"></i>Resetar Senha
+                    </button>
+                    <% if (!usuario.is_admin) { %>
+                        <button onclick="toggleAdmin()" class="px-4 py-2 rounded bg-purple-500 text-white hover:opacity-90">
+                            <i class="fas fa-user-shield mr-2"></i>Tornar Admin
+                        </button>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Total de Cálculos</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-2"><%= dados.calculos.total || 0 %></p>
+                    </div>
+                    <i class="fas fa-calculator text-blue-500 text-3xl"></i>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Checklists</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-2"><%= dados.checklists.length || 0 %></p>
+                    </div>
+                    <i class="fas fa-check-square text-green-500 text-3xl"></i>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Anotações</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-2"><%= dados.calendario.anotacoes || 0 %></p>
+                    </div>
+                    <i class="fas fa-sticky-note text-yellow-500 text-3xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Abas de Dados -->
+        <div class="bg-white rounded-lg shadow-md">
+            <div class="border-b border-gray-200">
+                <nav class="flex -mb-px">
+                    <button onclick="showTab('calculos')" id="tab-calculos" class="tab-button active px-6 py-3 text-sm font-medium border-b-2 border-blue-500 text-blue-600">
+                        Cálculos (<%= dados.calculos.total || 0 %>)
+                    </button>
+                    <button onclick="showTab('checklists')" id="tab-checklists" class="tab-button px-6 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                        Checklists (<%= dados.checklists.length || 0 %>)
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Conteúdo das Abas -->
+            <div class="p-6">
+                <!-- Aba Cálculos -->
+                <div id="content-calculos" class="tab-content">
+                    <div class="space-y-4">
+                        <% if (dados.calculos.inss.length > 0) { %>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">Cálculos de INSS (<%= dados.calculos.inss.length %>)</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-2 text-left">Data</th>
+                                                <th class="px-4 py-2 text-left">Salário Bruto</th>
+                                                <th class="px-4 py-2 text-left">Valor INSS</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% dados.calculos.inss.slice(0, 10).forEach(calc => { %>
+                                                <tr>
+                                                    <td class="px-4 py-2"><%= new Date(calc.created_at).toLocaleDateString('pt-BR') %></td>
+                                                    <td class="px-4 py-2">R$ <%= parseFloat(calc.salario_bruto).toFixed(2) %></td>
+                                                    <td class="px-4 py-2">R$ <%= parseFloat(calc.valor_inss).toFixed(2) %></td>
+                                                </tr>
+                                            <% }); %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        <% } %>
+
+                        <% if (dados.calculos.irrf.length > 0) { %>
+                            <div>
+                                <h3 class="font-bold text-lg mb-2">Cálculos de IRRF (<%= dados.calculos.irrf.length %>)</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-2 text-left">Data</th>
+                                                <th class="px-4 py-2 text-left">Salário Bruto</th>
+                                                <th class="px-4 py-2 text-left">Valor IRRF</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% dados.calculos.irrf.slice(0, 10).forEach(calc => { %>
+                                                <tr>
+                                                    <td class="px-4 py-2"><%= new Date(calc.created_at).toLocaleDateString('pt-BR') %></td>
+                                                    <td class="px-4 py-2">R$ <%= parseFloat(calc.salario_bruto).toFixed(2) %></td>
+                                                    <td class="px-4 py-2">R$ <%= parseFloat(calc.valor_irrf).toFixed(2) %></td>
+                                                </tr>
+                                            <% }); %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        <% } %>
+
+                        <% if (dados.calculos.total === 0) { %>
+                            <p class="text-gray-500 text-center py-8">Nenhum cálculo encontrado</p>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Aba Checklists -->
+                <div id="content-checklists" class="tab-content hidden">
+                    <% if (dados.checklists.length > 0) { %>
+                        <div class="space-y-4">
+                            <% dados.checklists.forEach(checklist => { %>
+                                <div class="border rounded-lg p-4">
+                                    <h3 class="font-bold"><%= checklist.titulo %></h3>
+                                    <p class="text-sm text-gray-600"><%= checklist.descricao %></p>
+                                    <p class="text-xs text-gray-500 mt-2">
+                                        Criado em: <%= new Date(checklist.created_at).toLocaleDateString('pt-BR') %>
+                                        <% if (checklist.concluido) { %>
+                                            <span class="ml-2 text-green-600">✓ Concluído</span>
+                                        <% } %>
+                                    </p>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <p class="text-gray-500 text-center py-8">Nenhum checklist encontrado</p>
+                    <% } %>
+                </div>
+
+            </div>
+        </div>
+
+        <script>
+            const userId = '<%= usuario.id %>';
+
+            function showTab(tabName) {
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                document.querySelectorAll('.tab-button').forEach(button => {
+                    button.classList.remove('active', 'border-blue-500', 'text-blue-600');
+                    button.classList.add('border-transparent', 'text-gray-500');
+                });
+
+                document.getElementById('content-' + tabName).classList.remove('hidden');
+                const button = document.getElementById('tab-' + tabName);
+                button.classList.add('active', 'border-blue-500', 'text-blue-600');
+                button.classList.remove('border-transparent', 'text-gray-500');
+            }
+
+            async function toggleStatus(campo, valor) {
+                // Converte string para boolean se necessário
+                const valorBool = valor === 'true' || valor === true;
+                const acao = valorBool ? (campo === 'bloqueado' ? 'bloquear' : 'ativar') : (campo === 'bloqueado' ? 'desbloquear' : 'desativar');
+                if (!confirm('Tem certeza que deseja ' + acao + ' este usuário?')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/admin/usuarios/' + userId + '/atualizar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ [campo]: valorBool })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Erro: ' + (data.error || 'Erro ao atualizar usuário'));
+                    }
+                } catch (error) {
+                    alert('Erro ao atualizar usuário');
+                    console.error(error);
+                }
+            }
+
+            function toggleAdmin() {
+                if (!confirm('Tem certeza que deseja tornar este usuário administrador?')) {
+                    return;
+                }
+
+                fetch('/admin/usuarios/' + userId + '/atualizar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_admin: true })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Erro: ' + (data.error || 'Erro ao atualizar usuário'));
+                    }
+                });
+            }
+
+            function resetarSenha() {
+                const novaSenha = prompt('Digite a nova senha:');
+                if (!novaSenha || novaSenha.length < 6) {
+                    alert('Senha deve ter pelo menos 6 caracteres');
+                    return;
+                }
+
+                if (!confirm('Tem certeza que deseja alterar a senha deste usuário?')) {
+                    return;
+                }
+
+                fetch('/admin/usuarios/' + userId + '/resetar-senha', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ novaSenha: novaSenha })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Senha alterada com sucesso!');
+                    } else {
+                        alert('Erro: ' + (data.error || 'Erro ao alterar senha'));
+                    }
+                });
+            }
+        </script>
+    </main>
+</body>
+</html>
