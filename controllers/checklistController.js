@@ -385,29 +385,42 @@ class ChecklistController {
     const userId = req.session.user.id;
     const { checklistId } = req.body;
 
+    // Valida UUID
+    if (!checklistId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(checklistId)) {
+      return res.status(400).json({ error: "ID do checklist inválido" });
+    }
+
+    const client = await db.pool.connect();
     try {
+      await client.query('BEGIN');
+
       // Verifica se o checklist pertence ao usuário
-      const checklist = await db.query(
+      const checklist = await client.query(
         "SELECT * FROM checklists WHERE id = $1 AND user_id = $2",
         [checklistId, userId]
       );
 
       if (checklist.rows.length === 0) {
+        await client.query('ROLLBACK');
         return res.status(404).json({ error: "Checklist não encontrado" });
       }
 
       // Deleta os itens primeiro
-      await db.query("DELETE FROM checklist_itens WHERE checklist_id = $1", [
+      await client.query("DELETE FROM checklist_itens WHERE checklist_id = $1", [
         checklistId,
       ]);
 
       // Deleta o checklist
-      await db.query("DELETE FROM checklists WHERE id = $1", [checklistId]);
+      await client.query("DELETE FROM checklists WHERE id = $1", [checklistId]);
 
+      await client.query('COMMIT');
       res.json({ success: true });
     } catch (error) {
+      await client.query('ROLLBACK');
       console.error("Erro ao deletar checklist:", error);
       res.status(500).json({ error: "Erro ao deletar checklist" });
+    } finally {
+      client.release();
     }
   }
 

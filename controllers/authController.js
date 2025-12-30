@@ -55,11 +55,15 @@ class AuthController {
 
       // Atualiza último login e última atividade
       await User.updateLastLogin(user.id);
-      const db = require('../config/database');
-      await db.query(
-        'UPDATE users SET ultima_atividade = CURRENT_TIMESTAMP WHERE id = $1',
-        [user.id]
-      ).catch(() => {}); // Ignora erro se campo não existir
+      // Tenta atualizar última atividade (campo pode não existir)
+      try {
+        await db.query(
+          'UPDATE users SET ultima_atividade = CURRENT_TIMESTAMP WHERE id = $1',
+          [user.id]
+        );
+      } catch (err) {
+        // Ignora erro se campo não existir
+      }
 
       // Cria sessão
       req.session.user = {

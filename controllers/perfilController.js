@@ -60,6 +60,18 @@ class PerfilController {
     }
 
     try {
+      // Verifica se email já existe (exceto para o próprio usuário)
+      const emailExistente = await User.findByEmail(email);
+      if (emailExistente && emailExistente.id !== userId) {
+        const user = await User.findProfileById(userId);
+        return res.render('perfil/index', {
+          title: 'Meu Perfil - Suporte DP',
+          user,
+          error: 'Este email já está em uso por outro usuário',
+          success: null
+        });
+      }
+
       const updatedUser = await User.update(userId, { nome, email });
       
       if (updatedUser) {
@@ -100,17 +112,43 @@ class PerfilController {
    */
   static async updateProfile(req, res) {
     const userId = req.session.user.id;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const user = await User.findProfileById(userId);
+      return res.render('perfil/index', {
+        title: 'Meu Perfil - Suporte DP',
+        user,
+        error: errors.array().map(e => e.msg).join(', '),
+        success: null
+      });
+    }
+
     const { telefone, whatsapp, empresa, cargo, observacoes, instagram } = req.body;
 
     try {
-      const updatedUser = await User.update(userId, {
-        telefone: telefone || null,
-        whatsapp: whatsapp || null,
-        empresa: empresa || null,
-        cargo: cargo || null,
-        observacoes: observacoes || null,
-        instagram: instagram || null
-      });
+      // Sanitiza e prepara dados
+      const profileData = {
+        telefone: telefone ? telefone.trim() : null,
+        whatsapp: whatsapp ? whatsapp.trim() : null,
+        empresa: empresa ? empresa.trim() : null,
+        cargo: cargo ? cargo.trim() : null,
+        observacoes: observacoes ? observacoes.trim() : null,
+        instagram: instagram ? instagram.trim().replace(/^@/, '') : null // Remove @ se presente
+      };
+
+      // Valida tamanho de observações
+      if (profileData.observacoes && profileData.observacoes.length > 5000) {
+        const user = await User.findProfileById(userId);
+        return res.render('perfil/index', {
+          title: 'Meu Perfil - Suporte DP',
+          user,
+          error: 'Observações muito longas (máximo 5000 caracteres)',
+          success: null
+        });
+      }
+
+      const updatedUser = await User.update(userId, profileData);
       
       if (updatedUser) {
         const user = await User.findProfileById(userId);

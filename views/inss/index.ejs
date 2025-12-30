@@ -86,6 +86,9 @@
                     <% } %>
 
                     <form method="POST" action="/inss/calcular" class="space-y-4">
+                        <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <% } %>
                         <div>
                             <label for="ano" class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-calendar mr-2"></i>Ano da Tabela

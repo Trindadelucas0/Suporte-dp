@@ -5,14 +5,23 @@
 
 const db = require('../config/database');
 const User = require('../models/User');
+const UserActivityService = require('../services/userActivityService');
 
 class AdminController {
   /**
    * Dashboard principal do admin
    */
   static async index(req, res) {
+    // Verificação dupla de permissões
+    if (!req.session.user || !req.session.user.is_admin) {
+      return res.status(403).render('error', {
+        title: 'Acesso Negado',
+        error: 'Você não tem permissão para acessar esta página.'
+      });
+    }
+
     try {
-      const [userStats, calculosStats] = await Promise.all([
+      const [userStats, calculosStats, onlineUsers, offlineUsers] = await Promise.all([
         User.getStats(),
         db.query(`
           SELECT 
@@ -24,7 +33,9 @@ class AdminController {
             (SELECT COUNT(*) FROM calculos_custo) +
             (SELECT COUNT(*) FROM calculos_data_base) +
             (SELECT COUNT(*) FROM calculos_contrato_experiencia) as total
-        `)
+        `),
+        UserActivityService.getOnlineUsers().catch(() => []),
+        UserActivityService.getOfflineUsers().catch(() => [])
       ]);
 
       res.render('admin/index', {
@@ -32,7 +43,9 @@ class AdminController {
         stats: {
           usuarios: userStats,
           calculos: parseInt(calculosStats.rows[0]?.total || 0)
-        }
+        },
+        onlineUsers: onlineUsers || [],
+        offlineUsers: offlineUsers || []
       });
     } catch (error) {
       console.error('Erro no painel admin:', error);
@@ -41,7 +54,9 @@ class AdminController {
         stats: {
           usuarios: { total: 0, ativos: 0, inativos: 0, bloqueados: 0 },
           calculos: 0
-        }
+        },
+        onlineUsers: [],
+        offlineUsers: []
       });
     }
   }
@@ -204,6 +219,17 @@ class AdminController {
    * Reseta senha do usuário
    */
   static async resetarSenha(req, res) {
+    // Verificação dupla de permissões
+    if (!req.session.user || !req.session.user.is_admin) {
+      return res.status(403).json({ success: false, error: 'Acesso negado' });
+    }
+
+    // Valida UUID
+    const { id } = req.params;
+    if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      return res.status(400).json({ success: false, error: 'ID inválido' });
+    }
+
     try {
       const { id } = req.params;
       const { novaSenha } = req.body;

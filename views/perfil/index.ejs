@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
+    <title>
+        <%= title %>
+    </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -19,140 +22,176 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/loading.css">
 </head>
+
 <body class="bg-gray-50">
     <%- include('../partials/navbar') %>
 
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="spinner"></div>
-    </div>
-
-    <main class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">Meu Perfil</h1>
-            <p class="mt-2 text-gray-600">Gerencie suas informações pessoais</p>
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="spinner"></div>
         </div>
 
-        <% if (error) { %>
-            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
-                <strong>Erro:</strong> <%= error %>
+        <main class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-gray-900">Meu Perfil</h1>
+                <p class="mt-2 text-gray-600">Gerencie suas informações pessoais</p>
             </div>
-        <% } %>
 
-        <% if (success) { %>
-            <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-6">
-                <strong>Sucesso:</strong> <%= success %>
-            </div>
-        <% } %>
+            <% if (error) { %>
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+                    <strong>Erro:</strong>
+                    <%= error %>
+                </div>
+                <% } %>
 
-        <!-- Dados Básicos -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">
-                <i class="fas fa-user mr-2"></i>Dados Básicos
-            </h2>
-            <form action="/perfil/update-basic" method="POST" onsubmit="showLoading('Salvando dados básicos...')">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome</label>
-                        <input type="text" name="nome" value="<%= user.nome %>" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                        <input type="email" name="email" value="<%= user.email %>" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <button type="submit" class="bg-primary-red text-white px-6 py-2 rounded-md hover:bg-red-700 transition">
-                        <i class="fas fa-save mr-2"></i>Salvar Dados Básicos
-                    </button>
-                </div>
-            </form>
-        </div>
+                    <% if (success) { %>
+                        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-6">
+                            <strong>Sucesso:</strong>
+                            <%= success %>
+                        </div>
+                        <% } %>
 
-        <!-- Dados Adicionais -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">
-                <i class="fas fa-address-card mr-2"></i>Informações Adicionais
-            </h2>
-            <p class="text-sm text-gray-600 mb-4">Essas informações são privadas e podem ser úteis para contato comercial/marketing.</p>
-            <form action="/perfil/update-profile" method="POST" onsubmit="showLoading('Salvando informações adicionais...')">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
-                        <input type="tel" name="telefone" value="<%= user.telefone || '' %>" placeholder="(00) 0000-0000"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">WhatsApp</label>
-                        <input type="tel" name="whatsapp" value="<%= user.whatsapp || '' %>" placeholder="(00) 00000-0000"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Empresa</label>
-                        <input type="text" name="empresa" value="<%= user.empresa || '' %>" placeholder="Nome da empresa"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Cargo</label>
-                        <input type="text" name="cargo" value="<%= user.cargo || '' %>" placeholder="Seu cargo/função"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Instagram</label>
-                        <input type="text" name="instagram" value="<%= user.instagram || '' %>" placeholder="@seuinstagram"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
-                        <textarea name="observacoes" rows="4" placeholder="Observações adicionais..."
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red"><%= user.observacoes || '' %></textarea>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <button type="submit" class="bg-primary-yellow text-white px-6 py-2 rounded-md hover:bg-yellow-600 transition">
-                        <i class="fas fa-save mr-2"></i>Salvar Informações Adicionais
-                    </button>
-                </div>
-            </form>
-        </div>
+                            <!-- Dados Básicos -->
+                            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                                <h2 class="text-xl font-bold text-gray-900 mb-4">
+                                    <i class="fas fa-user mr-2"></i>Dados Básicos
+                                </h2>
+                                <form action="/perfil/update-basic" method="POST"
+                                    onsubmit="showLoading('Salvando dados básicos...')">
+                                    <% if (typeof csrfToken !=='undefined' && csrfToken) { %>
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                        <% } %>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label
+                                                        class="block text-sm font-medium text-gray-700 mb-2">Nome</label>
+                                                    <input type="text" name="nome" value="<%= user.nome %>" required
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
+                                                </div>
+                                                <div>
+                                                    <label
+                                                        class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                                    <input type="email" name="email" value="<%= user.email %>" required
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
+                                                </div>
+                                            </div>
+                                            <div class="mt-4">
+                                                <button type="submit"
+                                                    class="bg-primary-red text-white px-6 py-2 rounded-md hover:bg-red-700 transition">
+                                                    <i class="fas fa-save mr-2"></i>Salvar Dados Básicos
+                                                </button>
+                                            </div>
+                                </form>
+                            </div>
 
-        <!-- Alterar Senha -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">
-                <i class="fas fa-lock mr-2"></i>Alterar Senha
-            </h2>
-            <form action="/perfil/update-password" method="POST" onsubmit="showLoading('Alterando senha...')">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Senha Atual</label>
-                        <input type="password" name="senhaAtual" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nova Senha</label>
-                        <input type="password" name="novaSenha" required minlength="6"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Confirmar Nova Senha</label>
-                        <input type="password" name="confirmarNovaSenha" required minlength="6"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <button type="submit" class="bg-gray-700 text-white px-6 py-2 rounded-md hover:bg-gray-800 transition">
-                        <i class="fas fa-key mr-2"></i>Alterar Senha
-                    </button>
-                </div>
-            </form>
+                            <!-- Dados Adicionais -->
+                            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                                <h2 class="text-xl font-bold text-gray-900 mb-4">
+                                    <i class="fas fa-address-card mr-2"></i>Informações Adicionais
+                                </h2>
+                                <p class="text-sm text-gray-600 mb-4">Essas informações são privadas e podem ser úteis
+                                    para contato comercial/marketing.</p>
+                                <form action="/perfil/update-profile" method="POST"
+                                    onsubmit="showLoading('Salvando informações adicionais...')">
+                                    <% if (typeof csrfToken !=='undefined' && csrfToken) { %>
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                        <% } %>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label
+                                                        class="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
+                                                    <input type="tel" name="telefone" value="<%= user.telefone || '' %>"
+                                                        placeholder="(00) 0000-0000"
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
+                                                </div>
+                                                <div>
+                                                    <label
+                                                        class="block text-sm font-medium text-gray-700 mb-2">WhatsApp</label>
+                                                    <input type="tel" name="whatsapp" value="<%= user.whatsapp || '' %>"
+                                                        placeholder="(00) 00000-0000"
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
+                                                </div>
+                                                <div>
+                                                    <label
+                                                        class="block text-sm font-medium text-gray-700 mb-2">Empresa</label>
+                                                    <input type="text" name="empresa" value="<%= user.empresa || '' %>"
+                                                        placeholder="Nome da empresa"
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
+                                                </div>
+                                                <div>
+                                                    <label
+                                                        class="block text-sm font-medium text-gray-700 mb-2">Cargo</label>
+                                                    <input type="text" name="cargo" value="<%= user.cargo || '' %>"
+                                                        placeholder="Seu cargo/função"
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
+                                                </div>
+                                                <div class="md:col-span-2">
+                                                    <label
+                                                        class="block text-sm font-medium text-gray-700 mb-2">Instagram</label>
+                                                    <input type="text" name="instagram"
+                                                        value="<%= user.instagram || '' %>" placeholder="@seuinstagram"
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
+                                                </div>
+                                                <div class="md:col-span-2">
+                                                    <label
+                                                        class="block text-sm font-medium text-gray-700 mb-2">Observações</label>
+                                                    <textarea name="observacoes" rows="4"
+                                                        placeholder="Observações adicionais..."
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red"><%= user.observacoes || '' %></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="mt-4">
+                                                <button type="submit"
+                                                    class="bg-primary-yellow text-white px-6 py-2 rounded-md hover:bg-yellow-600 transition">
+                                                    <i class="fas fa-save mr-2"></i>Salvar Informações Adicionais
+                                                </button>
+                                            </div>
+                                </form>
+                            </div>
+
+                            <!-- Alterar Senha -->
+                            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                                <h2 class="text-xl font-bold text-gray-900 mb-4">
+                                    <i class="fas fa-lock mr-2"></i>Alterar Senha
+                                </h2>
+                                <form action="/perfil/update-password" method="POST"
+                                    onsubmit="showLoading('Alterando senha...')">
+                                    <% if (typeof csrfToken !=='undefined' && csrfToken) { %>
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                        <% } %>
+                                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-2">Senha
+                                                        Atual</label>
+                                                    <input type="password" name="senhaAtual" required
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-2">Nova
+                                                        Senha</label>
+                                                    <input type="password" name="novaSenha" required minlength="6"
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
+                                                </div>
+                                                <div>
+                                                    <label
+                                                        class="block text-sm font-medium text-gray-700 mb-2">Confirmar
+                                                        Nova Senha</label>
+                                                    <input type="password" name="confirmarNovaSenha" required
+                                                        minlength="6"
+                                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-red">
+                                                </div>
+                                            </div>
+                                            <div class="mt-4">
+                                                <button type="submit"
+                                                    class="bg-gray-700 text-white px-6 py-2 rounded-md hover:bg-gray-800 transition">
+                                                    <i class="fas fa-key mr-2"></i>Alterar Senha
+                                                </button>
+                                            </div>
+                                </form>
         </div>
     </main>
 
-    <%- include('../partials/footer') %>
-
     <script src="/js/loading.js"></script>
 </body>
-</html>
 
+</html>

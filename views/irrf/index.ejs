@@ -81,6 +81,9 @@
                     <% } %>
 
                     <form method="POST" action="/irrf/calcular" class="space-y-4">
+                        <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <% } %>
                         <div>
                             <label for="salarioBruto" class="block text-sm font-medium text-gray-700 mb-2">
                                 Salário Bruto (R$)

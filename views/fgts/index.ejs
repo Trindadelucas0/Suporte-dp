@@ -41,6 +41,9 @@
                     <% } %>
 
                     <form method="POST" action="/fgts/calcular" class="space-y-4">
+                        <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <% } %>
                         <div>
                             <label class="block text-sm font-medium mb-2">Salário Bruto (R$)</label>
                             <input type="number" name="salarioBruto" step="0.01" required
