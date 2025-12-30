@@ -23,168 +23,506 @@
         <%- include('../partials/navbar') %>
     <% } %>
 
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p class="mt-2 text-gray-600">Bem-vindo ao Suporte DP!</p>
+    <main class="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+        <div class="mb-4 sm:mb-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p class="mt-2 text-sm sm:text-base text-gray-600">Bem-vindo ao Suporte DP!</p>
         </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <!-- Card INSS -->
-    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary-red">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-gray-600 text-sm">Cálculos de INSS</p>
-                <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.calculosInss %></p>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+            <!-- Menu Lateral de Acesso Rápido (Lado Esquerdo) -->
+            <div class="lg:col-span-3 order-2 lg:order-1">
+                <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 lg:sticky lg:top-6">
+                    <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-primary-red">
+                        <i class="fas fa-bolt text-primary-yellow mr-2"></i>
+                        Acesso Rápido
+                    </h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-1 gap-2 sm:space-y-2">
+                        <a href="/inss" class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
+                            <i class="fas fa-percent text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">INSS</p>
+                                <p class="text-xs text-gray-600 hidden sm:block">Cálculo progressivo</p>
+                            </div>
+                        </a>
+                        <a href="/irrf" class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
+                            <i class="fas fa-file-invoice-dollar text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">IRRF</p>
+                                <p class="text-xs text-gray-600 hidden sm:block">Imposto de Renda</p>
+                            </div>
+                        </a>
+                        <a href="/fgts" class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
+                            <i class="fas fa-piggy-bank text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">FGTS</p>
+                                <p class="text-xs text-gray-600 hidden sm:block">Fundo de Garantia</p>
+                            </div>
+                        </a>
+                        <a href="/avos" class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
+                            <i class="fas fa-gift text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">13º Salário</p>
+                                <p class="text-xs text-gray-600 hidden sm:block">Cálculo proporcional</p>
+                            </div>
+                        </a>
+                        <a href="/ferias" class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
+                            <i class="fas fa-umbrella-beach text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Férias</p>
+                                <p class="text-xs text-gray-600 hidden sm:block">Cálculo proporcional</p>
+                            </div>
+                        </a>
+                        <a href="/calendario" class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
+                            <i class="fas fa-calendar text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Calendário</p>
+                                <p class="text-xs text-gray-600 hidden sm:block">Obrigações e feriados</p>
+                            </div>
+                        </a>
+                        <a href="/custo" class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
+                            <i class="fas fa-calculator text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Custo</p>
+                                <p class="text-xs text-gray-600 hidden sm:block">Simulador completo</p>
+                            </div>
+                        </a>
+                        <a href="/periculosidade" class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
+                            <i class="fas fa-exclamation-triangle text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Periculosidade</p>
+                                <p class="text-xs text-gray-600 hidden sm:block">Adicionais de risco</p>
+                            </div>
+                        </a>
+                        <a href="/risco-multa" class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
+                            <i class="fas fa-gavel text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Multa Data Base</p>
+                                <p class="text-xs text-gray-600 hidden sm:block">Período de risco</p>
+                            </div>
+                        </a>
+                        <a href="/contrato-experiencia" class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
+                            <i class="fas fa-file-contract text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Contrato Experiência</p>
+                                <p class="text-xs text-gray-600 hidden sm:block">Cálculo de multa</p>
+                            </div>
+                        </a>
+                        <a href="/checklist" class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
+                            <i class="fas fa-check-square text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Checklists</p>
+                                <p class="text-xs text-gray-600 hidden sm:block">Processos e documentos</p>
+                            </div>
+                        </a>
+                        <% if (typeof user !== 'undefined' && user && user.is_admin) { %>
+                        <a href="/admin" class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
+                            <i class="fas fa-user-shield text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Admin</p>
+                                <p class="text-xs text-gray-600 hidden sm:block">Painel administrativo</p>
+                            </div>
+                        </a>
+                        <% } %>
+                    </div>
+                </div>
             </div>
-            <i class="fas fa-percent text-primary-red text-4xl"></i>
+            <!-- Calendário (Lado Direito) -->
+            <div class="lg:col-span-9 order-1 lg:order-2">
+                <!-- 
+                    CALENDÁRIO DE OBRIGAÇÕES
+                    =========================
+                    REUTILIZAÇÃO: Este calendário consome os mesmos dados e endpoints do calendário principal.
+                    - Dados vêm de CalendarioService.getCalendarioMensal() (já processados)
+                    - Operações (anotação, obrigações) usam endpoints /calendario/*
+                    - Nenhuma lógica de cálculo está aqui, apenas renderização
+                    - Se o calendário principal atualizar, este reflete automaticamente
+                -->
+                <div class="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-0">
+                        <h2 class="text-xl sm:text-2xl font-bold capitalize"><%= mesNome %> <%= ano %></h2>
+                        <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                            <a href="?ano=<%= mes === 1 ? ano - 1 : ano %>&mes=<%= mes === 1 ? 12 : mes - 1 %>" 
+                               class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm sm:text-base text-center">
+                                <i class="fas fa-chevron-left"></i> <span class="hidden sm:inline">Anterior</span>
+                            </a>
+                            <a href="?ano=<%= mes === 12 ? ano + 1 : ano %>&mes=<%= mes === 12 ? 1 : mes + 1 %>" 
+                               class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm sm:text-base text-center">
+                                <span class="hidden sm:inline">Próximo </span><i class="fas fa-chevron-right"></i>
+                            </a>
+                            <a href="?ano=<%= new Date().getFullYear() %>&mes=<%= new Date().getMonth() + 1 %>" 
+                               class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-primary-red text-white rounded hover:bg-red-700 text-sm sm:text-base text-center">
+                                Hoje
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Cabeçalho dos dias da semana -->
+                    <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2">
+                        <div class="text-center font-bold text-gray-700 py-1 sm:py-2 bg-gray-100 rounded text-xs sm:text-sm">Dom</div>
+                        <div class="text-center font-bold text-gray-700 py-1 sm:py-2 bg-gray-100 rounded text-xs sm:text-sm">Seg</div>
+                        <div class="text-center font-bold text-gray-700 py-1 sm:py-2 bg-gray-100 rounded text-xs sm:text-sm">Ter</div>
+                        <div class="text-center font-bold text-gray-700 py-1 sm:py-2 bg-gray-100 rounded text-xs sm:text-sm">Qua</div>
+                        <div class="text-center font-bold text-gray-700 py-1 sm:py-2 bg-gray-100 rounded text-xs sm:text-sm">Qui</div>
+                        <div class="text-center font-bold text-gray-700 py-1 sm:py-2 bg-gray-100 rounded text-xs sm:text-sm">Sex</div>
+                        <div class="text-center font-bold text-gray-700 py-1 sm:py-2 bg-gray-100 rounded text-xs sm:text-sm">Sáb</div>
+                    </div>
+
+                    <!-- Dias do mês - REUTILIZA dados já processados pelo CalendarioService -->
+                    <div class="grid grid-cols-7 gap-1 sm:gap-2">
+                        <% 
+                        const primeiroDia = new Date(ano, mes - 1, 1).getDay();
+                        for (let i = 0; i < primeiroDia; i++) {
+                        %>
+                            <div class="h-16 sm:h-20 md:h-24"></div>
+                        <% } %>
+
+                        <% if (typeof calendario !== 'undefined' && calendario && calendario.length > 0) { %>
+                            <% calendario.forEach(dia => { %>
+                                <div onclick="abrirModal('<%= dia.data %>')" 
+                                    class="min-h-16 sm:min-h-20 md:min-h-24 border-2 rounded-lg p-1 sm:p-2 cursor-pointer transition-all hover:shadow-lg
+                                        <%= dia.isFeriado ? 'bg-red-50 border-red-400' : 
+                                            dia.diaSemana === 0 ? 'bg-gray-100 border-gray-300' : 
+                                            dia.diaSemana === 6 ? 'bg-gray-50 border-gray-200' :
+                                            dia.anotacao || (dia.obrigacoes && dia.obrigacoes.length > 0) ? 'bg-yellow-50 border-yellow-400' : 
+                                            'bg-white border-gray-200 hover:border-primary-red' %>">
+                                    <div class="flex justify-between items-start mb-0.5 sm:mb-1">
+                                        <span class="text-sm sm:text-base md:text-lg font-bold <%= dia.isFeriado ? 'text-red-700' : dia.diaSemana === 0 ? 'text-gray-500' : 'text-gray-900' %>">
+                                            <%= typeof dia.dia !== 'undefined' ? dia.dia : '' %>
+                                        </span>
+                                        <% if (dia.obrigacoes && dia.obrigacoes.length > 0) { %>
+                                            <span class="text-xs bg-primary-yellow text-white px-1 rounded font-bold">
+                                                <%= dia.obrigacoes.length %>
+                                            </span>
+                                        <% } %>
+                                    </div>
+                                    
+                                    <% if (dia.isFeriado) { %>
+                                        <div class="text-xs text-red-700 font-semibold truncate hidden sm:block" title="<%= dia.feriadoNome %>">
+                                            <i class="fas fa-calendar-times mr-1"></i><span class="hidden md:inline"><%= dia.feriadoNome %></span>
+                                        </div>
+                                    <% } %>
+                                    
+                                    <% if (dia.obrigacoes && dia.obrigacoes.length > 0) { %>
+                                        <div class="space-y-0.5 sm:space-y-1 mt-0.5 sm:mt-1">
+                                            <% dia.obrigacoes.slice(0, 1).forEach(obrigacao => { %>
+                                                <div class="text-xs <%= obrigacao.tipo === 'fgts' ? 'text-orange-700 bg-orange-100' : obrigacao.tipo === 'inss' ? 'text-green-700 bg-green-100' : obrigacao.tipo === 'irrf' ? 'text-purple-700 bg-purple-100' : obrigacao.tipo === 'dctfweb' ? 'text-blue-700 bg-blue-100' : obrigacao.tipo === 'efd_reinf' ? 'text-indigo-700 bg-indigo-100' : 'text-gray-700 bg-gray-100' %> px-1 py-0.5 rounded truncate hidden sm:block" 
+                                                     title="<%= obrigacao.descricao %>">
+                                                    <i class="fas fa-<%= obrigacao.tipo === 'fgts' ? 'wallet' : obrigacao.tipo === 'inss' ? 'shield-alt' : obrigacao.tipo === 'irrf' ? 'receipt' : obrigacao.tipo === 'dctfweb' ? 'file-invoice' : obrigacao.tipo === 'efd_reinf' ? 'file-alt' : 'calendar-check' %> mr-1"></i>
+                                                    <span class="hidden md:inline"><%= obrigacao.descricao %></span>
+                                                </div>
+                                            <% }); %>
+                                            <% if (dia.obrigacoes.length > 1) { %>
+                                                <div class="text-xs text-gray-600 hidden sm:block">
+                                                    +<%= dia.obrigacoes.length - 1 %> mais
+                                                </div>
+                                            <% } %>
+                                        </div>
+                                    <% } %>
+                                    
+                                    <% if (dia.anotacao) { %>
+                                        <div class="text-xs text-yellow-700 mt-0.5 sm:mt-1 truncate hidden sm:block" title="<%= dia.anotacao %>">
+                                            <i class="fas fa-sticky-note mr-1"></i><span class="hidden md:inline">Anotação</span>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="col-span-7 text-center py-8 text-gray-500">
+                                <i class="fas fa-calendar-times text-4xl mb-2"></i>
+                                <p>Carregando calendário...</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
         </div>
-        <a href="/inss" class="text-primary-red hover:underline text-sm mt-4 inline-block">
-            Ver calculadora <i class="fas fa-arrow-right ml-1"></i>
-        </a>
-    </div>
-
-    <!-- Card IRRF -->
-    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary-yellow">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-gray-600 text-sm">Cálculos de IRRF</p>
-                <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.calculosIrrf %></p>
-            </div>
-            <i class="fas fa-file-invoice-dollar text-primary-yellow text-4xl"></i>
-        </div>
-        <a href="/irrf" class="text-primary-yellow hover:underline text-sm mt-4 inline-block">
-            Ver calculadora <i class="fas fa-arrow-right ml-1"></i>
-        </a>
-    </div>
-
-    <!-- Card FGTS -->
-    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary-red">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-gray-600 text-sm">Cálculos de FGTS</p>
-                <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.calculosFgts %></p>
-            </div>
-            <i class="fas fa-piggy-bank text-primary-red text-4xl"></i>
-        </div>
-        <a href="/fgts" class="text-primary-red hover:underline text-sm mt-4 inline-block">
-            Ver calculadora <i class="fas fa-arrow-right ml-1"></i>
-        </a>
-    </div>
-
-    <!-- Card Checklists -->
-    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary-yellow">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-gray-600 text-sm">Checklists</p>
-                <p class="text-3xl font-bold text-gray-900 mt-2"><%= stats.checklists %></p>
-            </div>
-            <i class="fas fa-check-square text-primary-yellow text-4xl"></i>
-        </div>
-        <a href="/checklist" class="text-primary-yellow hover:underline text-sm mt-4 inline-block">
-            Ver checklists <i class="fas fa-arrow-right ml-1"></i>
-        </a>
-    </div>
-</div>
-
-<!-- Acesso Rápido -->
-<div class="bg-white rounded-lg shadow-md p-6 mb-8">
-    <h2 class="text-xl font-bold text-gray-900 mb-4">
-        <i class="fas fa-bolt text-primary-yellow mr-2"></i>Acesso Rápido
-    </h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <a href="/inss" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
-            <i class="fas fa-percent text-primary-red text-2xl mr-3"></i>
-            <div>
-                <p class="font-semibold text-gray-900">Calculadora de INSS</p>
-                <p class="text-sm text-gray-600">Cálculo progressivo</p>
-            </div>
-        </a>
-        <a href="/irrf" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
-            <i class="fas fa-file-invoice-dollar text-primary-yellow text-2xl mr-3"></i>
-            <div>
-                <p class="font-semibold text-gray-900">Calculadora de IRRF</p>
-                <p class="text-sm text-gray-600">Imposto de Renda</p>
-            </div>
-        </a>
-        <a href="/fgts" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
-            <i class="fas fa-piggy-bank text-primary-red text-2xl mr-3"></i>
-            <div>
-                <p class="font-semibold text-gray-900">Calculadora de FGTS</p>
-                <p class="text-sm text-gray-600">Fundo de Garantia</p>
-            </div>
-        </a>
-        <a href="/avos" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
-            <i class="fas fa-gift text-primary-yellow text-2xl mr-3"></i>
-            <div>
-                <p class="font-semibold text-gray-900">13º Salário</p>
-                <p class="text-sm text-gray-600">Cálculo proporcional</p>
-            </div>
-        </a>
-        <a href="/ferias" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
-            <i class="fas fa-umbrella-beach text-primary-yellow text-2xl mr-3"></i>
-            <div>
-                <p class="font-semibold text-gray-900">Férias</p>
-                <p class="text-sm text-gray-600">Cálculo proporcional</p>
-            </div>
-        </a>
-        <a href="/calendario" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
-            <i class="fas fa-calendar text-primary-red text-2xl mr-3"></i>
-            <div>
-                <p class="font-semibold text-gray-900">Calendário</p>
-                <p class="text-sm text-gray-600">Dias úteis e feriados</p>
-            </div>
-        </a>
-        <a href="/custo" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
-            <i class="fas fa-calculator text-primary-yellow text-2xl mr-3"></i>
-            <div>
-                <p class="font-semibold text-gray-900">Custo do Funcionário</p>
-                <p class="text-sm text-gray-600">Simulador completo</p>
-            </div>
-        </a>
-    </div>
-</div>
-
-<!-- Últimos Cálculos -->
-<% if (ultimosCalculos && ultimosCalculos.length > 0) { %>
-<div class="bg-white rounded-lg shadow-md p-6">
-    <h2 class="text-xl font-bold text-gray-900 mb-4">
-        <i class="fas fa-history text-primary-red mr-2"></i>Últimos Cálculos
-    </h2>
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                <% ultimosCalculos.forEach(calc => { %>
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                            <%= calc.tipo === 'INSS' ? 'bg-red-100 text-red-800' : 
-                                calc.tipo === 'IRRF' ? 'bg-yellow-100 text-yellow-800' : 
-                                'bg-blue-100 text-blue-800' %>">
-                            <%= calc.tipo %>
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                        R$ <%= parseFloat(calc.valor).toFixed(2) %>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <%= new Date(calc.created_at).toLocaleDateString('pt-BR') %>
-                    </td>
-                </tr>
-                <% }); %>
-            </tbody>
-        </table>
-    </div>
-</div>
-<% } %>
     </main>
+
+    <!-- 
+        MODAL DE ANOTAÇÃO E OBRIGAÇÕES
+        ===============================
+        REUTILIZAÇÃO: Este modal usa os mesmos endpoints do calendário principal.
+        - GET /calendario/anotacao/:data - busca anotação
+        - POST /calendario/anotacao - salva anotação
+        - GET /calendario/obrigacoes?data=... - busca obrigações
+        - POST /calendario/obrigacao - adiciona obrigação
+        - DELETE /calendario/obrigacao/:id - remove obrigação
+        Nenhuma lógica de processamento está aqui, apenas consumo de endpoints.
+    -->
+    <div id="modalAnotacao" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-white rounded-lg p-4 sm:p-6 max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-3 sm:mb-4">
+                <h3 class="text-lg sm:text-xl font-bold">Data: <span id="modalData" class="text-sm sm:text-base"></span></h3>
+                <button onclick="fecharModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl sm:text-2xl"></i>
+                </button>
+            </div>
+            
+            <!-- Abas -->
+            <div class="border-b mb-3 sm:mb-4">
+                <nav class="flex -mb-px">
+                    <button type="button" onclick="mostrarAba('anotacao')" id="tab-anotacao" 
+                            class="flex-1 sm:flex-none px-3 sm:px-4 py-2 border-b-2 border-primary-red text-primary-red font-semibold text-sm sm:text-base">
+                        <i class="fas fa-sticky-note mr-1 sm:mr-2"></i><span class="hidden sm:inline">Anotação</span><span class="sm:hidden">Nota</span>
+                    </button>
+                    <button type="button" onclick="mostrarAba('obrigacoes')" id="tab-obrigacoes" 
+                            class="flex-1 sm:flex-none px-3 sm:px-4 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm sm:text-base">
+                        <i class="fas fa-calendar-check mr-1 sm:mr-2"></i><span class="hidden sm:inline">Obrigações</span><span class="sm:hidden">Obrig.</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Aba Anotação -->
+            <div id="content-anotacao" class="tab-content">
+                <textarea id="modalTexto" class="w-full px-3 py-2 border rounded mb-3 sm:mb-4 text-sm sm:text-base" rows="4" 
+                          placeholder="Digite sua anotação para esta data..."></textarea>
+                <div class="flex flex-col sm:flex-row justify-end gap-2 sm:space-x-2">
+                    <button onclick="fecharModal()" class="w-full sm:w-auto px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm sm:text-base">Cancelar</button>
+                    <button onclick="salvarAnotacao()" class="w-full sm:w-auto px-4 py-2 bg-primary-red text-white rounded hover:bg-red-700 text-sm sm:text-base">
+                        <i class="fas fa-save mr-2"></i>Salvar Anotação
+                    </button>
+                </div>
+            </div>
+
+            <!-- Aba Obrigações -->
+            <div id="content-obrigacoes" class="tab-content hidden">
+                <div class="mb-3 sm:mb-4 bg-gray-50 p-3 sm:p-4 rounded">
+                    <h4 class="font-bold mb-2 sm:mb-3 text-sm sm:text-base">Adicionar Nova Obrigação</h4>
+                    <div class="space-y-2 sm:space-y-3">
+                        <div>
+                            <label class="block text-xs sm:text-sm font-medium mb-1">Tipo de Obrigação</label>
+                            <select id="tipoObrigacao" class="w-full px-3 py-2 border rounded text-sm sm:text-base">
+                                <option value="fgts">FGTS</option>
+                                <option value="inss">INSS</option>
+                                <option value="irrf">IRRF</option>
+                                <option value="dctfweb">DCTFWeb</option>
+                                <option value="efd_reinf">EFD-Reinf</option>
+                                <option value="esocial">eSocial</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs sm:text-sm font-medium mb-1">Descrição</label>
+                            <input type="text" id="descricaoObrigacao" placeholder="Ex: Vencimento DCTFWeb" 
+                                   class="w-full px-3 py-2 border rounded text-sm sm:text-base">
+                        </div>
+                        <div>
+                            <label class="block text-xs sm:text-sm font-medium mb-1">Observação (opcional)</label>
+                            <textarea id="observacaoObrigacao" placeholder="Observações adicionais..." 
+                                      class="w-full px-3 py-2 border rounded text-sm sm:text-base" rows="2"></textarea>
+                        </div>
+                        <button onclick="adicionarObrigacao()" 
+                                class="w-full bg-primary-yellow text-white py-2 rounded hover:bg-yellow-600 font-semibold text-sm sm:text-base">
+                            <i class="fas fa-plus mr-2"></i>Adicionar Obrigação
+                        </button>
+                    </div>
+                </div>
+
+                <div id="listaObrigacoes" class="space-y-2 mb-3 sm:mb-4">
+                    <p class="text-xs sm:text-sm text-gray-500 text-center py-4">Carregando obrigações...</p>
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="fecharModal()" class="w-full sm:w-auto px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm sm:text-base">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 
+        JAVASCRIPT - CONSUMO DE ENDPOINTS
+        ===================================
+        REUTILIZAÇÃO: Este JavaScript consome os mesmos endpoints do calendário principal.
+        Nenhuma lógica de cálculo ou processamento está aqui.
+        Todas as operações são feitas via endpoints /calendario/* que já existem.
+    -->
+    <script>
+        let dataSelecionada = '';
+        let obrigacoesAtuais = [];
+        
+        // REUTILIZA: Usa endpoint /calendario/anotacao/:data do calendário principal
+        function abrirModal(data) {
+            dataSelecionada = data;
+            const dataFormatada = new Date(data + 'T00:00:00').toLocaleDateString('pt-BR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('modalData').textContent = dataFormatada;
+            document.getElementById('modalAnotacao').classList.remove('hidden');
+            mostrarAba('anotacao');
+            
+            // REUTILIZA: Endpoint do calendário principal
+            fetch('/calendario/anotacao/' + data)
+                .then(r => r.json())
+                .then(result => {
+                    if (result.data && result.data.anotacao) {
+                        document.getElementById('modalTexto').value = result.data.anotacao;
+                    } else {
+                        document.getElementById('modalTexto').value = '';
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('modalTexto').value = '';
+                });
+            
+            // REUTILIZA: Carrega obrigações usando endpoint do calendário principal
+            carregarObrigacoes(data);
+        }
+        
+        function fecharModal() {
+            document.getElementById('modalAnotacao').classList.add('hidden');
+            obrigacoesAtuais = [];
+        }
+        
+        function mostrarAba(aba) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('[id^="tab-"]').forEach(b => {
+                b.classList.remove('border-primary-red', 'text-primary-red', 'font-semibold');
+                b.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            document.getElementById('content-' + aba).classList.remove('hidden');
+            const btn = document.getElementById('tab-' + aba);
+            btn.classList.add('border-primary-red', 'text-primary-red', 'font-semibold');
+            btn.classList.remove('border-transparent', 'text-gray-500');
+        }
+        
+        // REUTILIZA: Endpoint /calendario/obrigacoes do calendário principal
+        function carregarObrigacoes(data) {
+            fetch(`/calendario/obrigacoes?data=${data}`)
+                .then(r => r.json())
+                .then(result => {
+                    obrigacoesAtuais = result.data || [];
+                    atualizarListaObrigacoes();
+                })
+                .catch(() => {
+                    obrigacoesAtuais = [];
+                    atualizarListaObrigacoes();
+                });
+        }
+        
+        function atualizarListaObrigacoes() {
+            const lista = document.getElementById('listaObrigacoes');
+            if (obrigacoesAtuais.length === 0) {
+                lista.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Nenhuma obrigação cadastrada para esta data</p>';
+                return;
+            }
+            
+            lista.innerHTML = obrigacoesAtuais.map(obrigacao => {
+                    const cores = {
+                    'fgts': 'bg-orange-100 text-orange-700 border-orange-300',
+                    'inss': 'bg-green-100 text-green-700 border-green-300',
+                    'irrf': 'bg-purple-100 text-purple-700 border-purple-300',
+                    'dctfweb': 'bg-blue-100 text-blue-700 border-blue-300',
+                    'efd_reinf': 'bg-indigo-100 text-indigo-700 border-indigo-300',
+                    'esocial': 'bg-teal-100 text-teal-700 border-teal-300',
+                    'outro': 'bg-gray-100 text-gray-700 border-gray-300'
+                };
+                const cor = cores[obrigacao.tipo] || cores['outro'];
+                
+                return `
+                    <div class="border rounded p-3 ${cor}">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <p class="font-semibold text-sm">${obrigacao.descricao}</p>
+                                <p class="text-xs opacity-75 mt-1">${obrigacao.tipo.toUpperCase()}</p>
+                                ${obrigacao.observacao ? `<p class="text-xs mt-2 opacity-90">${obrigacao.observacao}</p>` : ''}
+                            </div>
+                            <button onclick="removerObrigacao('${obrigacao.id}')" 
+                                    class="text-red-600 hover:text-red-800 ml-2">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // REUTILIZA: Endpoint POST /calendario/obrigacao do calendário principal
+        function adicionarObrigacao() {
+            const tipo = document.getElementById('tipoObrigacao').value;
+            const descricao = document.getElementById('descricaoObrigacao').value.trim();
+            const observacao = document.getElementById('observacaoObrigacao').value.trim();
+            
+            if (!descricao) {
+                alert('Digite uma descrição para a obrigação');
+                return;
+            }
+            
+            fetch('/calendario/obrigacao', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    data: dataSelecionada, 
+                    tipo, 
+                    descricao, 
+                    observacao: observacao || null 
+                })
+            })
+            .then(r => r.json())
+            .then(result => {
+                if (result.success) {
+                    document.getElementById('descricaoObrigacao').value = '';
+                    document.getElementById('observacaoObrigacao').value = '';
+                    carregarObrigacoes(dataSelecionada);
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    alert('Erro ao adicionar obrigação: ' + (result.error || 'Erro desconhecido'));
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao adicionar obrigação. Tente novamente.');
+            });
+        }
+        
+        // REUTILIZA: Endpoint DELETE /calendario/obrigacao/:id do calendário principal
+        function removerObrigacao(id) {
+            if (!confirm('Deseja remover esta obrigação?')) return;
+            
+            fetch(`/calendario/obrigacao/${id}`, {
+                method: 'DELETE'
+            })
+            .then(r => r.json())
+            .then(result => {
+                if (result.success) {
+                    carregarObrigacoes(dataSelecionada);
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    alert('Erro ao remover obrigação');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao remover obrigação. Tente novamente.');
+            });
+        }
+        
+        // REUTILIZA: Endpoint POST /calendario/anotacao do calendário principal
+        function salvarAnotacao() {
+            const texto = document.getElementById('modalTexto').value;
+            fetch('/calendario/anotacao', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: dataSelecionada, anotacao: texto })
+            })
+            .then(r => r.json())
+            .then(result => {
+                if (result.success) {
+                    fecharModal();
+                    location.reload();
+                } else {
+                    alert('Erro ao salvar anotação');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao salvar anotação. Tente novamente.');
+            });
+        }
+    </script>
 </body>
 </html>
-
