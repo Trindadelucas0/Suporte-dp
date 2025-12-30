@@ -53,6 +53,9 @@
                     <% } %>
 
                     <form method="POST" action="/risco-multa/calcular" class="space-y-4">
+                        <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <% } %>
                         <div>
                             <label class="block text-sm font-medium mb-2">Data Base *</label>
                             <input type="date" name="dataBase" required

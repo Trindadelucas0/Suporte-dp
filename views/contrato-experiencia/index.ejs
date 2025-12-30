@@ -57,6 +57,9 @@
                     <% } %>
 
                     <form method="POST" action="/contrato-experiencia/calcular" class="space-y-4">
+                        <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <% } %>
                         <div>
                             <label class="block text-sm font-medium mb-2">Data de Início do Contrato *</label>
                             <input type="date" name="dataInicio" required

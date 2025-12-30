@@ -427,8 +427,8 @@
                             try {
                                 const response = await fetch('/admin/usuarios/' + userId + '/atualizar', {
                                     method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ [campo]: valorBool })
+                                    headers: getCSRFHeaders(),
+                                    body: JSON.stringify({ [campo]: valorBool, _csrf: window.csrfToken })
                                 });
 
                                 const data = await response.json();
@@ -450,8 +450,8 @@
 
                             fetch('/admin/usuarios/' + userId + '/atualizar', {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ is_admin: true })
+                                headers: getCSRFHeaders(),
+                                body: JSON.stringify({ is_admin: true, _csrf: window.csrfToken })
                             })
                                 .then(res => res.json())
                                 .then(data => {
@@ -476,8 +476,8 @@
 
                             fetch('/admin/usuarios/' + userId + '/resetar-senha', {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ novaSenha: novaSenha })
+                                headers: getCSRFHeaders(),
+                                body: JSON.stringify({ novaSenha: novaSenha, _csrf: window.csrfToken })
                             })
                                 .then(res => res.json())
                                 .then(data => {

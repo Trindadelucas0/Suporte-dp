@@ -66,6 +66,9 @@
                                     <% } %>
 
                                         <form method="POST" action="/avos/calcular" class="space-y-5" id="formAvos">
+                                            <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                            <% } %>
                                             <!-- Data de Admissão -->
                                             <div>
                                                 <label class="block text-sm font-semibold text-gray-700 mb-2">

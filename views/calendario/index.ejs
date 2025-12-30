@@ -399,12 +399,13 @@
             
             fetch('/calendario/obrigacao', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getCSRFHeaders(),
                 body: JSON.stringify({ 
                     data: dataSelecionada, 
                     tipo, 
                     descricao, 
-                    observacao: observacao || null 
+                    observacao: observacao || null,
+                    _csrf: window.csrfToken
                 })
             })
             .then(r => r.json())
@@ -447,8 +448,8 @@
             const texto = document.getElementById('modalTexto').value;
             fetch('/calendario/anotacao', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: dataSelecionada, anotacao: texto })
+                headers: getCSRFHeaders(),
+                body: JSON.stringify({ data: dataSelecionada, anotacao: texto, _csrf: window.csrfToken })
             })
             .then(r => r.json())
             .then(result => {

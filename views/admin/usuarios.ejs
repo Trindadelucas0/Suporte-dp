@@ -247,10 +247,8 @@
 
                                     fetch('/admin/usuarios/' + userId + '/resetar-senha', {
                                         method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json'
-                                        },
-                                        body: JSON.stringify({ novaSenha: novaSenha })
+                                        headers: getCSRFHeaders(),
+                                        body: JSON.stringify({ novaSenha: novaSenha, _csrf: window.csrfToken })
                                     })
                                         .then(res => res.json())
                                         .then(data => {

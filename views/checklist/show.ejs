@@ -140,8 +140,8 @@
         function toggleItem(itemId, concluido) {
             fetch('/checklist/item/concluir', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ itemId, concluido: concluido.toString() })
+                headers: getCSRFHeaders(),
+                body: JSON.stringify({ itemId, concluido: concluido.toString(), _csrf: window.csrfToken })
             })
             .then(r => r.json())
             .then(data => {
@@ -176,8 +176,8 @@
 
             fetch('/checklist/atualizar', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ checklistId, titulo: novoTitulo })
+                headers: getCSRFHeaders(),
+                body: JSON.stringify({ checklistId, titulo: novoTitulo, _csrf: window.csrfToken })
             })
             .then(r => {
                 if (!r.ok) {
@@ -222,8 +222,8 @@
             
             fetch('/checklist/item/atualizar', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ itemId, item, observacao: observacao || null })
+                headers: getCSRFHeaders(),
+                body: JSON.stringify({ itemId, item, observacao: observacao || null, _csrf: window.csrfToken })
             })
             .then(r => {
                 if (!r.ok) {
@@ -265,8 +265,8 @@
 
             fetch('/checklist/item/adicionar', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ checklistId, item, observacao: observacao || null })
+                headers: getCSRFHeaders(),
+                body: JSON.stringify({ checklistId, item, observacao: observacao || null, _csrf: window.csrfToken })
             })
             .then(r => {
                 if (!r.ok) {

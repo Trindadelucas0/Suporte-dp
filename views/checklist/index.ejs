@@ -265,8 +265,8 @@
 
             fetch('/checklist/criar-custom', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ titulo, tipo: tipo || 'custom', itens })
+                headers: getCSRFHeaders(),
+                body: JSON.stringify({ titulo, tipo: tipo || 'custom', itens, _csrf: window.csrfToken })
             })
             .then(r => r.json())
             .then(data => {
@@ -313,8 +313,8 @@
 
             fetch('/checklist/atualizar-custom', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ checklistId: id, titulo, tipo: tipo || 'custom' })
+                headers: getCSRFHeaders(),
+                body: JSON.stringify({ checklistId: id, titulo, tipo: tipo || 'custom', _csrf: window.csrfToken })
             })
             .then(r => r.json())
             .then(data => {
@@ -341,8 +341,8 @@
 
             fetch('/checklist/deletar', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ checklistId: id })
+                headers: getCSRFHeaders(),
+                body: JSON.stringify({ checklistId: id, _csrf: window.csrfToken })
             })
             .then(r => r.json())
             .then(data => {
