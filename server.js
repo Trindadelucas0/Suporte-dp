@@ -22,13 +22,17 @@ const PORT = process.env.NODE_ENV === 'test'
   ? (process.env.TEST_PORT || 3001)
   : (process.env.PORT || 3000);
 
-// Validação de SESSION_SECRET
+// Validação e geração automática de SESSION_SECRET
+let sessionSecretWarning = false;
 if (!process.env.SESSION_SECRET) {
-  console.error("❌ ERRO CRÍTICO: SESSION_SECRET não configurado no .env");
-  console.error("💡 Gere um secret seguro: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"");
-  if (process.env.NODE_ENV === "production") {
-    process.exit(1);
-  }
+  const crypto = require('crypto');
+  // Gera um secret seguro automaticamente
+  process.env.SESSION_SECRET = crypto.randomBytes(32).toString('hex');
+  sessionSecretWarning = true;
+  console.warn("⚠️  ATENÇÃO: SESSION_SECRET não foi configurado!");
+  console.warn("💡 Um secret foi gerado automaticamente, mas é recomendado configurar manualmente no Render.");
+  console.warn("💡 Para gerar um secret seguro: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"");
+  console.warn("💡 Configure no Render: Environment → Add Environment Variable → SESSION_SECRET");
 }
 
 // Helmet.js - Proteção de headers HTTP
@@ -82,13 +86,8 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Configuração de sessão com PostgreSQL
-const sessionSecret = process.env.SESSION_SECRET || (() => {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("SESSION_SECRET é obrigatório em produção!");
-  }
-  console.warn("⚠️  Usando SESSION_SECRET temporário. Configure no .env para produção!");
-  return "temporary-secret-change-in-production-" + Date.now();
-})();
+// SESSION_SECRET já foi validado/gerado acima
+const sessionSecret = process.env.SESSION_SECRET;
 
 app.use(
   session({
@@ -246,6 +245,11 @@ if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, async () => {
     console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
     console.log(`📊 Ambiente: ${process.env.NODE_ENV || "development"}`);
+    
+    // Mostra aviso sobre SESSION_SECRET se foi gerado automaticamente
+    if (sessionSecretWarning) {
+      console.warn("⚠️  IMPORTANTE: Configure SESSION_SECRET no painel do Render para maior segurança!");
+    }
 
     // Testa conexão com banco e inicializa tabelas
     try {
