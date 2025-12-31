@@ -73,18 +73,30 @@ class AuthController {
         is_admin: user.is_admin
       };
 
-      const returnTo = req.session.returnTo || '/dashboard';
-      delete req.session.returnTo;
-      
-      // Pequeno delay para mostrar transição de loading
-      setTimeout(() => {
-        res.redirect(returnTo);
-      }, 300);
+      // Salva a sessão antes de redirecionar
+      req.session.save((err) => {
+        if (err) {
+          console.error('Erro ao salvar sessão:', err);
+          return res.render('auth/login', {
+            title: 'Login - Suporte DP',
+            error: 'Erro ao fazer login. Tente novamente.'
+          });
+        }
+
+        const returnTo = req.session.returnTo || '/dashboard';
+        delete req.session.returnTo;
+        
+        // Pequeno delay para mostrar transição de loading
+        setTimeout(() => {
+          res.redirect(returnTo);
+        }, 300);
+      });
     } catch (error) {
       console.error('Erro no login:', error);
+      console.error('Stack:', error.stack);
       res.render('auth/login', {
         title: 'Login - Suporte DP',
-        error: 'Erro ao fazer login. Tente novamente.'
+        error: 'Erro ao fazer login. Tente novamente. ' + (process.env.NODE_ENV === 'development' ? error.message : '')
       });
     }
   }
@@ -141,12 +153,24 @@ class AuthController {
         is_admin: user.is_admin
       };
 
-      res.redirect('/dashboard');
+      // Salva a sessão antes de redirecionar
+      req.session.save((err) => {
+        if (err) {
+          console.error('Erro ao salvar sessão após cadastro:', err);
+          return res.render('auth/register', {
+            title: 'Cadastro - Suporte DP',
+            error: 'Conta criada, mas erro ao fazer login automático. Tente fazer login manualmente.'
+          });
+        }
+
+        res.redirect('/dashboard');
+      });
     } catch (error) {
       console.error('Erro no cadastro:', error);
+      console.error('Stack:', error.stack);
       res.render('auth/register', {
         title: 'Cadastro - Suporte DP',
-        error: 'Erro ao criar conta. Tente novamente.'
+        error: 'Erro ao criar conta. Tente novamente. ' + (process.env.NODE_ENV === 'development' ? error.message : '')
       });
     }
   }
