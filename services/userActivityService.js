@@ -11,61 +11,94 @@ class UserActivityService {
    */
   static async getOnlineUsers() {
     try {
-      // Busca sessões ativas (últimos 5 minutos)
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
       
-      const result = await db.query(`
-        SELECT DISTINCT
-          u.id,
-          u.nome,
-          u.email,
-          u.is_admin,
-          u.ultima_atividade,
-          s.sess AS session_data
-        FROM users u
-        INNER JOIN sessions s ON s.sess::jsonb->>'user' IS NOT NULL
-        WHERE 
-          (u.ultima_atividade IS NOT NULL AND u.ultima_atividade > $1)
-          OR (s.expire > NOW())
-        ORDER BY u.ultima_atividade DESC NULLS LAST
-      `, [fiveMinutesAgo]);
+      // Primeiro, busca sessões ativas (não expiradas)
+      const sessionsResult = await db.query(`
+        SELECT sess, expire
+        FROM sessions
+        WHERE expire > NOW()
+      `);
 
-      // Processa sessões para extrair dados do usuário
+      // Extrai IDs de usuários das sessões
+      const userIdsFromSessions = new Set();
+      
+      for (const row of sessionsResult.rows) {
+        try {
+          // Parse do JSON (pode ser string ou objeto)
+          const sessionData = typeof row.sess === 'string' 
+            ? JSON.parse(row.sess) 
+            : row.sess;
+          
+          // Tenta extrair o ID do usuário da sessão
+          // Formato pode ser: { user: { id: ... } } ou { passport: { user: ... } }
+          const user = sessionData?.user || sessionData?.passport?.user;
+          if (user && user.id) {
+            userIdsFromSessions.add(user.id);
+          }
+        } catch (err) {
+          // Ignora sessões com JSON inválido
+          continue;
+        }
+      }
+
+      // Busca usuários que estão online por:
+      // 1. Última atividade recente (últimos 5 minutos)
+      // 2. OU têm sessão ativa
+      const userIdsArray = Array.from(userIdsFromSessions);
+      
+      let result;
+      if (userIdsArray.length > 0) {
+        // Busca usuários com última atividade OU com sessão ativa
+        // Usa COALESCE para lidar com campos que podem não existir
+        result = await db.query(`
+          SELECT 
+            id,
+            nome,
+            email,
+            is_admin,
+            ultima_atividade
+          FROM users
+          WHERE 
+            (
+              (ultima_atividade IS NOT NULL AND ultima_atividade > $1)
+              OR id = ANY($2::uuid[])
+            )
+          ORDER BY ultima_atividade DESC NULLS LAST
+        `, [fiveMinutesAgo, userIdsArray]);
+      } else {
+        // Se não há sessões, busca apenas por última atividade
+        result = await db.query(`
+          SELECT 
+            id,
+            nome,
+            email,
+            is_admin,
+            ultima_atividade
+          FROM users
+          WHERE 
+            ultima_atividade IS NOT NULL 
+            AND ultima_atividade > $1
+          ORDER BY ultima_atividade DESC
+        `, [fiveMinutesAgo]);
+      }
+
+      // Remove duplicatas e formata resultado
       const onlineUsers = [];
-      const userIds = new Set();
+      const seenIds = new Set();
 
       for (const row of result.rows) {
-        if (userIds.has(row.id)) continue;
-        userIds.add(row.id);
+        if (seenIds.has(row.id)) continue;
+        seenIds.add(row.id);
 
-        try {
-          let userData = null;
-          if (row.session_data) {
-            const sessionObj = typeof row.session_data === 'string' 
-              ? JSON.parse(row.session_data) 
-              : row.session_data;
-            userData = sessionObj.user || sessionObj.passport?.user;
-          }
-
-          onlineUsers.push({
-            id: row.id,
-            nome: row.nome,
-            email: row.email,
-            is_admin: row.is_admin,
-            ultima_atividade: row.ultima_atividade,
-            tipo: row.is_admin ? 'admin' : 'usuário'
-          });
-        } catch (err) {
-          // Se não conseguir parsear sessão, usa dados diretos do user
-          onlineUsers.push({
-            id: row.id,
-            nome: row.nome,
-            email: row.email,
-            is_admin: row.is_admin,
-            ultima_atividade: row.ultima_atividade,
-            tipo: row.is_admin ? 'admin' : 'usuário'
-          });
-        }
+        onlineUsers.push({
+          id: row.id,
+          nome: row.nome,
+          email: row.email,
+          is_admin: row.is_admin,
+          ultima_atividade: row.ultima_atividade,
+          tipo: row.is_admin ? 'admin' : 'usuário'
+        });
       }
 
       return onlineUsers;
@@ -83,6 +116,7 @@ class UserActivityService {
     try {
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
       
+      // Query que funciona mesmo se campos ativo/bloqueado não existirem
       const result = await db.query(`
         SELECT 
           id,
@@ -93,8 +127,6 @@ class UserActivityService {
         FROM users
         WHERE ultima_atividade IS NOT NULL 
           AND ultima_atividade > $1
-          AND ativo = true
-          AND (bloqueado IS NULL OR bloqueado = false)
         ORDER BY ultima_atividade DESC
       `, [fiveMinutesAgo]);
 
