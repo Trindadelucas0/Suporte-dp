@@ -49,19 +49,44 @@ app.use(helmet({
   },
 }));
 
-// Rate Limiting Global (menos restritivo em desenvolvimento)
+// Função para obter IP real (considera proxy do Render)
+const getRealIp = (req) => {
+  // Render usa X-Forwarded-For
+  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+         req.headers['x-real-ip'] || 
+         req.connection?.remoteAddress || 
+         req.socket?.remoteAddress ||
+         req.ip;
+};
+
+// Rate Limiting Global (ajustado para produção no Render)
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: process.env.NODE_ENV === 'production' ? 100 : 1000, // 1000 em dev, 100 em produção
+  max: process.env.NODE_ENV === 'production' ? 1000 : 10000, // 1000 em produção, 10000 em dev
   message: "Muitas requisições deste IP, tente novamente em 15 minutos.",
   standardHeaders: true,
   legacyHeaders: false,
+  // Usa IP real considerando proxy do Render
+  keyGenerator: (req) => getRealIp(req),
   skip: (req) => {
-    // Pula rate limiting para requisições GET em desenvolvimento
-    return process.env.NODE_ENV !== 'production' && req.method === 'GET';
+    // Pula rate limiting para:
+    // 1. Arquivos estáticos (CSS, JS, imagens, fonts)
+    const isStaticFile = /\.(css|js|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot)$/i.test(req.path);
+    if (isStaticFile) return true;
+    
+    // 2. Requisições GET em desenvolvimento
+    if (process.env.NODE_ENV !== 'production' && req.method === 'GET') {
+      return true;
+    }
+    
+    // 3. Health checks e favicon
+    if (req.path === '/health' || req.path === '/favicon.ico') {
+      return true;
+    }
+    
+    return false;
   }
 });
-app.use(globalLimiter);
 
 // Rate Limiting para Login
 const loginLimiter = rateLimit({
@@ -69,6 +94,7 @@ const loginLimiter = rateLimit({
   max: 5, // 5 tentativas de login
   message: "Muitas tentativas de login. Tente novamente em 15 minutos.",
   skipSuccessfulRequests: true,
+  keyGenerator: (req) => getRealIp(req), // Usa IP real considerando proxy do Render
 });
 
 // Rate Limiting para Registro
@@ -76,6 +102,7 @@ const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hora
   max: 3, // 3 registros por hora por IP
   message: "Muitas tentativas de registro. Tente novamente em 1 hora.",
+  keyGenerator: (req) => getRealIp(req), // Usa IP real considerando proxy do Render
 });
 
 // Cookie Parser (necessário para CSRF)
@@ -125,6 +152,9 @@ app.set("views", path.join(__dirname, "views"));
 
 // Arquivos estáticos (CSS, JS, imagens)
 app.use(express.static(path.join(__dirname, "public")));
+
+// Rate Limiting Global (aplicado após arquivos estáticos para não contar requisições de assets)
+app.use(globalLimiter);
 
 // CSRF Protection (após sessão estar configurada)
 // Desabilitado em modo de teste para facilitar testes automatizados

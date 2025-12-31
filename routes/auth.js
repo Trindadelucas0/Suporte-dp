@@ -8,6 +8,16 @@ const AuthController = require('../controllers/authController');
 const { body } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 
+// Função para obter IP real (considera proxy do Render)
+const getRealIp = (req) => {
+  // Render usa X-Forwarded-For
+  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+         req.headers['x-real-ip'] || 
+         req.connection?.remoteAddress || 
+         req.socket?.remoteAddress ||
+         req.ip;
+};
+
 // Rate Limiting para Login
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
@@ -16,6 +26,7 @@ const loginLimiter = rateLimit({
   skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => getRealIp(req), // Usa IP real considerando proxy do Render
 });
 
 // Rate Limiting para Registro
@@ -25,6 +36,7 @@ const registerLimiter = rateLimit({
   message: "Muitas tentativas de registro. Tente novamente em 1 hora.",
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => getRealIp(req), // Usa IP real considerando proxy do Render
 });
 
 // Validações
