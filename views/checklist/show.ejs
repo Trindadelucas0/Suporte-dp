@@ -10,270 +10,486 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: { red: '#DC2626', yellow: '#FBBF24' }
+                        primary: {
+                            red: '#DC2626',
+                            yellow: '#FBBF24'
+                        }
                     }
                 }
             }
         }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .item-completed {
+            text-decoration: line-through;
+            color: #9CA3AF;
+        }
+        .item-row:hover .item-actions {
+            opacity: 1;
+        }
+        .item-actions {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .fade-in-item {
+            animation: slideIn 0.3s ease-out;
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
     <% if (typeof user !== 'undefined' && user) { %>
         <%- include('../partials/navbar') %>
     <% } %>
 
-    <main class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="mb-6 flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900" id="checklistTitulo"><%= checklist.titulo %></h1>
-                <button onclick="editarTitulo()" class="text-sm text-primary-red hover:underline mt-1">
-                    <i class="fas fa-edit mr-1"></i>Editar título
-                </button>
-            </div>
-            <a href="/checklist" class="text-primary-red hover:underline">
-                <i class="fas fa-arrow-left mr-1"></i>Voltar
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="/checklist" class="text-primary-red hover:text-primary-yellow transition-colors flex items-center gap-2 text-sm font-semibold mb-4">
+                <i class="fas fa-arrow-left"></i>
+                Voltar para Checklists
             </a>
-        </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="space-y-4" id="listaItens">
-                <% itens.forEach(item => { %>
-                    <div class="flex items-start border rounded-lg p-4 hover:bg-gray-50" data-item-id="<%= item.id %>">
-                        <input type="checkbox" 
-                               id="item-<%= item.id %>"
-                               <%= item.concluido ? 'checked' : '' %>
-                               onchange="toggleItem('<%= item.id %>', this.checked)"
-                               class="mt-1 h-5 w-5 text-primary-red focus:ring-primary-red border-gray-300 rounded">
-                        <div class="ml-3 flex-1">
-                            <label for="item-<%= item.id %>" class="cursor-pointer">
-                                <span class="item-text <%= item.concluido ? 'line-through text-gray-500' : 'text-gray-900' %>">
-                                    <%= item.item %>
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary-red">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div class="flex-1">
+                        <h1 id="checklistTitulo" class="text-3xl font-bold text-gray-900 mb-2">
+                            <%= checklist.titulo %>
+                        </h1>
+                        <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                            <span class="px-3 py-1 bg-primary-red text-white rounded-full font-bold uppercase text-xs">
+                                <%= checklist.tipo || 'Custom' %>
+                            </span>
+                            <span>
+                                <i class="fas fa-list mr-1"></i>
+                                <%= itens.length %> item<%= itens.length !== 1 ? 's' : '' %>
+                            </span>
+                            <% 
+                                const itensConcluidos = itens.filter(i => i.concluido).length;
+                                const percentual = itens.length > 0 ? Math.round((itensConcluidos / itens.length) * 100) : 0;
+                            %>
+                            <span>
+                                <i class="fas fa-check-circle mr-1"></i>
+                                <%= itensConcluidos %> concluído<%= itensConcluidos !== 1 ? 's' : '' %>
+                            </span>
+                            <% if (checklist.created_at) { %>
+                                <span>
+                                    <i class="fas fa-calendar-alt mr-1"></i>
+                                    Criado em <%= new Date(checklist.created_at).toLocaleDateString('pt-BR') %>
                                 </span>
-                            </label>
-                            <% if (item.observacao) { %>
-                                <p class="text-xs text-gray-500 mt-1"><%= item.observacao %></p>
                             <% } %>
                         </div>
-                        <div class="flex space-x-2">
-                            <button onclick="editarItem('<%= item.id %>', <%= JSON.stringify(item.item) %>, <%= JSON.stringify(item.observacao || '') %>)" 
-                                    class="text-primary-yellow hover:text-yellow-600">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="removerItem('<%= item.id %>')" 
-                                    class="text-red-600 hover:text-red-800">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                    </div>
+                    <button 
+                        type="button"
+                        data-action="editar-titulo"
+                        class="px-4 py-2 bg-gray-100 hover:bg-primary-yellow hover:text-white text-gray-700 rounded-lg font-semibold transition">
+                        <i class="fas fa-edit mr-2"></i>
+                        Editar Título
+                    </button>
+                </div>
+
+                <!-- Barra de Progresso -->
+                <div class="mt-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-semibold text-gray-700">Progresso Geral</span>
+                        <span class="text-lg font-bold text-primary-red"><%= percentual %>%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                        <div 
+                            class="bg-gradient-to-r from-primary-red to-primary-yellow h-4 rounded-full transition-all duration-500 flex items-center justify-end pr-2"
+                            style="width: <%= percentual %>%">
+                            <% if (percentual > 10) { %>
+                                <span class="text-xs font-bold text-white"><%= percentual %>%</span>
+                            <% } %>
                         </div>
                     </div>
-                <% }); %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Itens -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-900">
+                    <i class="fas fa-tasks text-primary-red mr-2"></i>
+                    Itens do Checklist
+                </h2>
+                <button 
+                    type="button"
+                    data-action="adicionar-item"
+                    class="px-4 py-2 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-lg font-semibold hover:opacity-90 transition transform hover:scale-105">
+                    <i class="fas fa-plus mr-2"></i>
+                    Adicionar Item
+                </button>
             </div>
 
-            <div class="mt-6 pt-6 border-t">
-                <button onclick="adicionarItem()" 
-                        class="w-full bg-primary-yellow text-white py-2 rounded-md hover:opacity-90 mb-4">
-                    <i class="fas fa-plus mr-2"></i>Adicionar Item
+            <div id="listaItens" class="space-y-3">
+                <% if (itens && itens.length > 0) { %>
+                    <% itens.forEach((item, index) => { %>
+                        <div 
+                            class="item-row flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition fade-in-item border-l-4 <%= item.concluido ? 'border-green-500' : 'border-gray-300' %>"
+                            data-item-id="<%= item.id %>">
+                            <input 
+                                type="checkbox" 
+                                id="item-<%= item.id %>"
+                                <%= item.concluido ? 'checked' : '' %>
+                                data-action="toggle"
+                                data-item-id="<%= item.id %>"
+                                class="mt-1 w-5 h-5 text-primary-red focus:ring-primary-red border-gray-300 rounded cursor-pointer">
+                            
+                            <div class="flex-1">
+                                <div 
+                                    class="item-text <%= item.concluido ? 'item-completed' : 'text-gray-900' %> font-medium outline-none cursor-text"
+                                    contenteditable="true"
+                                    data-action="editar-texto"
+                                    data-item-id="<%= item.id %>">
+                                    <%= item.item %>
+                                </div>
+                                <% if (item.observacao) { %>
+                                    <p class="text-sm text-gray-500 mt-1 italic">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        <%= item.observacao %>
+                                    </p>
+                                <% } %>
+                                <div class="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                                    <% if (item.updated_at) { %>
+                                        <span>
+                                            <i class="fas fa-clock mr-1"></i>
+                                            Atualizado <%= new Date(item.updated_at).toLocaleDateString('pt-BR') %>
+                                        </span>
+                                    <% } %>
+                                    <button 
+                                        type="button"
+                                        data-action="adicionar-observacao"
+                                        data-item-id="<%= item.id %>"
+                                        class="text-primary-yellow hover:text-primary-red transition">
+                                        <i class="fas fa-comment mr-1"></i>
+                                        <%= item.observacao ? 'Editar' : 'Adicionar' %> Observação
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="item-actions flex gap-2">
+                                <button 
+                                    type="button"
+                                    data-action="remover"
+                                    data-item-id="<%= item.id %>"
+                                    class="p-2 text-gray-400 hover:text-primary-red transition">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fas fa-clipboard-list text-4xl mb-3"></i>
+                        <p>Nenhum item adicionado ainda.</p>
+                        <p class="text-sm mt-2">Clique em "Adicionar Item" para começar.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Adicionar Item Rápido -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">
+                <i class="fas fa-plus-circle text-primary-yellow mr-2"></i>
+                Adicionar Item Rápido
+            </h3>
+            <div class="flex gap-3">
+                <input 
+                    type="text" 
+                    id="novoItemInput" 
+                    placeholder="Digite o novo item e pressione Enter..."
+                    class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition outline-none">
+                <button 
+                    type="button"
+                    data-action="salvar-item-rapido"
+                    class="px-6 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-lg font-bold hover:opacity-90 transition">
+                    <i class="fas fa-check mr-2"></i>
+                    Adicionar
                 </button>
-                <p class="text-sm text-gray-600">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    Marque os itens conforme forem concluídos. Clique no ícone de edição para modificar itens.
-                </p>
             </div>
         </div>
     </main>
 
-    <!-- Modal de Edição de Título -->
-    <div id="modalTitulo" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 class="text-xl font-bold mb-4">Editar Título</h3>
-            <input type="text" id="novoTitulo" value="<%= checklist.titulo %>" 
-                   class="w-full px-4 py-2 border rounded-md mb-4">
-            <div class="flex justify-end space-x-2">
-                <button onclick="fecharModalTitulo()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancelar</button>
-                <button onclick="salvarTitulo()" class="px-4 py-2 bg-primary-red text-white rounded hover:bg-red-700">Salvar</button>
+    <!-- Modal Editar Título -->
+    <div id="modalTitulo" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">
+                    <i class="fas fa-edit text-primary-yellow mr-2"></i>
+                    Editar Título
+                </h3>
+                <button 
+                    type="button"
+                    data-action="fechar-titulo"
+                    class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
+            <form id="formTitulo" class="space-y-4">
+                <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <% } %>
+                <input type="hidden" id="checklistIdTitulo" value="<%= checklist.id %>">
+                <input 
+                    type="text" 
+                    id="novoTitulo" 
+                    value="<%= checklist.titulo %>"
+                    required
+                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition outline-none">
+                <div class="flex gap-3">
+                    <button 
+                        type="button"
+                        data-action="fechar-titulo"
+                        class="flex-1 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition">
+                        Cancelar
+                    </button>
+                    <button 
+                        type="submit"
+                        class="flex-1 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white font-bold rounded-lg hover:opacity-90 transition">
+                        <i class="fas fa-save mr-2"></i>
+                        Salvar
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- Modal de Edição de Item -->
-    <div id="modalItem" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 class="text-xl font-bold mb-4">Editar Item</h3>
-            <input type="hidden" id="itemIdEdit">
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Item</label>
-                <input type="text" id="itemTextoEdit" class="w-full px-4 py-2 border rounded-md">
+    <!-- Modal Adicionar/Editar Observação -->
+    <div id="modalObservacao" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">
+                    <i class="fas fa-comment text-primary-yellow mr-2"></i>
+                    Observação do Item
+                </h3>
+                <button 
+                    type="button"
+                    data-action="fechar-observacao"
+                    class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Observação (opcional)</label>
-                <textarea id="itemObservacaoEdit" rows="2" class="w-full px-4 py-2 border rounded-md"></textarea>
-            </div>
-            <div class="flex justify-end space-x-2">
-                <button onclick="fecharModalItem()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancelar</button>
-                <button onclick="salvarItem()" class="px-4 py-2 bg-primary-red text-white rounded hover:bg-red-700">Salvar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Adicionar Item -->
-    <div id="modalAdicionar" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 class="text-xl font-bold mb-4">Adicionar Item</h3>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Item</label>
-                <input type="text" id="novoItemTexto" class="w-full px-4 py-2 border rounded-md">
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Observação (opcional)</label>
-                <textarea id="novoItemObservacao" rows="2" class="w-full px-4 py-2 border rounded-md"></textarea>
-            </div>
-            <div class="flex justify-end space-x-2">
-                <button onclick="fecharModalAdicionar()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancelar</button>
-                <button onclick="salvarNovoItem()" class="px-4 py-2 bg-primary-red text-white rounded hover:bg-red-700">Adicionar</button>
-            </div>
+            <form id="formObservacao" class="space-y-4">
+                <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <% } %>
+                <input type="hidden" id="itemIdObservacao">
+                <textarea 
+                    id="textoObservacao" 
+                    rows="4"
+                    placeholder="Digite uma observação para este item..."
+                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-yellow focus:ring-2 focus:ring-primary-yellow transition outline-none resize-none"></textarea>
+                <div class="flex gap-3">
+                    <button 
+                        type="button"
+                        data-action="fechar-observacao"
+                        class="flex-1 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition">
+                        Cancelar
+                    </button>
+                    <button 
+                        type="submit"
+                        class="flex-1 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white font-bold rounded-lg hover:opacity-90 transition">
+                        <i class="fas fa-save mr-2"></i>
+                        Salvar
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
     <script>
         const checklistId = '<%= checklist.id %>';
+        window.csrfToken = '<%= typeof csrfToken !== "undefined" && csrfToken ? csrfToken : "" %>';
+        
+        function getCSRFHeaders() {
+            const headers = { 'Content-Type': 'application/json' };
+            if (window.csrfToken) {
+                headers['X-CSRF-Token'] = window.csrfToken;
+            }
+            return headers;
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle Item
+            document.querySelectorAll('[data-action="toggle"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    toggleItem(this.getAttribute('data-item-id'), this.checked);
+                });
+            });
+
+            // Editar Texto Item
+            document.querySelectorAll('[data-action="editar-texto"]').forEach(el => {
+                el.addEventListener('blur', function() {
+                    const itemId = this.getAttribute('data-item-id');
+                    const novoTexto = this.innerText.trim();
+                    if (novoTexto) {
+                        atualizarTextoItem(itemId, novoTexto);
+                    } else {
+                        this.innerText = this.getAttribute('data-original') || 'Item sem descrição';
+                    }
+                });
+            });
+
+            // Editar Título
+            document.querySelector('[data-action="editar-titulo"]').addEventListener('click', function() {
+                document.getElementById('modalTitulo').classList.remove('hidden');
+                document.getElementById('novoTitulo').focus();
+                document.getElementById('novoTitulo').select();
+            });
+
+            // Fechar Modal Título
+            document.querySelectorAll('[data-action="fechar-titulo"]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('modalTitulo').classList.add('hidden');
+                });
+            });
+
+            // Adicionar Item
+            document.querySelector('[data-action="adicionar-item"]').addEventListener('click', function() {
+                document.getElementById('novoItemInput').focus();
+            });
+
+            // Salvar Item Rápido
+            document.querySelector('[data-action="salvar-item-rapido"]').addEventListener('click', salvarNovoItem);
+            document.getElementById('novoItemInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    salvarNovoItem();
+                }
+            });
+
+            // Adicionar Observação
+            document.querySelectorAll('[data-action="adicionar-observacao"]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const itemId = this.getAttribute('data-item-id');
+                    const itemRow = document.querySelector(`[data-item-id="${itemId}"]`);
+                    const observacao = itemRow.querySelector('.text-gray-500.italic')?.textContent.replace(/.*?fa-info-circle.*?/, '').trim() || '';
+                    document.getElementById('itemIdObservacao').value = itemId;
+                    document.getElementById('textoObservacao').value = observacao;
+                    document.getElementById('modalObservacao').classList.remove('hidden');
+                    document.getElementById('textoObservacao').focus();
+                });
+            });
+
+            // Fechar Modal Observação
+            document.querySelectorAll('[data-action="fechar-observacao"]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('modalObservacao').classList.add('hidden');
+                });
+            });
+
+            // Remover Item
+            document.querySelectorAll('[data-action="remover"]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const itemId = this.getAttribute('data-item-id');
+                    removerItem(itemId);
+                });
+            });
+
+            // Fechar modais ao clicar fora
+            document.getElementById('modalTitulo').addEventListener('click', function(e) {
+                if (e.target === this) this.classList.add('hidden');
+            });
+
+            document.getElementById('modalObservacao').addEventListener('click', function(e) {
+                if (e.target === this) this.classList.add('hidden');
+            });
+        });
 
         function toggleItem(itemId, concluido) {
+            const itemRow = document.querySelector(`[data-item-id="${itemId}"]`);
+            const itemText = itemRow.querySelector('.item-text');
+            
+            // Atualização visual imediata
+            if (concluido) {
+                itemText.classList.add('item-completed');
+                itemRow.classList.remove('border-gray-300');
+                itemRow.classList.add('border-green-500');
+            } else {
+                itemText.classList.remove('item-completed');
+                itemRow.classList.remove('border-green-500');
+                itemRow.classList.add('border-gray-300');
+            }
+
+            // Atualização no servidor
             fetch('/checklist/item/concluir', {
                 method: 'POST',
                 headers: getCSRFHeaders(),
-                body: JSON.stringify({ itemId, concluido: concluido.toString(), _csrf: window.csrfToken })
+                body: JSON.stringify({ 
+                    itemId, 
+                    concluido: concluido.toString(),
+                    _csrf: window.csrfToken 
+                })
             })
             .then(r => r.json())
             .then(data => {
-                if (data.success) {
-                    const label = document.querySelector(`label[for="item-${itemId}"] .item-text`);
-                    if (concluido) {
-                        label.classList.add('line-through', 'text-gray-500');
-                        label.classList.remove('text-gray-900');
-                    } else {
-                        label.classList.remove('line-through', 'text-gray-500');
-                        label.classList.add('text-gray-900');
-                    }
-                }
-            });
-        }
-
-        function editarTitulo() {
-            document.getElementById('modalTitulo').classList.remove('hidden');
-        }
-
-        function fecharModalTitulo() {
-            document.getElementById('modalTitulo').classList.add('hidden');
-        }
-
-        function salvarTitulo() {
-            const novoTitulo = document.getElementById('novoTitulo').value.trim();
-            
-            if (!novoTitulo) {
-                alert('O título não pode estar vazio');
-                return;
-            }
-
-            fetch('/checklist/atualizar', {
-                method: 'POST',
-                headers: getCSRFHeaders(),
-                body: JSON.stringify({ checklistId, titulo: novoTitulo, _csrf: window.csrfToken })
-            })
-            .then(r => {
-                if (!r.ok) {
-                    throw new Error('Erro ao salvar');
-                }
-                return r.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('checklistTitulo').textContent = novoTitulo;
-                    fecharModalTitulo();
-                } else {
-                    alert('Erro ao salvar título: ' + (data.error || 'Erro desconhecido'));
+                if (!data.success) {
+                    // Reverter se falhar
+                    const checkbox = document.querySelector(`[data-item-id="${itemId}"][type="checkbox"]`);
+                    checkbox.checked = !concluido;
+                    toggleItem(itemId, !concluido);
                 }
             })
             .catch(error => {
                 console.error('Erro:', error);
-                alert('Erro ao salvar título. Tente novamente.');
+                // Reverter se falhar
+                const checkbox = document.querySelector(`[data-item-id="${itemId}"][type="checkbox"]`);
+                checkbox.checked = !concluido;
+                toggleItem(itemId, !concluido);
             });
         }
 
-        function editarItem(itemId, itemTexto, observacao) {
-            document.getElementById('itemIdEdit').value = itemId;
-            document.getElementById('itemTextoEdit').value = itemTexto || '';
-            document.getElementById('itemObservacaoEdit').value = observacao || '';
-            document.getElementById('modalItem').classList.remove('hidden');
-        }
+        function atualizarTextoItem(itemId, novoTexto) {
+            if (!novoTexto.trim()) return;
 
-        function fecharModalItem() {
-            document.getElementById('modalItem').classList.add('hidden');
-        }
-
-        function salvarItem() {
-            const itemId = document.getElementById('itemIdEdit').value;
-            const item = document.getElementById('itemTextoEdit').value.trim();
-            const observacao = document.getElementById('itemObservacaoEdit').value.trim();
-            
-            if (!item) {
-                alert('O item não pode estar vazio');
-                return;
-            }
-            
             fetch('/checklist/item/atualizar', {
                 method: 'POST',
                 headers: getCSRFHeaders(),
-                body: JSON.stringify({ itemId, item, observacao: observacao || null, _csrf: window.csrfToken })
-            })
-            .then(r => {
-                if (!r.ok) {
-                    throw new Error('Erro ao atualizar item');
-                }
-                return r.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('Erro ao atualizar item: ' + (data.error || 'Erro desconhecido'));
-                }
+                body: JSON.stringify({ 
+                    itemId, 
+                    item: novoTexto.trim(),
+                    _csrf: window.csrfToken 
+                })
             })
             .catch(error => {
-                console.error('Erro:', error);
-                alert('Erro ao atualizar item. Tente novamente.');
+                console.error('Erro ao atualizar item:', error);
             });
         }
 
-        function adicionarItem() {
-            document.getElementById('modalAdicionar').classList.remove('hidden');
-        }
-
-        function fecharModalAdicionar() {
-            document.getElementById('modalAdicionar').classList.add('hidden');
-            document.getElementById('novoItemTexto').value = '';
-            document.getElementById('novoItemObservacao').value = '';
-        }
-
         function salvarNovoItem() {
-            const item = document.getElementById('novoItemTexto').value.trim();
-            const observacao = document.getElementById('novoItemObservacao').value.trim();
+            const input = document.getElementById('novoItemInput');
+            const valor = input.value.trim();
             
-            if (!item) {
-                alert('O item não pode estar vazio');
+            if (!valor) {
+                alert('Digite um item para adicionar!');
                 return;
             }
 
             fetch('/checklist/item/adicionar', {
                 method: 'POST',
                 headers: getCSRFHeaders(),
-                body: JSON.stringify({ checklistId, item, observacao: observacao || null, _csrf: window.csrfToken })
+                body: JSON.stringify({ 
+                    checklistId, 
+                    item: valor,
+                    _csrf: window.csrfToken 
+                })
             })
-            .then(r => {
-                if (!r.ok) {
-                    throw new Error('Erro ao adicionar item');
-                }
-                return r.json();
-            })
+            .then(r => r.json())
             .then(data => {
                 if (data.success) {
                     location.reload();
@@ -294,21 +510,18 @@
 
             fetch('/checklist/item/remover', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ itemId })
+                headers: getCSRFHeaders(),
+                body: JSON.stringify({ 
+                    itemId,
+                    _csrf: window.csrfToken 
+                })
             })
-            .then(r => {
-                if (!r.ok) {
-                    throw new Error('Erro ao remover item');
-                }
-                return r.json();
-            })
+            .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    const elemento = document.querySelector(`[data-item-id="${itemId}"]`);
-                    if (elemento) {
-                        elemento.remove();
-                    }
+                    document.querySelector(`[data-item-id="${itemId}"]`).remove();
+                    // Atualizar contador se necessário
+                    location.reload();
                 } else {
                     alert('Erro ao remover item: ' + (data.error || 'Erro desconhecido'));
                 }
@@ -318,6 +531,73 @@
                 alert('Erro ao remover item. Tente novamente.');
             });
         }
+
+        // Form Editar Título
+        document.getElementById('formTitulo').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const novoTitulo = document.getElementById('novoTitulo').value.trim();
+            if (!novoTitulo) {
+                alert('O título não pode estar vazio');
+                return;
+            }
+
+            fetch('/checklist/atualizar', {
+                method: 'POST',
+                headers: getCSRFHeaders(),
+                body: JSON.stringify({ 
+                    checklistId, 
+                    titulo: novoTitulo,
+                    _csrf: window.csrfToken 
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('checklistTitulo').textContent = novoTitulo;
+                    document.getElementById('modalTitulo').classList.add('hidden');
+                } else {
+                    alert('Erro ao atualizar título: ' + (data.error || 'Erro desconhecido'));
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao atualizar título. Tente novamente.');
+            });
+        });
+
+        // Form Observação
+        document.getElementById('formObservacao').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const itemId = document.getElementById('itemIdObservacao').value;
+            const observacao = document.getElementById('textoObservacao').value.trim();
+            const itemRow = document.querySelector(`[data-item-id="${itemId}"]`);
+            const itemText = itemRow.querySelector('.item-text').innerText.trim();
+
+            fetch('/checklist/item/atualizar', {
+                method: 'POST',
+                headers: getCSRFHeaders(),
+                body: JSON.stringify({ 
+                    itemId, 
+                    item: itemText,
+                    observacao: observacao || null,
+                    _csrf: window.csrfToken 
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Erro ao salvar observação: ' + (data.error || 'Erro desconhecido'));
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao salvar observação. Tente novamente.');
+            });
+        });
     </script>
 </body>
 </html>

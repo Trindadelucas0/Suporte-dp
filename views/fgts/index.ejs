@@ -71,13 +71,13 @@
                     <div class="bg-white rounded-lg shadow-md">
                         <div class="border-b">
                             <nav class="flex -mb-px">
-                                <button onclick="showTab('calc')" id="tab-calc" class="tab-button active px-6 py-3 border-b-2 border-primary-red text-primary-red">
+                                <button type="button" data-tab="calc" id="tab-calc" class="tab-button active px-6 py-3 border-b-2 border-primary-red text-primary-red">
                                     Calculadora
                                 </button>
-                                <button onclick="showTab('mem')" id="tab-mem" class="tab-button px-6 py-3 border-b-2 border-transparent text-gray-500">
+                                <button type="button" data-tab="mem" id="tab-mem" class="tab-button px-6 py-3 border-b-2 border-transparent text-gray-500">
                                     Memória
                                 </button>
-                                <button onclick="showTab('legal')" id="tab-legal" class="tab-button px-6 py-3 border-b-2 border-transparent text-gray-500">
+                                <button type="button" data-tab="legal" id="tab-legal" class="tab-button px-6 py-3 border-b-2 border-transparent text-gray-500">
                                     Base Legal
                                 </button>
                             </nav>
@@ -139,16 +139,53 @@
     </main>
 
     <script>
-        function showTab(tab) {
+        // Função para trocar abas - DEFINIDA GLOBALMENTE
+        window.showTab = function(tab) {
+            // Esconde TODAS as abas de conteúdo
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            
+            // Remove estilo ativo de TODOS os botões
             document.querySelectorAll('.tab-button').forEach(b => {
                 b.classList.remove('active', 'border-primary-red', 'text-primary-red');
                 b.classList.add('border-transparent', 'text-gray-500');
             });
-            document.getElementById('content-' + tab).classList.remove('hidden');
+            
+            // Mostra a aba selecionada
+            const contentElement = document.getElementById('content-' + tab);
+            if (contentElement) {
+                contentElement.classList.remove('hidden');
+            }
+            
+            // Ativa o botão correspondente
             const btn = document.getElementById('tab-' + tab);
-            btn.classList.add('active', 'border-primary-red', 'text-primary-red');
-        }
+            if (btn) {
+                btn.classList.add('active', 'border-primary-red', 'text-primary-red');
+                btn.classList.remove('border-transparent', 'text-gray-500');
+            }
+        };
+
+        // Inicializa quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Adiciona event listeners para os botões de aba
+            var tabButtons = document.querySelectorAll('.tab-button[data-tab]');
+            tabButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var tabName = this.getAttribute('data-tab');
+                    if (window.showTab) {
+                        window.showTab(tabName);
+                    }
+                });
+            });
+
+            // Exibe a primeira aba ativa
+            var primeiraAba = document.querySelector('.tab-button.active');
+            if (primeiraAba) {
+                var tabName = primeiraAba.getAttribute('data-tab') || primeiraAba.id.replace('tab-', '');
+                if (window.showTab) {
+                    window.showTab(tabName);
+                }
+            }
+        });
     </script>
 </body>
 </html>

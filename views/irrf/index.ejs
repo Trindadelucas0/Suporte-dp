@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
+    <title>
+        <%= title %>
+    </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -20,307 +23,362 @@
         }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        // Define a função ANTES de qualquer renderização - GARANTIDO
-        (function() {
-            'use strict';
-            
-            // Função para trocar abas - DEFINIDA GLOBALMENTE
-            window.showTab = function(tabName) {
-                // Esconde TODAS as abas de conteúdo
-                var allContents = document.querySelectorAll('.tab-content');
-                for (var i = 0; i < allContents.length; i++) {
-                    allContents[i].classList.add('hidden');
-                }
-                
-                // Remove estilo ativo de TODOS os botões
-                var allButtons = document.querySelectorAll('.tab-button');
-                for (var j = 0; j < allButtons.length; j++) {
-                    allButtons[j].classList.remove('active', 'border-primary-yellow', 'text-primary-yellow');
-                    allButtons[j].classList.add('border-transparent', 'text-gray-500');
-                }
-
-                // Mostra a aba selecionada
-                var contentElement = document.getElementById('content-' + tabName);
-                if (contentElement) {
-                    contentElement.classList.remove('hidden');
-                }
-
-                // Ativa o botão correspondente
-                var button = document.getElementById('tab-' + tabName);
-                if (button) {
-                    button.classList.add('active', 'border-primary-yellow', 'text-primary-yellow');
-                    button.classList.remove('border-transparent', 'text-gray-500');
-                }
-            };
-        })();
-    </script>
 </head>
+
 <body class="bg-gray-50">
-    <% if (typeof user !== 'undefined' && user) { %>
+    <% if (typeof user !=='undefined' && user) { %>
         <%- include('../partials/navbar') %>
-    <% } %>
+            <% } %>
 
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">Calculadora de IRRF</h1>
-            <p class="mt-2 text-gray-600">Imposto de Renda Retido na Fonte - IN RFB 1500/2014</p>
-        </div>
+                <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                    <div class="mb-6">
+                        <h1 class="text-3xl font-bold text-gray-900">Calculadora de IRRF</h1>
+                        <p class="mt-2 text-gray-600">Imposto de Renda Retido na Fonte - IN RFB 1500/2014</p>
+                    </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-4">
-                        <i class="fas fa-calculator text-primary-yellow mr-2"></i>Dados de Entrada
-                    </h2>
-                    
-                    <% if (error) { %>
-                        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-                            <i class="fas fa-exclamation-circle mr-2"></i><%= error %>
-                        </div>
-                    <% } %>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-1">
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h2 class="text-xl font-bold text-gray-900 mb-4">
+                                    <i class="fas fa-calculator text-primary-yellow mr-2"></i>Dados de Entrada
+                                </h2>
 
-                    <form method="POST" action="/irrf/calcular" class="space-y-4">
-                        <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
-                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                        <% } %>
-                        <div>
-                            <label for="salarioBruto" class="block text-sm font-medium text-gray-700 mb-2">
-                                Salário Bruto (R$)
-                            </label>
-                            <input type="number" id="salarioBruto" name="salarioBruto" step="0.01" min="0" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-yellow">
-                        </div>
-
-                        <div>
-                            <label for="dependentes" class="block text-sm font-medium text-gray-700 mb-2">
-                                Número de Dependentes
-                            </label>
-                            <input type="number" id="dependentes" name="dependentes" min="0" value="0"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-yellow">
-                            <p class="text-xs text-gray-500 mt-1">R$ 189,59 por dependente (2024)</p>
-                        </div>
-
-                        <div>
-                            <label for="pensaoAlimenticia" class="block text-sm font-medium text-gray-700 mb-2">
-                                Pensão Alimentícia (R$)
-                            </label>
-                            <input type="number" id="pensaoAlimenticia" name="pensaoAlimenticia" step="0.01" min="0" value="0"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-yellow">
-                        </div>
-
-                        <div class="flex items-center">
-                            <input type="checkbox" id="proLabore" name="proLabore" value="true"
-                                class="h-4 w-4 text-primary-yellow focus:ring-primary-yellow border-gray-300 rounded">
-                            <label for="proLabore" class="ml-2 block text-sm text-gray-700">
-                                Pró-labore (alíquota fixa de 11% no INSS)
-                            </label>
-                        </div>
-
-                        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                            <div class="flex items-start">
-                                <input type="checkbox" id="deducaoSimplificada" name="deducaoSimplificada" value="true"
-                                    class="mt-1 h-4 w-4 text-primary-yellow focus:ring-primary-yellow border-gray-300 rounded">
-                                <div class="ml-3">
-                                    <label for="deducaoSimplificada" class="block text-sm font-semibold text-gray-900 cursor-pointer">
-                                        Dedução Simplificada (Lei 15.191/2025 e MP 1.294/2025)
-                                    </label>
-                                    <p class="text-xs text-gray-600 mt-1">
-                                        Valor fixo mensal de <strong>R$ 607,20</strong>. 
-                                        <strong>Substitui</strong> todas as deduções legais (dependentes, pensão, etc.).
-                                        Aplica-se exclusivamente ao IRRF mensal.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button type="submit"
-                            class="w-full bg-gradient-to-r from-primary-yellow to-primary-red text-white py-3 rounded-md font-semibold hover:opacity-90">
-                            <i class="fas fa-calculator mr-2"></i>Calcular
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="lg:col-span-2">
-                <% if (resultado) { %>
-                    <div class="bg-white rounded-lg shadow-md">
-                        <div class="border-b border-gray-200">
-                            <nav class="flex -mb-px">
-                                <button type="button" onclick="showTab('calculadora')" id="tab-calculadora"
-                                    class="tab-button active px-6 py-3 text-sm font-medium border-b-2 border-primary-yellow text-primary-yellow cursor-pointer">
-                                    <i class="fas fa-calculator mr-2"></i>Calculadora
-                                </button>
-                                <button type="button" onclick="showTab('memoria')" id="tab-memoria"
-                                    class="tab-button px-6 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 cursor-pointer hover:text-gray-700">
-                                    <i class="fas fa-list-ol mr-2"></i>Memória
-                                </button>
-                                <button type="button" onclick="showTab('base-legal')" id="tab-base-legal"
-                                    class="tab-button px-6 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 cursor-pointer hover:text-gray-700">
-                                    <i class="fas fa-gavel mr-2"></i>Base Legal
-                                </button>
-                            </nav>
-                        </div>
-
-                        <div class="p-6">
-                            <div id="content-calculadora" class="tab-content">
-                                <div class="bg-gradient-to-r from-primary-yellow to-primary-red rounded-lg p-6 text-white mb-6">
-                                    <h3 class="text-2xl font-bold mb-4">Resultado do Cálculo</h3>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <p class="text-sm opacity-90">Salário Bruto</p>
-                                            <p class="text-2xl font-bold">R$ <%= resultado.salarioBruto.toFixed(2) %></p>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm opacity-90">(-) INSS</p>
-                                            <p class="text-xl">R$ <%= calculoINSS.valorINSS.toFixed(2) %></p>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm opacity-90">
-                                                <% if (resultado.deducaoSimplificada) { %>
-                                                    (-) Dedução Simplificada
-                                                <% } else { %>
-                                                    (-) Dependentes
-                                                <% } %>
-                                            </p>
-                                            <p class="text-xl">
-                                                <% if (resultado.deducaoSimplificada) { %>
-                                                    R$ <%= resultado.valorDeducaoSimplificada.toFixed(2) %>
-                                                <% } else { %>
-                                                    R$ <%= (resultado.dependentes * 189.59).toFixed(2) %>
-                                                <% } %>
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm opacity-90">Base de Cálculo</p>
-                                            <p class="text-xl font-bold">R$ <%= resultado.baseCalculo.toFixed(2) %></p>
-                                        </div>
-                                        <div class="col-span-2 border-t pt-4">
-                                            <p class="text-sm opacity-90">IRRF (<%= resultado.aliquota %>% de alíquota)</p>
-                                            <p class="text-3xl font-bold">R$ <%= resultado.valorIRRF.toFixed(2) %></p>
-                                        </div>
+                                <% if (error) { %>
+                                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+                                        <i class="fas fa-exclamation-circle mr-2"></i>
+                                        <%= error %>
                                     </div>
-                                </div>
+                                    <% } %>
 
-                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                    <p class="text-sm text-yellow-800">
-                                        <i class="fas fa-info-circle mr-2"></i>
-                                        <strong>Fórmula:</strong> Base IR = Bruto - INSS - (Dependentes × 189,59) - Pensão
-                                    </p>
-                                </div>
+                                        <form method="POST" action="/irrf/calcular" class="space-y-4">
+                                            <% if (typeof csrfToken !=='undefined' && csrfToken) { %>
+                                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                                <% } %>
+                                                    <div>
+                                                        <label for="salarioBruto"
+                                                            class="block text-sm font-medium text-gray-700 mb-2">
+                                                            Salário Bruto (R$)
+                                                        </label>
+                                                        <input type="number" id="salarioBruto" name="salarioBruto"
+                                                            step="0.01" min="0" required
+                                                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-yellow">
+                                                    </div>
+
+                                                    <div>
+                                                        <label for="dependentes"
+                                                            class="block text-sm font-medium text-gray-700 mb-2">
+                                                            Número de Dependentes
+                                                        </label>
+                                                        <input type="number" id="dependentes" name="dependentes" min="0"
+                                                            value="0"
+                                                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-yellow">
+                                                        <p class="text-xs text-gray-500 mt-1">R$ 189,59 por dependente
+                                                            (2024)</p>
+                                                    </div>
+
+                                                    <div>
+                                                        <label for="pensaoAlimenticia"
+                                                            class="block text-sm font-medium text-gray-700 mb-2">
+                                                            Pensão Alimentícia (R$)
+                                                        </label>
+                                                        <input type="number" id="pensaoAlimenticia"
+                                                            name="pensaoAlimenticia" step="0.01" min="0" value="0"
+                                                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-yellow">
+                                                    </div>
+
+                                                    <div class="flex items-center">
+                                                        <input type="checkbox" id="proLabore" name="proLabore"
+                                                            value="true"
+                                                            class="h-4 w-4 text-primary-yellow focus:ring-primary-yellow border-gray-300 rounded">
+                                                        <label for="proLabore" class="ml-2 block text-sm text-gray-700">
+                                                            Pró-labore (alíquota fixa de 11% no INSS)
+                                                        </label>
+                                                    </div>
+
+                                                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                                                        <div class="flex items-start">
+                                                            <input type="checkbox" id="deducaoSimplificada"
+                                                                name="deducaoSimplificada" value="true"
+                                                                class="mt-1 h-4 w-4 text-primary-yellow focus:ring-primary-yellow border-gray-300 rounded">
+                                                            <div class="ml-3">
+                                                                <label for="deducaoSimplificada"
+                                                                    class="block text-sm font-semibold text-gray-900 cursor-pointer">
+                                                                    Dedução Simplificada (Lei 15.191/2025 e MP
+                                                                    1.294/2025)
+                                                                </label>
+                                                                <p class="text-xs text-gray-600 mt-1">
+                                                                    Valor fixo mensal de <strong>R$ 607,20</strong>.
+                                                                    <strong>Substitui</strong> todas as deduções legais
+                                                                    (dependentes, pensão, etc.).
+                                                                    Aplica-se exclusivamente ao IRRF mensal.
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <button type="submit"
+                                                        class="w-full bg-gradient-to-r from-primary-yellow to-primary-red text-white py-3 rounded-md font-semibold hover:opacity-90">
+                                                        <i class="fas fa-calculator mr-2"></i>Calcular
+                                                    </button>
+                                        </form>
                             </div>
+                        </div>
 
-                            <div id="content-memoria" class="tab-content hidden">
-                                <h3 class="text-xl font-bold mb-4">Memória de Cálculo</h3>
-                                <div class="space-y-3">
-                                    <% resultado.memoria.forEach(passo => { %>
-                                        <div class="bg-gray-50 rounded-lg p-4 border-l-4 <%= passo.destaque ? 'border-primary-yellow' : 'border-gray-300' %>">
-                                            <div class="flex items-start">
-                                                <span class="bg-primary-yellow text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-3">
-                                                    <%= passo.passo %>
-                                                </span>
-                                                <div class="flex-1">
-                                                    <p class="font-semibold"><%= passo.descricao %></p>
-                                                    <% if (passo.calculo) { %>
-                                                        <p class="text-sm text-gray-600 mt-1"><%= passo.calculo %></p>
-                                                    <% } %>
-                                                    <% if (passo.valor) { %>
-                                                        <p class="text-primary-yellow font-bold mt-2">R$ <%= passo.valor %></p>
-                                                    <% } %>
+                        <div class="lg:col-span-2">
+                            <% if (resultado) { %>
+                                <div class="bg-white rounded-lg shadow-md">
+                                    <div class="border-b border-gray-200">
+                                        <nav class="flex -mb-px">
+                                            <button type="button" data-tab="calculadora" id="tab-calculadora"
+                                                class="tab-button active px-6 py-3 text-sm font-medium border-b-2 border-primary-yellow text-primary-yellow cursor-pointer">
+                                                <i class="fas fa-calculator mr-2"></i>Calculadora
+                                            </button>
+                                            <button type="button" data-tab="memoria" id="tab-memoria"
+                                                class="tab-button px-6 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 cursor-pointer hover:text-gray-700">
+                                                <i class="fas fa-list-ol mr-2"></i>Memória
+                                            </button>
+                                            <button type="button" data-tab="base-legal" id="tab-base-legal"
+                                                class="tab-button px-6 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 cursor-pointer hover:text-gray-700">
+                                                <i class="fas fa-gavel mr-2"></i>Base Legal
+                                            </button>
+                                        </nav>
+                                    </div>
+
+                                    <div class="p-6">
+                                        <div id="content-calculadora" class="tab-content">
+                                            <div
+                                                class="bg-gradient-to-r from-primary-yellow to-primary-red rounded-lg p-6 text-white mb-6">
+                                                <h3 class="text-2xl font-bold mb-4">Resultado do Cálculo</h3>
+                                                <div class="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <p class="text-sm opacity-90">Salário Bruto</p>
+                                                        <p class="text-2xl font-bold">R$ <%=
+                                                                resultado.salarioBruto.toFixed(2) %>
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-sm opacity-90">(-) INSS</p>
+                                                        <p class="text-xl">R$ <%= calculoINSS.valorINSS.toFixed(2) %>
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-sm opacity-90">
+                                                            <% if (resultado.deducaoSimplificada) { %>
+                                                                (-) Dedução Simplificada
+                                                                <% } else { %>
+                                                                    (-) Dependentes
+                                                                    <% } %>
+                                                        </p>
+                                                        <p class="text-xl">
+                                                            <% if (resultado.deducaoSimplificada) { %>
+                                                                R$ <%= resultado.valorDeducaoSimplificada.toFixed(2) %>
+                                                                    <% } else { %>
+                                                                        R$ <%= (resultado.dependentes *
+                                                                            189.59).toFixed(2) %>
+                                                                            <% } %>
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-sm opacity-90">Base de Cálculo</p>
+                                                        <p class="text-xl font-bold">R$ <%=
+                                                                resultado.baseCalculo.toFixed(2) %>
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-span-2 border-t pt-4">
+                                                        <p class="text-sm opacity-90">IRRF (<%= resultado.aliquota %>%
+                                                                de alíquota)</p>
+                                                        <p class="text-3xl font-bold">R$ <%=
+                                                                resultado.valorIRRF.toFixed(2) %>
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
+
+                                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                                <p class="text-sm text-yellow-800">
+                                                    <i class="fas fa-info-circle mr-2"></i>
+                                                    <strong>Fórmula:</strong> Base IR = Bruto - INSS - (Dependentes ×
+                                                    189,59) - Pensão
+                                                </p>
+                                            </div>
                                         </div>
-                                    <% }); %>
-                                </div>
-                            </div>
 
-                            <div id="content-base-legal" class="tab-content hidden">
-                                <div class="flex justify-between items-center mb-4">
-                                    <h3 class="text-xl font-bold text-gray-900">Base Legal</h3>
-                                </div>
-
-                                <!-- Tabela Completa de IRRF -->
-                                <% if (resultado.faixas) { %>
-                                    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                                        <h4 class="font-bold text-lg mb-4">Tabela Progressiva de IRRF - Ano <%= resultado.ano || new Date().getFullYear() %></h4>
-                                        <div class="overflow-x-auto">
-                                            <table class="min-w-full divide-y divide-gray-200">
-                                                <thead class="bg-gray-50">
-                                                    <tr>
-                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Base de Cálculo</th>
-                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alíquota</th>
-                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Parcela a Deduzir</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody class="bg-white divide-y divide-gray-200">
-                                                    <% resultado.faixas.forEach((faixa, index) => { %>
-                                                        <tr class="<%= index % 2 === 0 ? 'bg-white' : 'bg-gray-50' %>">
-                                                            <td class="px-4 py-3 text-sm text-gray-700">
-                                                                <% if (faixa.limite === Infinity) { %>
-                                                                    Acima de R$ <%= resultado.faixas[index - 1].limite.toFixed(2) %>
-                                                                <% } else { %>
-                                                                    Até R$ <%= faixa.limite.toFixed(2) %>
-                                                                <% } %>
-                                                            </td>
-                                                            <td class="px-4 py-3 text-sm font-bold text-primary-yellow"><%= faixa.aliquota %>%</td>
-                                                            <td class="px-4 py-3 text-sm text-gray-700">R$ <%= faixa.deducao.toFixed(2) %></td>
-                                                        </tr>
+                                        <div id="content-memoria" class="tab-content hidden">
+                                            <h3 class="text-xl font-bold mb-4">Memória de Cálculo</h3>
+                                            <div class="space-y-3">
+                                                <% resultado.memoria.forEach(passo=> { %>
+                                                    <div
+                                                        class="bg-gray-50 rounded-lg p-4 border-l-4 <%= passo.destaque ? 'border-primary-yellow' : 'border-gray-300' %>">
+                                                        <div class="flex items-start">
+                                                            <span
+                                                                class="bg-primary-yellow text-white rounded-full w-8 h-8 flex items-center justify-center font-bold mr-3">
+                                                                <%= passo.passo %>
+                                                            </span>
+                                                            <div class="flex-1">
+                                                                <p class="font-semibold">
+                                                                    <%= passo.descricao %>
+                                                                </p>
+                                                                <% if (passo.calculo) { %>
+                                                                    <p class="text-sm text-gray-600 mt-1">
+                                                                        <%= passo.calculo %>
+                                                                    </p>
+                                                                    <% } %>
+                                                                        <% if (passo.valor) { %>
+                                                                            <p
+                                                                                class="text-primary-yellow font-bold mt-2">
+                                                                                R$ <%= passo.valor %>
+                                                                            </p>
+                                                                            <% } %>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                     <% }); %>
-                                                </tbody>
-                                            </table>
+                                            </div>
                                         </div>
-                                        <p class="text-sm text-gray-600 mt-4">
-                                            <strong>Dedução por Dependente:</strong> R$ <%= (resultado.valorDependente || 189.59).toFixed(2) %>
-                                        </p>
-                                    </div>
-                                <% } %>
 
-                                <!-- Lei Completa -->
-                                <div class="bg-gray-50 rounded-lg p-6">
-                                    <h4 class="font-bold text-lg mb-2"><%= resultado.baseLegal.titulo %></h4>
-                                    <p class="mb-4"><strong>Artigo:</strong> <%= resultado.baseLegal.artigo %></p>
-                                    <% if (resultado.baseLegal.textoCompleto) { %>
-                                        <div class="text-gray-700 leading-relaxed whitespace-pre-line">
-                                            <%= resultado.baseLegal.textoCompleto %>
+                                        <div id="content-base-legal" class="tab-content hidden">
+                                            <div class="flex justify-between items-center mb-4">
+                                                <h3 class="text-xl font-bold text-gray-900">Base Legal</h3>
+                                            </div>
+
+                                            <!-- Tabela Completa de IRRF -->
+                                            <% if (resultado.faixas) { %>
+                                                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                                                    <h4 class="font-bold text-lg mb-4">Tabela Progressiva de IRRF - Ano
+                                                        <%= resultado.ano || new Date().getFullYear() %>
+                                                    </h4>
+                                                    <div class="overflow-x-auto">
+                                                        <table class="min-w-full divide-y divide-gray-200">
+                                                            <thead class="bg-gray-50">
+                                                                <tr>
+                                                                    <th
+                                                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                                        Base de Cálculo</th>
+                                                                    <th
+                                                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                                        Alíquota</th>
+                                                                    <th
+                                                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                                        Parcela a Deduzir</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody class="bg-white divide-y divide-gray-200">
+                                                                <% resultado.faixas.forEach((faixa, index)=> { %>
+                                                                    <tr
+                                                                        class="<%= index % 2 === 0 ? 'bg-white' : 'bg-gray-50' %>">
+                                                                        <td class="px-4 py-3 text-sm text-gray-700">
+                                                                            <% if (faixa.limite===Infinity) { %>
+                                                                                Acima de R$ <%= resultado.faixas[index -
+                                                                                    1].limite.toFixed(2) %>
+                                                                                    <% } else { %>
+                                                                                        Até R$ <%=
+                                                                                            faixa.limite.toFixed(2) %>
+                                                                                            <% } %>
+                                                                        </td>
+                                                                        <td
+                                                                            class="px-4 py-3 text-sm font-bold text-primary-yellow">
+                                                                            <%= faixa.aliquota %>%
+                                                                        </td>
+                                                                        <td class="px-4 py-3 text-sm text-gray-700">R$
+                                                                            <%= faixa.deducao.toFixed(2) %>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <% }); %>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <p class="text-sm text-gray-600 mt-4">
+                                                        <strong>Dedução por Dependente:</strong> R$ <%=
+                                                            (resultado.valorDependente || 189.59).toFixed(2) %>
+                                                    </p>
+                                                </div>
+                                                <% } %>
+
+                                                    <!-- Lei Completa -->
+                                                    <div class="bg-gray-50 rounded-lg p-6">
+                                                        <h4 class="font-bold text-lg mb-2">
+                                                            <%= resultado.baseLegal.titulo %>
+                                                        </h4>
+                                                        <p class="mb-4"><strong>Artigo:</strong>
+                                                            <%= resultado.baseLegal.artigo %>
+                                                        </p>
+                                                        <% if (resultado.baseLegal.textoCompleto) { %>
+                                                            <div
+                                                                class="text-gray-700 leading-relaxed whitespace-pre-line">
+                                                                <%= resultado.baseLegal.textoCompleto %>
+                                                            </div>
+                                                            <% } else { %>
+                                                                <p class="text-gray-600">
+                                                                    <%= resultado.baseLegal.descricao %>
+                                                                </p>
+                                                                <% } %>
+                                                    </div>
                                         </div>
-                                    <% } else { %>
-                                        <p class="text-gray-600"><%= resultado.baseLegal.descricao %></p>
-                                    <% } %>
+                                    </div>
                                 </div>
-                            </div>
+                                <% } else { %>
+                                    <div class="bg-white rounded-lg shadow-md p-12 text-center">
+                                        <i class="fas fa-calculator text-gray-300 text-6xl mb-4"></i>
+                                        <p class="text-gray-600">Preencha os dados ao lado para calcular o IRRF</p>
+                                    </div>
+                                    <% } %>
                         </div>
                     </div>
-                <% } else { %>
-                    <div class="bg-white rounded-lg shadow-md p-12 text-center">
-                        <i class="fas fa-calculator text-gray-300 text-6xl mb-4"></i>
-                        <p class="text-gray-600">Preencha os dados ao lado para calcular o IRRF</p>
-                    </div>
-                <% } %>
-            </div>
-        </div>
-    </main>
+                </main>
 
     <script>
+        // Função para trocar abas - DEFINIDA GLOBALMENTE
+        window.showTab = function(tabName) {
+            // Esconde TODAS as abas de conteúdo
+            var allContents = document.querySelectorAll('.tab-content');
+            for (var i = 0; i < allContents.length; i++) {
+                allContents[i].classList.add('hidden');
+            }
+
+            // Remove estilo ativo de TODOS os botões
+            var allButtons = document.querySelectorAll('.tab-button');
+            for (var j = 0; j < allButtons.length; j++) {
+                allButtons[j].classList.remove('active', 'border-primary-yellow', 'text-primary-yellow');
+                allButtons[j].classList.add('border-transparent', 'text-gray-500');
+            }
+
+            // Mostra a aba selecionada
+            var contentElement = document.getElementById('content-' + tabName);
+            if (contentElement) {
+                contentElement.classList.remove('hidden');
+            }
+
+            // Ativa o botão correspondente
+            var button = document.getElementById('tab-' + tabName);
+            if (button) {
+                button.classList.add('active', 'border-primary-yellow', 'text-primary-yellow');
+                button.classList.remove('border-transparent', 'text-gray-500');
+            }
+        };
+
         // Inicializa quando a página carregar
-        (function() {
-            function init() {
-                var primeiraAba = document.querySelector('.tab-button.active');
-                if (primeiraAba) {
-                    var tabName = primeiraAba.id.replace('tab-', '');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Adiciona event listeners para os botões de aba
+            var tabButtons = document.querySelectorAll('.tab-button[data-tab]');
+            tabButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var tabName = this.getAttribute('data-tab');
                     if (window.showTab) {
                         window.showTab(tabName);
                     }
+                });
+            });
+
+            // Exibe a primeira aba ativa
+            var primeiraAba = document.querySelector('.tab-button.active');
+            if (primeiraAba) {
+                var tabName = primeiraAba.getAttribute('data-tab') || primeiraAba.id.replace('tab-', '');
+                if (window.showTab) {
+                    window.showTab(tabName);
                 }
             }
-            
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init);
-            } else {
-                setTimeout(init, 100);
-            }
-        })();
-
+        });
     </script>
 </body>
-</html>
 
+</html>

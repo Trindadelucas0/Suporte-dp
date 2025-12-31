@@ -487,7 +487,9 @@
             if (!confirm('Deseja remover esta obrigação?')) return;
             
             fetch(`/calendario/obrigacao/${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: getCSRFHeaders(),
+                body: JSON.stringify({ _csrf: window.csrfToken })
             })
             .then(r => r.json())
             .then(result => {

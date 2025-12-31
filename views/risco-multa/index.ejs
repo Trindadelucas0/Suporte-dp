@@ -97,8 +97,11 @@
                         </h2>
                         <div class="space-y-3 max-h-96 overflow-y-auto">
                             <% historico.forEach(calc => { %>
-                                <div class="border border-gray-200 rounded p-3 hover:bg-gray-50 cursor-pointer"
-                                     onclick="preencherFormulario('<%= calc.data_base %>', '<%= calc.data_rescisao %>', '<%= calc.salario_base %>', '<%= calc.valor_medias || 0 %>')">
+                                <div class="border border-gray-200 rounded p-3 hover:bg-gray-50 cursor-pointer historico-item"
+                                     data-data-base="<%= calc.data_base %>"
+                                     data-data-rescisao="<%= calc.data_rescisao %>"
+                                     data-salario-base="<%= calc.salario_base %>"
+                                     data-valor-medias="<%= calc.valor_medias || 0 %>">
                                     <div class="flex justify-between items-start mb-2">
                                         <div>
                                             <p class="text-sm font-semibold text-gray-900">
@@ -167,7 +170,7 @@
                             <% }); %>
                         </div>
                     </div>
-                <% else { %>
+                <% } else { %>
                     <div class="bg-white rounded-lg shadow-md p-12 text-center">
                         <i class="fas fa-calculator text-gray-300 text-6xl mb-4"></i>
                         <p class="text-gray-600">Preencha os dados para calcular</p>
@@ -187,6 +190,20 @@
             // Scroll para o formulário
             document.querySelector('form').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+
+        // Adiciona event listeners para histórico
+        document.addEventListener('DOMContentLoaded', function() {
+            var historicoItems = document.querySelectorAll('.historico-item');
+            historicoItems.forEach(function(item) {
+                item.addEventListener('click', function() {
+                    var dataBase = this.getAttribute('data-data-base');
+                    var dataRescisao = this.getAttribute('data-data-rescisao');
+                    var salarioBase = this.getAttribute('data-salario-base');
+                    var valorMedias = this.getAttribute('data-valor-medias');
+                    preencherFormulario(dataBase, dataRescisao, salarioBase, valorMedias);
+                });
+            });
+        });
     </script>
 </body>
 </html>

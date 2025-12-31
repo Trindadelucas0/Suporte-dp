@@ -3,48 +3,62 @@
         <div class="flex justify-between h-14 sm:h-16">
             <div class="flex items-center">
                 <a href="/dashboard" class="text-white text-lg sm:text-xl font-bold">
-                    <i class="fas fa-calculator mr-1 sm:mr-2"></i><span class="hidden sm:inline">Suporte DP</span><span class="sm:hidden">DP</span>
+                    <i class="fas fa-calculator mr-1 sm:mr-2"></i><span class="hidden sm:inline">Suporte DP</span><span
+                        class="sm:hidden">DP</span>
                 </a>
             </div>
             <!-- Desktop Menu -->
             <div class="hidden md:flex items-center space-x-2 lg:space-x-4">
-                <a href="/dashboard" class="text-white hover:text-yellow-200 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium">
+                <a href="/dashboard"
+                    class="text-white hover:text-yellow-200 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium">
                     <i class="fas fa-home mr-1"></i><span class="hidden lg:inline">Dashboard</span>
                 </a>
                 <div class="relative group">
-                    <button class="text-white hover:text-yellow-200 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium">
-                        <i class="fas fa-calculator mr-1"></i><span class="hidden lg:inline">Calculadoras</span><span class="lg:hidden">Calc.</span>
+                    <button
+                        class="text-white hover:text-yellow-200 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium">
+                        <i class="fas fa-calculator mr-1"></i><span class="hidden lg:inline">Calculadoras</span><span
+                            class="lg:hidden">Calc.</span>
                         <i class="fas fa-chevron-down ml-1 text-xs"></i>
                     </button>
-                    <div class="hidden group-hover:block absolute right-0 mt-2 w-56 lg:w-64 bg-white rounded-md shadow-lg z-50">
+                    <div
+                        class="hidden group-hover:block absolute right-0 mt-2 w-56 lg:w-64 bg-white rounded-md shadow-lg z-50">
                         <a href="/inss" class="block px-4 py-2 text-gray-800 hover:bg-red-50 text-sm">INSS</a>
                         <a href="/irrf" class="block px-4 py-2 text-gray-800 hover:bg-red-50 text-sm">IRRF</a>
                         <a href="/fgts" class="block px-4 py-2 text-gray-800 hover:bg-red-50 text-sm">FGTS</a>
                         <a href="/avos" class="block px-4 py-2 text-gray-800 hover:bg-red-50 text-sm">13º Salário</a>
                         <a href="/ferias" class="block px-4 py-2 text-gray-800 hover:bg-red-50 text-sm">Férias</a>
-                        <a href="/risco-multa" class="block px-4 py-2 text-gray-800 hover:bg-red-50 text-sm">Multa da Data Base</a>
-                        <a href="/contrato-experiencia" class="block px-4 py-2 text-gray-800 hover:bg-red-50 text-sm">Contrato de Experiência</a>
-                        <a href="/periculosidade" class="block px-4 py-2 text-gray-800 hover:bg-red-50 text-sm">Periculosidade/Insalubridade</a>
-                        <a href="/custo" class="block px-4 py-2 text-gray-800 hover:bg-red-50 text-sm">Custo do Funcionário</a>
+                        <a href="/risco-multa" class="block px-4 py-2 text-gray-800 hover:bg-red-50 text-sm">Multa da
+                            Data Base</a>
+                        <a href="/contrato-experiencia"
+                            class="block px-4 py-2 text-gray-800 hover:bg-red-50 text-sm">Contrato de Experiência</a>
+                        <a href="/periculosidade"
+                            class="block px-4 py-2 text-gray-800 hover:bg-red-50 text-sm">Periculosidade/Insalubridade</a>
+                        <a href="/custo" class="block px-4 py-2 text-gray-800 hover:bg-red-50 text-sm">Custo do
+                            Funcionário</a>
                     </div>
                 </div>
-                <a href="/calendario" class="text-white hover:text-yellow-200 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium">
+                <a href="/calendario"
+                    class="text-white hover:text-yellow-200 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium">
                     <i class="fas fa-calendar mr-1"></i><span class="hidden lg:inline">Calendário</span>
                 </a>
-                <a href="/checklist" class="text-white hover:text-yellow-200 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium">
+                <a href="/checklist"
+                    class="text-white hover:text-yellow-200 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium">
                     <i class="fas fa-check-square mr-1"></i><span class="hidden lg:inline">Checklists</span>
                 </a>
-                <a href="/perfil" class="text-white hover:text-yellow-200 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium">
+                <a href="/perfil"
+                    class="text-white hover:text-yellow-200 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium">
                     <i class="fas fa-user mr-1"></i><span class="hidden lg:inline">Perfil</span>
                 </a>
-                <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
-                    <a href="/admin" class="text-white hover:text-yellow-200 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium">
+                <% if (typeof isAdmin !=='undefined' && isAdmin) { %>
+                    <a href="/admin"
+                        class="text-white hover:text-yellow-200 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium">
                         <i class="fas fa-cog mr-1"></i><span class="hidden lg:inline">Admin</span>
                     </a>
-                <% } %>
-                <a href="/logout" class="text-white hover:text-yellow-200 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium">
-                    <i class="fas fa-sign-out-alt mr-1"></i><span class="hidden lg:inline">Sair</span>
-                </a>
+                    <% } %>
+                        <a href="/logout"
+                            class="text-white hover:text-yellow-200 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium">
+                            <i class="fas fa-sign-out-alt mr-1"></i><span class="hidden lg:inline">Sair</span>
+                        </a>
             </div>
             <!-- Mobile Menu Button -->
             <div class="md:hidden flex items-center">
@@ -64,15 +78,27 @@
                         <i class="fas fa-calculator mr-2"></i>Calculadoras
                     </p>
                     <div class="ml-4 space-y-1">
-                        <a href="/inss" class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">INSS</a>
-                        <a href="/irrf" class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">IRRF</a>
-                        <a href="/fgts" class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">FGTS</a>
-                        <a href="/avos" class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">13º Salário</a>
-                        <a href="/ferias" class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">Férias</a>
-                        <a href="/risco-multa" class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">Multa da Data Base</a>
-                        <a href="/contrato-experiencia" class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">Contrato de Experiência</a>
-                        <a href="/periculosidade" class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">Periculosidade/Insalubridade</a>
-                        <a href="/custo" class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">Custo do Funcionário</a>
+                        <a href="/inss"
+                            class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">INSS</a>
+                        <a href="/irrf"
+                            class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">IRRF</a>
+                        <a href="/fgts"
+                            class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">FGTS</a>
+                        <a href="/avos" class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">13º
+                            Salário</a>
+                        <a href="/ferias"
+                            class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">Férias</a>
+                        <a href="/risco-multa"
+                            class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">Multa da Data
+                            Base</a>
+                        <a href="/contrato-experiencia"
+                            class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">Contrato de
+                            Experiência</a>
+                        <a href="/periculosidade"
+                            class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">Periculosidade/Insalubridade</a>
+                        <a href="/custo"
+                            class="block text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm">Custo do
+                            Funcionário</a>
                     </div>
                 </div>
                 <a href="/calendario" class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-medium">
@@ -84,14 +110,15 @@
                 <a href="/perfil" class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-medium">
                     <i class="fas fa-user mr-2"></i>Perfil
                 </a>
-                <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+                <% if (typeof isAdmin !=='undefined' && isAdmin) { %>
                     <a href="/admin" class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-medium">
                         <i class="fas fa-cog mr-2"></i>Admin
                     </a>
-                <% } %>
-                <a href="/logout" class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-medium">
-                    <i class="fas fa-sign-out-alt mr-2"></i>Sair
-                </a>
+                    <% } %>
+                        <a href="/logout"
+                            class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-medium">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Sair
+                        </a>
             </div>
         </div>
     </div>
@@ -111,4 +138,3 @@
         }
     }
 </script>
-

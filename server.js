@@ -36,7 +36,8 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com"],
+      scriptSrcAttr: ["'unsafe-inline'"], // Permite inline event handlers (onclick, etc)
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com"],
       fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "https:"],
@@ -44,13 +45,17 @@ app.use(helmet({
   },
 }));
 
-// Rate Limiting Global
+// Rate Limiting Global (menos restritivo em desenvolvimento)
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // 100 requisições por IP
+  max: process.env.NODE_ENV === 'production' ? 100 : 1000, // 1000 em dev, 100 em produção
   message: "Muitas requisições deste IP, tente novamente em 15 minutos.",
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Pula rate limiting para requisições GET em desenvolvimento
+    return process.env.NODE_ENV !== 'production' && req.method === 'GET';
+  }
 });
 app.use(globalLimiter);
 
@@ -137,6 +142,7 @@ if (process.env.NODE_ENV === 'test') {
   };
 } else {
   // Em produção/desenvolvimento, CSRF está ativo
+  // Configuração do CSRF para validar apenas métodos "unsafe" (POST, PUT, PATCH, DELETE)
   csrfProtection = csrf({ 
     cookie: {
       httpOnly: true,
@@ -146,14 +152,19 @@ if (process.env.NODE_ENV === 'test') {
   });
 
   // Middleware para disponibilizar token CSRF nas views
+  // O csrfProtection adiciona req.csrfToken(), então este helper apenas expõe nas views
   csrfHelper = (req, res, next) => {
-    if (req.session && req.session.user) {
-      try {
-        res.locals.csrfToken = req.csrfToken ? req.csrfToken() : null;
-      } catch (error) {
+    try {
+      // O token CSRF só está disponível se o csrfProtection foi aplicado
+      // Mas podemos tentar gerar um token mesmo sem proteção ativa
+      if (req.csrfToken) {
+        res.locals.csrfToken = req.csrfToken();
+      } else {
+        // Se não houver csrfToken disponível, tenta gerar um token básico
+        // Isso é necessário para rotas públicas que ainda precisam do token
         res.locals.csrfToken = null;
       }
-    } else {
+    } catch (error) {
       res.locals.csrfToken = null;
     }
     next();
@@ -177,11 +188,12 @@ const checklistRoutes = require("./routes/checklist");
 const perfilRoutes = require("./routes/perfil");
 const adminRoutes = require("./routes/admin");
 
-// Rotas públicas (sem CSRF, mas com rate limiting)
+// Rotas públicas (sem CSRF protection)
 app.use("/", authRoutes);
 
-// Rotas protegidas (com CSRF)
-app.use(csrfProtection);
+// Rotas protegidas (com CSRF protection)
+// Aplicamos CSRF apenas nas rotas protegidas
+app.use(csrfProtection); // Protege POST/PUT/DELETE e adiciona req.csrfToken()
 app.use(csrfHelper); // Disponibiliza token nas views
 app.use("/dashboard", dashboardRoutes);
 app.use("/calendario", calendarioRoutes);

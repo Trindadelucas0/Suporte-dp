@@ -10,184 +10,344 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: { red: '#DC2626', yellow: '#FBBF24' }
+                        primary: {
+                            red: '#DC2626',
+                            yellow: '#FBBF24'
+                        }
                     }
                 }
             }
         }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/loading.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+    </style>
 </head>
 <body class="bg-gray-50">
     <% if (typeof user !== 'undefined' && user) { %>
         <%- include('../partials/navbar') %>
     <% } %>
 
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">Checklists de Processos</h1>
-                <p class="mt-2 text-gray-600">Gerencie seus checklists de processos trabalhistas</p>
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                        <i class="fas fa-tasks text-primary-red mr-2"></i>
+                        Checklists de Processos
+                    </h1>
+                    <p class="text-gray-600">
+                        Organize e acompanhe todos os processos trabalhistas da sua empresa
+                    </p>
+                </div>
+                <button 
+                    type="button"
+                    data-action="criar"
+                    class="bg-gradient-to-r from-primary-red to-primary-yellow text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition transform hover:scale-105 shadow-lg flex items-center gap-2">
+                    <i class="fas fa-plus"></i>
+                    Novo Checklist
+                </button>
             </div>
-            <button onclick="abrirModalCriar()" 
-                    class="w-full sm:w-auto bg-gradient-to-r from-primary-red to-primary-yellow text-white px-6 py-3 rounded-lg hover:opacity-90 font-semibold shadow-lg hover:shadow-xl transition-all">
-                <i class="fas fa-plus mr-2"></i>Criar Novo Checklist
-            </button>
+
+            <!-- Estatísticas -->
+            <% if (checklists && checklists.length > 0) { %>
+                <% 
+                    const totalChecklists = checklists.length;
+                    const totalItens = checklists.reduce((sum, c) => sum + (parseInt(c.total_itens) || 0), 0);
+                    const itensConcluidos = checklists.reduce((sum, c) => sum + (parseInt(c.itens_concluidos) || 0), 0);
+                    const percentualGeral = totalItens > 0 ? Math.round((itensConcluidos / totalItens) * 100) : 0;
+                %>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-primary-red">
+                        <p class="text-sm text-gray-600 mb-1">Total de Checklists</p>
+                        <p class="text-2xl font-bold text-gray-900"><%= totalChecklists %></p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-primary-yellow">
+                        <p class="text-sm text-gray-600 mb-1">Total de Itens</p>
+                        <p class="text-2xl font-bold text-gray-900"><%= totalItens %></p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-green-500">
+                        <p class="text-sm text-gray-600 mb-1">Itens Concluídos</p>
+                        <p class="text-2xl font-bold text-gray-900"><%= itensConcluidos %></p>
+                    </div>
+                    <div class="bg-gradient-to-r from-primary-red to-primary-yellow rounded-lg shadow-md p-4 text-white">
+                        <p class="text-sm opacity-90 mb-1">Progresso Geral</p>
+                        <p class="text-2xl font-bold"><%= percentualGeral %>%</p>
+                    </div>
+                </div>
+            <% } %>
         </div>
 
-        <!-- Checklists Padrão -->
-        <div class="mb-8">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Checklists Padrão</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <a href="/checklist/admissao" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition border-l-4 border-primary-red transform hover:scale-105">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-user-plus text-primary-red text-4xl mr-4"></i>
+        <!-- Modelos Prontos -->
+        <section class="mb-12">
+            <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-book text-primary-red mr-2"></i>
+                Modelos Prontos
+            </h2>
+            <p class="text-sm text-gray-600 mb-4">
+                Use nossos modelos pré-configurados para processos comuns
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <a href="/checklist/admissao" 
+                   class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500 hover:shadow-lg transition-all hover:scale-105 group">
+                    <div class="flex items-center gap-4 mb-3">
+                        <div class="bg-blue-100 text-blue-600 rounded-lg w-12 h-12 flex items-center justify-center">
+                            <i class="fas fa-user-plus text-xl"></i>
+                        </div>
                         <div>
-                            <h2 class="text-xl font-bold text-gray-900">Checklist de Admissão</h2>
-                            <p class="text-gray-600 text-sm">Processo completo de admissão</p>
+                            <h3 class="font-bold text-lg text-gray-900">Admissão</h3>
+                            <p class="text-xs text-gray-500">Processo completo de admissão</p>
                         </div>
                     </div>
-                    <ul class="text-sm text-gray-600 space-y-1">
-                        <li>✓ Coleta de documentos</li>
-                        <li>✓ Exame admissional</li>
-                        <li>✓ Registro CTPS Digital</li>
-                        <li>✓ Cadastro eSocial</li>
-                    </ul>
+                    <p class="text-sm text-gray-600">
+                        Checklist completo com todos os passos necessários para admissão de funcionários
+                    </p>
                 </a>
 
-                <a href="/checklist/rescisao" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition border-l-4 border-primary-yellow transform hover:scale-105">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-user-minus text-primary-yellow text-4xl mr-4"></i>
+                <a href="/checklist/rescisao" 
+                   class="bg-white rounded-lg shadow-md p-6 border-l-4 border-amber-500 hover:shadow-lg transition-all hover:scale-105 group">
+                    <div class="flex items-center gap-4 mb-3">
+                        <div class="bg-amber-100 text-amber-600 rounded-lg w-12 h-12 flex items-center justify-center">
+                            <i class="fas fa-user-minus text-xl"></i>
+                        </div>
                         <div>
-                            <h2 class="text-xl font-bold text-gray-900">Checklist de Rescisão</h2>
-                            <p class="text-gray-600 text-sm">Processo completo de rescisão</p>
+                            <h3 class="font-bold text-lg text-gray-900">Rescisão</h3>
+                            <p class="text-xs text-gray-500">Processo completo de rescisão</p>
                         </div>
                     </div>
-                    <ul class="text-sm text-gray-600 space-y-1">
-                        <li>✓ Aviso prévio</li>
-                        <li>✓ Exame demissional</li>
-                        <li>✓ Cálculo de rescisão</li>
-                        <li>✓ Chave FGTS</li>
-                    </ul>
+                    <p class="text-sm text-gray-600">
+                        Todos os passos para realizar uma rescisão trabalhista corretamente
+                    </p>
                 </a>
 
-                <a href="/checklist/afastamento_inss" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition border-l-4 border-primary-red transform hover:scale-105">
-                    <div class="flex items-center mb-4">
-                        <i class="fas fa-user-injured text-primary-red text-4xl mr-4"></i>
+                <a href="/checklist/afastamento_inss" 
+                   class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500 hover:shadow-lg transition-all hover:scale-105 group">
+                    <div class="flex items-center gap-4 mb-3">
+                        <div class="bg-red-100 text-red-600 rounded-lg w-12 h-12 flex items-center justify-center">
+                            <i class="fas fa-user-injured text-xl"></i>
+                        </div>
                         <div>
-                            <h2 class="text-xl font-bold text-gray-900">Afastamento INSS</h2>
-                            <p class="text-gray-600 text-sm">Processo de afastamento</p>
+                            <h3 class="font-bold text-lg text-gray-900">Afastamento INSS</h3>
+                            <p class="text-xs text-gray-500">Gestão de afastamentos</p>
                         </div>
                     </div>
-                    <ul class="text-sm text-gray-600 space-y-1">
-                        <li>✓ Atestado médico</li>
-                        <li>✓ Registro eSocial</li>
-                        <li>✓ Cálculo de avos</li>
-                        <li>✓ Retorno ao trabalho</li>
-                    </ul>
+                    <p class="text-sm text-gray-600">
+                        Controle completo de afastamentos por INSS e retorno ao trabalho
+                    </p>
                 </a>
             </div>
-        </div>
+        </section>
 
-        <!-- Meus Checklists -->
-        <div class="mb-8">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Meus Checklists</h2>
+        <!-- Checklists Personalizados -->
+        <section>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                    <i class="fas fa-list-check text-primary-yellow mr-2"></i>
+                    Meus Checklists Personalizados
+                </h2>
+                <% if (checklists && checklists.length > 0) { %>
+                    <span class="text-sm text-gray-500">
+                        <%= checklists.length %> checklist<%= checklists.length !== 1 ? 's' : '' %>
+                    </span>
+                <% } %>
+            </div>
+
             <% if (checklists && checklists.length > 0) { %>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <% checklists.forEach(checklist => { %>
-                        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary-yellow hover:shadow-lg transition">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="flex-1">
-                                    <h3 class="text-lg font-bold text-gray-900 mb-1"><%= checklist.titulo %></h3>
-                                    <p class="text-sm text-gray-500 mb-2">
-                                        <i class="fas fa-tag mr-1"></i><%= checklist.tipo || 'Personalizado' %>
-                                    </p>
-                                    <div class="flex items-center text-sm text-gray-600 mb-2">
-                                        <span>
-                                            <i class="fas fa-check-circle mr-1 text-green-600"></i>
-                                            <%= checklist.itens_concluidos || 0 %> / <%= checklist.total_itens || 0 %> itens
-                                        </span>
+                        <% 
+                            const percentual = checklist.total_itens > 0 
+                                ? Math.round((checklist.itens_concluidos / checklist.total_itens) * 100) 
+                                : 0;
+                            const dataCriacao = checklist.created_at 
+                                ? new Date(checklist.created_at).toLocaleDateString('pt-BR') 
+                                : 'Data não disponível';
+                        %>
+                        <div class="bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-xl transition-all fade-in">
+                            <div class="p-6">
+                                <!-- Header do Card -->
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <span class="px-2 py-1 bg-primary-red text-white text-xs font-bold rounded uppercase">
+                                                <%= checklist.tipo || 'Custom' %>
+                                            </span>
+                                            <% if (percentual === 100) { %>
+                                                <span class="px-2 py-1 bg-green-500 text-white text-xs font-bold rounded">
+                                                    <i class="fas fa-check-circle mr-1"></i>Concluído
+                                                </span>
+                                            <% } %>
+                                        </div>
+                                        <h3 class="text-lg font-bold text-gray-900 mb-1"><%= checklist.titulo %></h3>
+                                        <p class="text-xs text-gray-500">
+                                            <i class="fas fa-calendar-alt mr-1"></i>
+                                            Criado em <%= dataCriacao %>
+                                        </p>
                                     </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-gradient-to-r from-primary-yellow to-primary-red h-2 rounded-full transition-all" 
-                                             style="width: <%= checklist.total_itens > 0 ? ((checklist.itens_concluidos / checklist.total_itens * 100) || 0) : 0 %>%"></div>
+                                    <div class="flex gap-2">
+                                        <button 
+                                            type="button"
+                                            data-action="editar"
+                                            data-id="<%= checklist.id %>"
+                                            data-titulo="<%= checklist.titulo %>"
+                                            data-tipo="<%= checklist.tipo || 'custom' %>"
+                                            class="text-gray-400 hover:text-primary-yellow transition-colors p-2"
+                                            title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            data-action="deletar"
+                                            data-id="<%= checklist.id %>"
+                                            data-titulo="<%= checklist.titulo %>"
+                                            class="text-gray-400 hover:text-primary-red transition-colors p-2"
+                                            title="Deletar">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="flex flex-wrap gap-2 mt-4">
-                                <a href="/checklist/custom/<%= checklist.id %>" 
-                                   class="flex-1 bg-primary-yellow text-white px-4 py-2 rounded-lg hover:bg-yellow-600 text-center text-sm font-semibold transition">
-                                    <i class="fas fa-eye mr-1"></i>Abrir
+
+                                <!-- Progresso -->
+                                <div class="mb-4">
+                                    <div class="flex justify-between text-sm mb-2">
+                                        <span class="text-gray-600">
+                                            <i class="fas fa-tasks mr-1"></i>
+                                            <%= checklist.itens_concluidos || 0 %> de <%= checklist.total_itens || 0 %> itens
+                                        </span>
+                                        <span class="font-bold text-gray-900"><%= percentual %>%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                        <div 
+                                            class="bg-gradient-to-r from-primary-red to-primary-yellow h-3 rounded-full transition-all duration-500"
+                                            style="width: <%= percentual %>%">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Informações Adicionais -->
+                                <div class="grid grid-cols-2 gap-2 mb-4 text-xs text-gray-600">
+                                    <div>
+                                        <i class="fas fa-list mr-1"></i>
+                                        <%= checklist.total_itens || 0 %> itens
+                                    </div>
+                                    <div>
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        <%= checklist.itens_concluidos || 0 %> concluídos
+                                    </div>
+                                </div>
+
+                                <!-- Botão Abrir -->
+                                <a 
+                                    href="/checklist/custom/<%= checklist.id %>" 
+                                    class="block w-full text-center py-2 bg-gradient-to-r from-primary-red to-primary-yellow text-white font-bold rounded-lg hover:opacity-90 transition transform hover:scale-105">
+                                    <i class="fas fa-external-link-alt mr-2"></i>
+                                    Abrir Checklist
                                 </a>
-                                <button onclick="editarChecklist('<%= checklist.id %>', '<%= checklist.titulo.replace(/'/g, "\\'") %>', '<%= (checklist.tipo || "custom").replace(/'/g, "\\'") %>')" 
-                                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm transition">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button onclick="deletarChecklist('<%= checklist.id %>', '<%= checklist.titulo.replace(/'/g, "\\'") %>')" 
-                                        class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-sm transition">
-                                    <i class="fas fa-trash"></i>
-                                </button>
                             </div>
                         </div>
                     <% }); %>
                 </div>
             <% } else { %>
-                <div class="bg-white rounded-lg shadow-md p-12 text-center">
-                    <i class="fas fa-clipboard-list text-gray-300 text-6xl mb-4"></i>
-                    <p class="text-gray-600 mb-4">Você ainda não criou nenhum checklist personalizado</p>
-                    <button onclick="abrirModalCriar()" 
-                            class="bg-gradient-to-r from-primary-red to-primary-yellow text-white px-6 py-3 rounded-lg hover:opacity-90 font-semibold shadow-lg">
-                        <i class="fas fa-plus mr-2"></i>Criar Primeiro Checklist
+                <div class="bg-white rounded-lg shadow-md p-12 text-center border-2 border-dashed border-gray-300">
+                    <i class="fas fa-clipboard-list text-6xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-700 mb-2">Nenhum checklist criado ainda</h3>
+                    <p class="text-gray-500 mb-6">
+                        Crie seu primeiro checklist personalizado ou use um dos modelos prontos acima
+                    </p>
+                    <button 
+                        type="button"
+                        data-action="criar"
+                        class="bg-gradient-to-r from-primary-red to-primary-yellow text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition">
+                        <i class="fas fa-plus mr-2"></i>
+                        Criar Primeiro Checklist
                     </button>
                 </div>
             <% } %>
-        </div>
+        </section>
     </main>
 
     <!-- Modal Criar Checklist -->
     <div id="modalCriar" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full transform transition-all">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-2xl font-bold text-gray-900">Criar Novo Checklist</h3>
-                <button onclick="fecharModalCriar()" class="text-gray-400 hover:text-gray-600">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">
+                    <i class="fas fa-plus-circle text-primary-red mr-2"></i>
+                    Criar Novo Checklist
+                </h3>
+                <button 
+                    type="button"
+                    data-action="fechar-criar"
+                    class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
-            <form id="formCriar" onsubmit="criarChecklist(event)">
-                <div class="mb-4">
+            
+            <form id="formCriar" class="space-y-4">
+                <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <% } %>
+                
+                <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-heading text-primary-red mr-2"></i>Nome do Checklist <span class="text-red-500">*</span>
+                        <i class="fas fa-heading text-primary-red mr-2"></i>
+                        Título do Checklist *
                     </label>
-                    <input type="text" id="novoTituloChecklist" required
-                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-primary-red transition" 
-                           placeholder="Ex: Checklist de Férias">
+                    <input 
+                        type="text" 
+                        id="novoTituloChecklist" 
+                        name="titulo"
+                        required
+                        placeholder="Ex: Processo de Férias 2024"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition outline-none">
+                    <p class="text-xs text-gray-500 mt-1">Dê um nome descritivo para seu checklist</p>
                 </div>
-                <div class="mb-4">
+
+                <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-tag text-primary-red mr-2"></i>Tipo (opcional)
+                        <i class="fas fa-tag text-primary-yellow mr-2"></i>
+                        Tipo/Categoria
                     </label>
-                    <input type="text" id="novoTipoChecklist"
-                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-primary-red transition" 
-                           placeholder="Ex: Férias, Promoção, etc.">
+                    <input 
+                        type="text" 
+                        id="novoTipoChecklist" 
+                        name="tipo"
+                        placeholder="Ex: Férias, Folha de Pagamento, etc."
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-yellow focus:ring-2 focus:ring-primary-yellow transition outline-none">
+                    <p class="text-xs text-gray-500 mt-1">Opcional: categorize seu checklist</p>
                 </div>
-                <div class="mb-4">
+
+                <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-list text-primary-red mr-2"></i>Itens Iniciais (um por linha)
+                        <i class="fas fa-list text-primary-red mr-2"></i>
+                        Itens Iniciais (Opcional)
                     </label>
-                    <textarea id="novosItensChecklist" rows="5"
-                              class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-primary-red transition" 
-                              placeholder="Item 1&#10;Item 2&#10;Item 3"></textarea>
-                    <p class="text-xs text-gray-500 mt-1">
-                        <i class="fas fa-info-circle mr-1"></i>Digite um item por linha (opcional)
-                    </p>
+                    <textarea 
+                        id="novosItensChecklist" 
+                        name="itens"
+                        rows="4" 
+                        placeholder="Digite um item por linha&#10;Exemplo:&#10;Verificar documentos&#10;Calcular valores&#10;Enviar para aprovação"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition outline-none resize-none"></textarea>
+                    <p class="text-xs text-gray-500 mt-1">Você pode adicionar itens depois também</p>
                 </div>
-                <div class="flex justify-end space-x-2">
-                    <button type="button" onclick="fecharModalCriar()" 
-                            class="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 font-semibold transition">Cancelar</button>
-                    <button type="submit" 
-                            class="px-6 py-2 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-lg hover:opacity-90 font-semibold shadow-lg transition">
-                        <i class="fas fa-check mr-2"></i>Criar Checklist
+
+                <div class="flex gap-3 pt-4">
+                    <button 
+                        type="button"
+                        data-action="fechar-criar"
+                        class="flex-1 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition">
+                        Cancelar
+                    </button>
+                    <button 
+                        type="submit"
+                        class="flex-1 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white font-bold rounded-lg hover:opacity-90 transition transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-check mr-2"></i>
+                        Criar Checklist
                     </button>
                 </div>
             </form>
@@ -196,47 +356,127 @@
 
     <!-- Modal Editar Checklist -->
     <div id="modalEditar" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full transform transition-all">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-2xl font-bold text-gray-900">Editar Checklist</h3>
-                <button onclick="fecharModalEditar()" class="text-gray-400 hover:text-gray-600">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">
+                    <i class="fas fa-edit text-primary-yellow mr-2"></i>
+                    Editar Checklist
+                </h3>
+                <button 
+                    type="button"
+                    data-action="fechar-editar"
+                    class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
-            <form id="formEditar" onsubmit="salvarEdicaoChecklist(event)">
-                <input type="hidden" id="checklistIdEditar">
-                <div class="mb-4">
+            
+            <form id="formEditar" class="space-y-4">
+                <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <% } %>
+                <input type="hidden" id="checklistIdEditar" name="checklistId">
+                
+                <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-heading text-primary-red mr-2"></i>Nome do Checklist <span class="text-red-500">*</span>
+                        <i class="fas fa-heading text-primary-red mr-2"></i>
+                        Título do Checklist *
                     </label>
-                    <input type="text" id="tituloChecklistEditar" required
-                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-primary-red transition">
+                    <input 
+                        type="text" 
+                        id="tituloChecklistEditar" 
+                        name="titulo"
+                        required
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition outline-none">
                 </div>
-                <div class="mb-4">
+
+                <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-tag text-primary-red mr-2"></i>Tipo (opcional)
+                        <i class="fas fa-tag text-primary-yellow mr-2"></i>
+                        Tipo/Categoria
                     </label>
-                    <input type="text" id="tipoChecklistEditar"
-                           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-primary-red transition">
+                    <input 
+                        type="text" 
+                        id="tipoChecklistEditar" 
+                        name="tipo"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-yellow focus:ring-2 focus:ring-primary-yellow transition outline-none">
                 </div>
-                <div class="flex justify-end space-x-2">
-                    <button type="button" onclick="fecharModalEditar()" 
-                            class="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 font-semibold transition">Cancelar</button>
-                    <button type="submit" 
-                            class="px-6 py-2 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-lg hover:opacity-90 font-semibold shadow-lg transition">
-                        <i class="fas fa-save mr-2"></i>Salvar Alterações
+
+                <div class="flex gap-3 pt-4">
+                    <button 
+                        type="button"
+                        data-action="fechar-editar"
+                        class="flex-1 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition">
+                        Cancelar
+                    </button>
+                    <button 
+                        type="submit"
+                        class="flex-1 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white font-bold rounded-lg hover:opacity-90 transition transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-save mr-2"></i>
+                        Salvar Alterações
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="loading-overlay" class="loading-overlay hidden">
-        <div class="spinner"></div>
-        <p class="loading-text">Processando...</p>
-    </div>
-    <script src="/js/loading.js"></script>
     <script>
+        // Disponibiliza token CSRF globalmente
+        window.csrfToken = '<%= typeof csrfToken !== "undefined" && csrfToken ? csrfToken : "" %>';
+        
+        function getCSRFHeaders() {
+            const headers = { 'Content-Type': 'application/json' };
+            if (window.csrfToken) {
+                headers['X-CSRF-Token'] = window.csrfToken;
+            }
+            return headers;
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Botão Criar
+            document.querySelectorAll('[data-action="criar"]').forEach(btn => {
+                btn.addEventListener('click', abrirModalCriar);
+            });
+
+            // Botão Fechar Criar
+            document.querySelectorAll('[data-action="fechar-criar"]').forEach(btn => {
+                btn.addEventListener('click', fecharModalCriar);
+            });
+
+            // Botão Editar
+            document.querySelectorAll('[data-action="editar"]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const titulo = this.getAttribute('data-titulo');
+                    const tipo = this.getAttribute('data-tipo');
+                    editarChecklist(id, titulo, tipo);
+                });
+            });
+
+            // Botão Fechar Editar
+            document.querySelectorAll('[data-action="fechar-editar"]').forEach(btn => {
+                btn.addEventListener('click', fecharModalEditar);
+            });
+
+            // Botão Deletar
+            document.querySelectorAll('[data-action="deletar"]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const titulo = this.getAttribute('data-titulo');
+                    deletarChecklist(id, titulo);
+                });
+            });
+
+            // Fechar modal ao clicar fora
+            document.getElementById('modalCriar').addEventListener('click', function(e) {
+                if (e.target === this) fecharModalCriar();
+            });
+
+            document.getElementById('modalEditar').addEventListener('click', function(e) {
+                if (e.target === this) fecharModalEditar();
+            });
+        });
+
         function abrirModalCriar() {
             document.getElementById('modalCriar').classList.remove('hidden');
             document.getElementById('novoTituloChecklist').focus();
@@ -245,43 +485,6 @@
         function fecharModalCriar() {
             document.getElementById('modalCriar').classList.add('hidden');
             document.getElementById('formCriar').reset();
-        }
-
-        function criarChecklist(event) {
-            event.preventDefault();
-            showLoading('Criando checklist...');
-            
-            const titulo = document.getElementById('novoTituloChecklist').value.trim();
-            const tipo = document.getElementById('novoTipoChecklist').value.trim();
-            const itensTexto = document.getElementById('novosItensChecklist').value.trim();
-            
-            if (!titulo) {
-                hideLoading();
-                alert('O nome do checklist é obrigatório!');
-                return;
-            }
-
-            const itens = itensTexto ? itensTexto.split('\n').filter(item => item.trim()).map(item => item.trim()) : [];
-
-            fetch('/checklist/criar-custom', {
-                method: 'POST',
-                headers: getCSRFHeaders(),
-                body: JSON.stringify({ titulo, tipo: tipo || 'custom', itens, _csrf: window.csrfToken })
-            })
-            .then(r => r.json())
-            .then(data => {
-                hideLoading();
-                if (data.success) {
-                    window.location.href = '/checklist/custom/' + data.data.id;
-                } else {
-                    alert('Erro ao criar checklist: ' + (data.error || 'Erro desconhecido'));
-                }
-            })
-            .catch(error => {
-                hideLoading();
-                console.error('Erro:', error);
-                alert('Erro ao criar checklist. Tente novamente.');
-            });
         }
 
         function editarChecklist(id, titulo, tipo) {
@@ -297,56 +500,118 @@
             document.getElementById('formEditar').reset();
         }
 
-        function salvarEdicaoChecklist(event) {
-            event.preventDefault();
-            showLoading('Salvando alterações...');
+        // Criar Checklist
+        document.getElementById('formCriar').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const titulo = document.getElementById('novoTituloChecklist').value.trim();
+            const tipo = document.getElementById('novoTipoChecklist').value.trim();
+            const itensTexto = document.getElementById('novosItensChecklist').value.trim();
+            
+            if (!titulo) {
+                alert('O título do checklist é obrigatório!');
+                return;
+            }
+
+            const itens = itensTexto ? itensTexto.split('\n').filter(item => item.trim()).map(item => item.trim()) : [];
+
+            // Loading
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Criando...';
+
+            fetch('/checklist/criar-custom', {
+                method: 'POST',
+                headers: getCSRFHeaders(),
+                body: JSON.stringify({ 
+                    titulo, 
+                    tipo: tipo || 'custom', 
+                    itens,
+                    _csrf: window.csrfToken 
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/checklist/custom/' + data.data.id;
+                } else {
+                    alert('Erro ao criar checklist: ' + (data.error || 'Erro desconhecido'));
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao criar checklist. Tente novamente.');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        });
+
+        // Editar Checklist
+        document.getElementById('formEditar').addEventListener('submit', function(e) {
+            e.preventDefault();
             
             const id = document.getElementById('checklistIdEditar').value;
             const titulo = document.getElementById('tituloChecklistEditar').value.trim();
             const tipo = document.getElementById('tipoChecklistEditar').value.trim();
 
             if (!titulo) {
-                hideLoading();
-                alert('O nome do checklist é obrigatório!');
+                alert('O título do checklist é obrigatório!');
                 return;
             }
+
+            // Loading
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Salvando...';
 
             fetch('/checklist/atualizar-custom', {
                 method: 'POST',
                 headers: getCSRFHeaders(),
-                body: JSON.stringify({ checklistId: id, titulo, tipo: tipo || 'custom', _csrf: window.csrfToken })
+                body: JSON.stringify({ 
+                    checklistId: id, 
+                    titulo, 
+                    tipo: tipo || 'custom',
+                    _csrf: window.csrfToken 
+                })
             })
             .then(r => r.json())
             .then(data => {
-                hideLoading();
                 if (data.success) {
                     location.reload();
                 } else {
                     alert('Erro ao atualizar checklist: ' + (data.error || 'Erro desconhecido'));
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
                 }
             })
             .catch(error => {
-                hideLoading();
                 console.error('Erro:', error);
                 alert('Erro ao atualizar checklist. Tente novamente.');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             });
-        }
+        });
 
+        // Deletar Checklist
         function deletarChecklist(id, titulo) {
-            if (!confirm('Tem certeza que deseja deletar o checklist "' + titulo + '"?\n\nEsta ação não pode ser desfeita e todos os itens serão removidos.')) {
+            if (!confirm('Tem certeza que deseja deletar o checklist "' + titulo + '"?\n\nEsta ação não pode ser desfeita!')) {
                 return;
             }
-
-            showLoading('Deletando checklist...');
 
             fetch('/checklist/deletar', {
                 method: 'POST',
                 headers: getCSRFHeaders(),
-                body: JSON.stringify({ checklistId: id, _csrf: window.csrfToken })
+                body: JSON.stringify({ 
+                    checklistId: id,
+                    _csrf: window.csrfToken 
+                })
             })
             .then(r => r.json())
             .then(data => {
-                hideLoading();
                 if (data.success) {
                     location.reload();
                 } else {
@@ -354,32 +619,10 @@
                 }
             })
             .catch(error => {
-                hideLoading();
                 console.error('Erro:', error);
                 alert('Erro ao deletar checklist. Tente novamente.');
             });
         }
-
-        // Fechar modais ao clicar fora
-        document.addEventListener('click', function(event) {
-            const modalCriar = document.getElementById('modalCriar');
-            const modalEditar = document.getElementById('modalEditar');
-            
-            if (event.target === modalCriar) {
-                fecharModalCriar();
-            }
-            if (event.target === modalEditar) {
-                fecharModalEditar();
-            }
-        });
-
-        // Fechar modais com ESC
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                fecharModalCriar();
-                fecharModalEditar();
-            }
-        });
     </script>
 </body>
 </html>

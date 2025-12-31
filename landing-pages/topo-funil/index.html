@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evite Multas Trabalhistas - Sistema Completo de Gestão DP</title>
+    <meta name="description"
+        content="Nunca mais perca prazos ou pague multas. Sistema completo para gerenciar todas as obrigações trabalhistas da sua empresa.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            red: '#DC2626',
+                            yellow: '#FBBF24'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .animate-delay-200 {
+            animation-delay: 0.2s;
+        }
+
+        .animate-delay-400 {
+            animation-delay: 0.4s;
+        }
+
+        .animate-delay-600 {
+            animation-delay: 0.6s;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Hero Section -->
+    <section
+        class="relative bg-gradient-to-br from-primary-red via-red-600 to-primary-yellow text-white py-20 lg:py-32 overflow-hidden">
+        <div class="absolute inset-0 bg-black opacity-10"></div>
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="max-w-4xl mx-auto text-center animate-fade-in-up">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                    Pare de Pagar Multas Trabalhistas
+                    <span class="block text-primary-yellow mt-2">Antes Que Elas Destruam Seu Negócio</span>
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 opacity-95">
+                    O sistema que <strong>RHs e Empresários</strong> usam para nunca mais perder prazos ou pagar multas
+                    por esquecimento
+                </p>
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-8 border border-white/20">
+                    <p class="text-lg mb-4">
+                        <i class="fas fa-exclamation-triangle text-primary-yellow mr-2"></i>
+                        <strong>Você sabia?</strong> Uma única multa trabalhista pode custar até <strong>R$
+                            50.000</strong> ou mais
+                    </p>
+                    <p class="text-sm opacity-90">
+                        E o pior: muitas empresas descobrem o problema só quando recebem a notificação
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problema Section -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
+                    Você Já Passou Por Isso?
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-red-50 border-l-4 border-primary-red p-6 rounded-lg">
+                        <i class="fas fa-times-circle text-primary-red text-2xl mb-3"></i>
+                        <h3 class="font-bold text-lg mb-2">Esqueceu um Prazo</h3>
+                        <p class="text-gray-700">E pagou multa por atraso no envio de obrigações</p>
+                    </div>
+                    <div class="bg-red-50 border-l-4 border-primary-red p-6 rounded-lg">
+                        <i class="fas fa-calendar-times text-primary-red text-2xl mb-3"></i>
+                        <h3 class="font-bold text-lg mb-2">Perdeu Controle</h3>
+                        <p class="text-gray-700">Não sabia quais obrigações venciam em cada mês</p>
+                    </div>
+                    <div class="bg-red-50 border-l-4 border-primary-red p-6 rounded-lg">
+                        <i class="fas fa-file-invoice-dollar text-primary-red text-2xl mb-3"></i>
+                        <h3 class="font-bold text-lg mb-2">Multas Recorrentes</h3>
+                        <p class="text-gray-700">Pagando multas que poderiam ter sido evitadas</p>
+                    </div>
+                    <div class="bg-red-50 border-l-4 border-primary-red p-6 rounded-lg">
+                        <i class="fas fa-exclamation-triangle text-primary-red text-2xl mb-3"></i>
+                        <h3 class="font-bold text-lg mb-2">Risco Trabalhista</h3>
+                        <p class="text-gray-700">Dormindo preocupado com possíveis problemas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solução Section -->
+    <section class="py-16 bg-gradient-to-br from-gray-50 to-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
+                        A Solução Que Você Precisa
+                    </h2>
+                    <p class="text-xl text-gray-600">
+                        Um sistema completo que organiza, alerta e protege sua empresa
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-2xl p-8 md:p-12 mb-8">
+                    <div class="grid md:grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <div class="flex items-start mb-4">
+                                <div
+                                    class="bg-primary-red text-white rounded-full w-12 h-12 flex items-center justify-center mr-4 flex-shrink-0">
+                                    <i class="fas fa-calendar-check text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg mb-2">Calendário Inteligente</h3>
+                                    <p class="text-gray-600">Todas as obrigações organizadas por data. Nunca mais perca
+                                        um prazo.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex items-start mb-4">
+                                <div
+                                    class="bg-primary-yellow text-white rounded-full w-12 h-12 flex items-center justify-center mr-4 flex-shrink-0">
+                                    <i class="fas fa-bell text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg mb-2">Alertas Automáticos</h3>
+                                    <p class="text-gray-600">Receba avisos antes dos prazos. Fique tranquilo, nunca mais
+                                        esqueça.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex items-start mb-4">
+                                <div
+                                    class="bg-primary-red text-white rounded-full w-12 h-12 flex items-center justify-center mr-4 flex-shrink-0">
+                                    <i class="fas fa-calculator text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg mb-2">Calculadoras Trabalhistas</h3>
+                                    <p class="text-gray-600">INSS, IRRF, FGTS, Férias e muito mais. Cálculos precisos e
+                                        atualizados.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex items-start mb-4">
+                                <div
+                                    class="bg-primary-yellow text-white rounded-full w-12 h-12 flex items-center justify-center mr-4 flex-shrink-0">
+                                    <i class="fas fa-shield-alt text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg mb-2">Proteção Total</h3>
+                                    <p class="text-gray-600">Sua empresa protegida contra multas e problemas
+                                        trabalhistas.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formulário de Captura -->
+    <section class="py-16 bg-primary-red text-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-2xl mx-auto">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                        Receba Agora o Guia Completo
+                    </h2>
+                    <p class="text-xl opacity-90">
+                        Descubra como empresas estão evitando multas trabalhistas
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-2xl p-8 text-gray-900">
+                    <form id="leadForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">
+                                <i class="fas fa-user text-primary-red mr-2"></i>
+                                Seu Nome Completo
+                            </label>
+                            <input type="text" name="nome" required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition"
+                                placeholder="Ex: João Silva">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">
+                                <i class="fas fa-envelope text-primary-red mr-2"></i>
+                                Seu Melhor Email
+                            </label>
+                            <input type="email" name="email" required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition"
+                                placeholder="seu@email.com">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">
+                                <i class="fab fa-whatsapp text-primary-red mr-2"></i>
+                                WhatsApp (com DDD)
+                            </label>
+                            <input type="tel" name="whatsapp" required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition"
+                                placeholder="(11) 99999-9999">
+                        </div>
+
+                        <button type="submit"
+                            class="w-full bg-gradient-to-r from-primary-red to-primary-yellow text-white py-4 rounded-lg font-bold text-lg hover:opacity-90 transition transform hover:scale-105 shadow-lg">
+                            <i class="fas fa-download mr-2"></i>
+                            Quero Receber o Guia Grátis
+                        </button>
+
+                        <p class="text-xs text-gray-500 text-center mt-4">
+                            <i class="fas fa-lock mr-1"></i>
+                            Seus dados estão seguros. Não enviamos spam.
+                        </p>
+                    </form>
+
+                    <div id="formSuccess"
+                        class="hidden bg-green-50 border border-green-200 text-green-800 p-4 rounded-lg mt-4">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <strong>Sucesso!</strong> Em breve você receberá o guia no seu email.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefícios Rápidos -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
+                    Por Que Empresas Escolhem o Suporte DP?
+                </h2>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="text-center p-6">
+                        <div
+                            class="bg-primary-red text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-clock text-2xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Economia de Tempo</h3>
+                        <p class="text-gray-600">Organize tudo em um só lugar. Menos trabalho, mais resultado.</p>
+                    </div>
+                    <div class="text-center p-6">
+                        <div
+                            class="bg-primary-yellow text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-dollar-sign text-2xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Economia de Dinheiro</h3>
+                        <p class="text-gray-600">Evite multas que custam milhares de reais. O sistema se paga sozinho.
+                        </p>
+                    </div>
+                    <div class="text-center p-6">
+                        <div
+                            class="bg-primary-red text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-heart text-2xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Tranquilidade</h3>
+                        <p class="text-gray-600">Durma tranquilo sabendo que tudo está organizado e protegido.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Final -->
+    <section class="py-16 bg-gradient-to-r from-primary-red to-primary-yellow text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                Não Deixe Sua Empresa Pagar Multas Desnecessárias
+            </h2>
+            <p class="text-xl mb-8 opacity-95">
+                Comece agora mesmo a proteger seu negócio
+            </p>
+            <a href="#leadForm"
+                class="inline-block bg-white text-primary-red px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition transform hover:scale-105 shadow-lg">
+                Quero Proteger Minha Empresa Agora
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-400">
+                © 2024 Suporte DP. Todos os direitos reservados.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Validação e envio do formulário
+        document.getElementById('leadForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = {
+                nome: formData.get('nome'),
+                email: formData.get('email'),
+                whatsapp: formData.get('whatsapp'),
+                origem: 'topo-funil',
+                data: new Date().toISOString()
+            };
+
+            // Aqui você pode integrar com Monkey Sheets, Zapier, Webhook, etc.
+            // Exemplo para Monkey Sheets:
+            // fetch('SUA_URL_DO_MONKEY_SHEETS', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(data)
+            // });
+
+            // Simulação de sucesso (remover quando integrar)
+            console.log('Dados capturados:', data);
+
+            // Mostrar mensagem de sucesso
+            document.getElementById('formSuccess').classList.remove('hidden');
+            this.reset();
+
+            // Scroll suave para mensagem
+            document.getElementById('formSuccess').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        // Validação de WhatsApp
+        document.querySelector('input[name="whatsapp"]').addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+            }
+            e.target.value = value;
+        });
+
+        // Animação ao scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fade-in-up');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section > div').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suporte DP - Sistema Completo de Gestão Trabalhista</title>
+    <meta name="description" content="Sistema completo para gerenciar obrigações trabalhistas, calcular valores e evitar multas. Tudo em um só lugar.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            red: '#DC2626',
+                            yellow: '#FBBF24'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.6s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-br from-primary-red to-primary-yellow text-white py-20">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                    O Sistema Que Organiza Tudo Para Você
+                </h1>
+                <p class="text-xl mb-8 opacity-95">
+                    Calendário de obrigações, calculadoras trabalhistas e alertas automáticos. 
+                    Tudo que você precisa para gerenciar o DP da sua empresa.
+                </p>
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+                    <p class="text-lg">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <strong>Mais de 1.000 empresas</strong> já usam o Suporte DP para evitar multas e organizar suas obrigações
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Como Funciona -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
+                    Como Funciona o Suporte DP
+                </h2>
+                
+                <div class="space-y-8">
+                    <div class="flex flex-col md:flex-row items-center gap-6">
+                        <div class="bg-primary-red text-white rounded-full w-20 h-20 flex items-center justify-center text-3xl flex-shrink-0">
+                            <span class="font-bold">1</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-2xl font-bold mb-3 text-gray-900">Cadastre Sua Empresa</h3>
+                            <p class="text-gray-600 text-lg">
+                                Em poucos minutos, você configura o sistema com os dados da sua empresa. 
+                                Interface simples e intuitiva.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row items-center gap-6">
+                        <div class="bg-primary-yellow text-white rounded-full w-20 h-20 flex items-center justify-center text-3xl flex-shrink-0">
+                            <span class="font-bold">2</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-2xl font-bold mb-3 text-gray-900">Visualize Seu Calendário</h3>
+                            <p class="text-gray-600 text-lg">
+                                Todas as obrigações trabalhistas organizadas em um calendário visual. 
+                                Veja o que vence em cada mês de forma clara.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row items-center gap-6">
+                        <div class="bg-primary-red text-white rounded-full w-20 h-20 flex items-center justify-center text-3xl flex-shrink-0">
+                            <span class="font-bold">3</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-2xl font-bold mb-3 text-gray-900">Receba Alertas Automáticos</h3>
+                            <p class="text-gray-600 text-lg">
+                                O sistema avisa você antes dos prazos. Nunca mais perca uma obrigação por esquecimento.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row items-center gap-6">
+                        <div class="bg-primary-yellow text-white rounded-full w-20 h-20 flex items-center justify-center text-3xl flex-shrink-0">
+                            <span class="font-bold">4</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-2xl font-bold mb-3 text-gray-900">Use as Calculadoras</h3>
+                            <p class="text-gray-600 text-lg">
+                                Calcule INSS, IRRF, FGTS, Férias e muito mais com precisão. 
+                                Todas as tabelas sempre atualizadas.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Antes x Depois -->
+    <section class="py-16 bg-gray-100">
+        <div class="container mx-auto px-4">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
+                    Antes e Depois do Suporte DP
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-red-50 border-2 border-red-200 rounded-xl p-8">
+                        <h3 class="text-2xl font-bold mb-6 text-red-700 flex items-center">
+                            <i class="fas fa-times-circle mr-3"></i>
+                            Antes (Sem o Sistema)
+                        </h3>
+                        <ul class="space-y-4 text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fas fa-times text-red-500 mr-3 mt-1"></i>
+                                <span>Planilhas desorganizadas e confusas</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-times text-red-500 mr-3 mt-1"></i>
+                                <span>Esquecimento de prazos importantes</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-times text-red-500 mr-3 mt-1"></i>
+                                <span>Multas recorrentes por atraso</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-times text-red-500 mr-3 mt-1"></i>
+                                <span>Cálculos manuais sujeitos a erros</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-times text-red-500 mr-3 mt-1"></i>
+                                <span>Estresse e preocupação constante</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-green-50 border-2 border-green-200 rounded-xl p-8">
+                        <h3 class="text-2xl font-bold mb-6 text-green-700 flex items-center">
+                            <i class="fas fa-check-circle mr-3"></i>
+                            Depois (Com o Sistema)
+                        </h3>
+                        <ul class="space-y-4 text-gray-700">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                                <span>Tudo organizado em um só lugar</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                                <span>Alertas automáticos antes dos prazos</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                                <span>Zero multas por esquecimento</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                                <span>Cálculos precisos e atualizados</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                                <span>Tranquilidade e controle total</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Funcionalidades -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
+                    Tudo Que Você Precisa em Um Só Lugar
+                </h2>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-primary-red transition shadow-lg hover:shadow-xl">
+                        <div class="bg-primary-red text-white rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                            <i class="fas fa-calendar-alt text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Calendário de Obrigações</h3>
+                        <p class="text-gray-600">Visualize todas as obrigações do mês de forma clara e organizada.</p>
+                    </div>
+
+                    <div class="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-primary-yellow transition shadow-lg hover:shadow-xl">
+                        <div class="bg-primary-yellow text-white rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                            <i class="fas fa-bell text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Sistema de Alertas</h3>
+                        <p class="text-gray-600">Receba avisos antes dos prazos. Nunca mais esqueça uma obrigação.</p>
+                    </div>
+
+                    <div class="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-primary-red transition shadow-lg hover:shadow-xl">
+                        <div class="bg-primary-red text-white rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                            <i class="fas fa-calculator text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Calculadoras Trabalhistas</h3>
+                        <p class="text-gray-600">INSS, IRRF, FGTS, Férias, 13º e muito mais. Tudo atualizado.</p>
+                    </div>
+
+                    <div class="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-primary-yellow transition shadow-lg hover:shadow-xl">
+                        <div class="bg-primary-yellow text-white rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                            <i class="fas fa-list-check text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Checklists Personalizados</h3>
+                        <p class="text-gray-600">Crie checklists para processos internos e acompanhe o progresso.</p>
+                    </div>
+
+                    <div class="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-primary-red transition shadow-lg hover:shadow-xl">
+                        <div class="bg-primary-red text-white rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                            <i class="fas fa-shield-alt text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Proteção Contra Multas</h3>
+                        <p class="text-gray-600">Sua empresa protegida contra multas e problemas trabalhistas.</p>
+                    </div>
+
+                    <div class="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-primary-yellow transition shadow-lg hover:shadow-xl">
+                        <div class="bg-primary-yellow text-white rounded-lg w-12 h-12 flex items-center justify-center mb-4">
+                            <i class="fas fa-mobile-alt text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Acesso em Qualquer Lugar</h3>
+                        <p class="text-gray-600">Funciona perfeitamente no computador, tablet e celular.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Prova Social -->
+    <section class="py-16 bg-gradient-to-br from-gray-50 to-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
+                    O Que Nossos Clientes Dizem
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-primary-red">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-primary-red text-white rounded-full w-12 h-12 flex items-center justify-center mr-4">
+                                <span class="font-bold">M</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">Maria Silva</h4>
+                                <p class="text-sm text-gray-500">RH - Empresa de 50 funcionários</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 italic">
+                            "Desde que comecei a usar o Suporte DP, nunca mais perdi um prazo. 
+                            Os alertas são perfeitos e me dão tranquilidade total."
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-primary-yellow">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-primary-yellow text-white rounded-full w-12 h-12 flex items-center justify-center mr-4">
+                                <span class="font-bold">J</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">João Santos</h4>
+                                <p class="text-sm text-gray-500">Empresário - Comércio</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 italic">
+                            "As calculadoras são incríveis. Economizo horas de trabalho e tenho 
+                            certeza de que os cálculos estão corretos."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-gradient-to-r from-primary-red to-primary-yellow text-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">
+                    Pronto Para Organizar Seu DP?
+                </h2>
+                <p class="text-xl mb-8 opacity-95">
+                    Comece agora e tenha controle total sobre as obrigações trabalhistas da sua empresa
+                </p>
+                
+                <div class="bg-white rounded-xl shadow-2xl p-8 text-gray-900">
+                    <form id="interesseForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">
+                                <i class="fas fa-user text-primary-red mr-2"></i>
+                                Nome Completo
+                            </label>
+                            <input 
+                                type="text" 
+                                name="nome" 
+                                required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition"
+                                placeholder="Seu nome"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">
+                                <i class="fas fa-envelope text-primary-red mr-2"></i>
+                                Email
+                            </label>
+                            <input 
+                                type="email" 
+                                name="email" 
+                                required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition"
+                                placeholder="seu@email.com"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">
+                                <i class="fab fa-whatsapp text-primary-red mr-2"></i>
+                                WhatsApp
+                            </label>
+                            <input 
+                                type="tel" 
+                                name="whatsapp" 
+                                required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition"
+                                placeholder="(11) 99999-9999"
+                            >
+                        </div>
+
+                        <button 
+                            type="submit"
+                            class="w-full bg-gradient-to-r from-primary-red to-primary-yellow text-white py-4 rounded-lg font-bold text-lg hover:opacity-90 transition transform hover:scale-105 shadow-lg"
+                        >
+                            <i class="fas fa-rocket mr-2"></i>
+                            Quero Conhecer o Sistema
+                        </button>
+                    </form>
+
+                    <div id="formSuccess" class="hidden bg-green-50 border border-green-200 text-green-800 p-4 rounded-lg mt-4">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <strong>Obrigado!</strong> Entraremos em contato em breve.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-400">
+                © 2024 Suporte DP. Todos os direitos reservados.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+    document.getElementById('vendaForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // 1. Feedback Visual
+        const btn = this.querySelector('button');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner animate-spin mr-2"></i> PROCESSANDO...';
+
+        const formData = new FormData(this);
+        const escolhaPagamento = formData.get('pagamento');
+        
+        // Dados formatados para as colunas da sua planilha
+        const data = {
+            nome: formData.get('nome'),
+            email: formData.get('email'),
+            whatsapp: formData.get('whatsapp'),
+            pagamento: escolhaPagamento,
+            data: new Date().toLocaleString('pt-BR')
+        };
+
+        // SUA URL DA VERSÃO 5 (ATUALIZADA)
+        const planilhaURL = 'https://script.google.com/macros/s/AKfycbzzgA-FlrwSBTIeusQyeYvBa-KnrXV3VJntU-9-Ji8-7DOAoKV808htoy9ztPXY1Gq47w/exec';
+
+        // 2. LINKS DE DESTINO (Substitua pelos seus links reais de pagamento)
+        const linksCheckout = {
+            'mensal': 'https://pay.kiwify.com.br/seu-link-mensal', 
+            'anual': 'https://pay.kiwify.com.br/seu-link-anual'
+        };
+
+        // 3. Envio para o Google Sheets via POST
+        fetch(planilhaURL, {
+            method: 'POST',
+            mode: 'no-cors', // OBRIGATÓRIO: Permite o envio a partir do localhost
+            cache: 'no-cache',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(() => {
+            // Sucesso: Redireciona o cliente para o pagamento
+            window.location.href = linksCheckout[escolhaPagamento];
+        })
+        .catch(error => {
+            console.error('Erro no envio:', error);
+            // Mesmo com erro, redireciona para não perder a venda
+            window.location.href = linksCheckout[escolhaPagamento];
+        });
+    });
+
+    // Máscara de Telefone Automática
+    document.querySelector('input[name="whatsapp"]').addEventListener('input', function (e) {
+        let v = e.target.value.replace(/\D/g, '');
+        if (v.length > 11) v = v.slice(0, 11);
+        if (v.length > 10) {
+            v = v.replace(/^(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        } else if (v.length > 5) {
+            v = v.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+        } else if (v.length > 2) {
+            v = v.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+        } else if (v.length > 0) {
+            v = v.replace(/^(\d*)/, '($1');
+        }
+        e.target.value = v;
+    });
+</script>
+</body>
+</html>
+
