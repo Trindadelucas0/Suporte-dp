@@ -291,9 +291,30 @@ if (process.env.NODE_ENV !== 'test') {
       await initDatabase();
     } catch (error) {
       console.error("❌ Erro ao conectar com PostgreSQL:", error.message);
-      console.error(
-        "💡 Verifique se o PostgreSQL está rodando e as configurações no .env"
-      );
+      
+      // Verifica se é erro de conexão (ECONNREFUSED) indicando variáveis não configuradas
+      if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+        console.error('');
+        console.error('🔴 PROBLEMA: Variáveis de ambiente do banco não configuradas!');
+        console.error('');
+        console.error('📋 Configure as seguintes variáveis no Render:');
+        console.error('   1. Acesse seu Web Service no Render');
+        console.error('   2. Vá em "Environment" → "Add Environment Variable"');
+        console.error('   3. Adicione as variáveis:');
+        console.error('      - DB_HOST (do painel do PostgreSQL → Connections → Hostname)');
+        console.error('      - DB_PORT (geralmente 5432)');
+        console.error('      - DB_NAME (do painel do PostgreSQL → Connections → Database)');
+        console.error('      - DB_USER (do painel do PostgreSQL → Connections → Username)');
+        console.error('      - DB_PASSWORD (do painel do PostgreSQL → Connections → Password)');
+        console.error('');
+        console.error('💡 Como obter essas informações:');
+        console.error('   - Acesse seu banco PostgreSQL no Render');
+        console.error('   - Clique em "Connections"');
+        console.error('   - Copie os valores mostrados lá');
+        console.error('');
+      } else {
+        console.error("💡 Verifique se o PostgreSQL está rodando e as configurações no .env");
+      }
     }
   });
 }
