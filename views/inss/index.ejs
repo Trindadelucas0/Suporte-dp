@@ -309,59 +309,59 @@
                     </div>
                 </main>
 
-    <script>
-        // Função para trocar abas - DEFINIDA GLOBALMENTE
-        window.showTab = function(tabName) {
-            // Esconde TODAS as abas de conteúdo
-            var allContents = document.querySelectorAll('.tab-content');
-            for (var i = 0; i < allContents.length; i++) {
-                allContents[i].classList.add('hidden');
-            }
+                <script>
+                    // Função para trocar abas - DEFINIDA GLOBALMENTE
+                    window.showTab = function (tabName) {
+                        // Esconde TODAS as abas de conteúdo
+                        var allContents = document.querySelectorAll('.tab-content');
+                        for (var i = 0; i < allContents.length; i++) {
+                            allContents[i].classList.add('hidden');
+                        }
 
-            // Remove estilo ativo de TODOS os botões
-            var allButtons = document.querySelectorAll('.tab-button');
-            for (var j = 0; j < allButtons.length; j++) {
-                allButtons[j].classList.remove('active', 'border-primary-red', 'text-primary-red');
-                allButtons[j].classList.add('border-transparent', 'text-gray-500');
-            }
+                        // Remove estilo ativo de TODOS os botões
+                        var allButtons = document.querySelectorAll('.tab-button');
+                        for (var j = 0; j < allButtons.length; j++) {
+                            allButtons[j].classList.remove('active', 'border-primary-red', 'text-primary-red');
+                            allButtons[j].classList.add('border-transparent', 'text-gray-500');
+                        }
 
-            // Mostra a aba selecionada
-            var contentElement = document.getElementById('content-' + tabName);
-            if (contentElement) {
-                contentElement.classList.remove('hidden');
-            }
+                        // Mostra a aba selecionada
+                        var contentElement = document.getElementById('content-' + tabName);
+                        if (contentElement) {
+                            contentElement.classList.remove('hidden');
+                        }
 
-            // Ativa o botão correspondente
-            var button = document.getElementById('tab-' + tabName);
-            if (button) {
-                button.classList.add('active', 'border-primary-red', 'text-primary-red');
-                button.classList.remove('border-transparent', 'text-gray-500');
-            }
-        };
+                        // Ativa o botão correspondente
+                        var button = document.getElementById('tab-' + tabName);
+                        if (button) {
+                            button.classList.add('active', 'border-primary-red', 'text-primary-red');
+                            button.classList.remove('border-transparent', 'text-gray-500');
+                        }
+                    };
 
-        // Inicializa quando a página carregar
-        document.addEventListener('DOMContentLoaded', function() {
-            // Adiciona event listeners para os botões de aba
-            var tabButtons = document.querySelectorAll('.tab-button[data-tab]');
-            tabButtons.forEach(function(button) {
-                button.addEventListener('click', function() {
-                    var tabName = this.getAttribute('data-tab');
-                    if (window.showTab) {
-                        window.showTab(tabName);
-                    }
-                });
-            });
+                    // Inicializa quando a página carregar
+                    document.addEventListener('DOMContentLoaded', function () {
+                        // Adiciona event listeners para os botões de aba
+                        var tabButtons = document.querySelectorAll('.tab-button[data-tab]');
+                        tabButtons.forEach(function (button) {
+                            button.addEventListener('click', function () {
+                                var tabName = this.getAttribute('data-tab');
+                                if (window.showTab) {
+                                    window.showTab(tabName);
+                                }
+                            });
+                        });
 
-            // Exibe a primeira aba ativa
-            var primeiraAba = document.querySelector('.tab-button.active');
-            if (primeiraAba) {
-                var tabName = primeiraAba.getAttribute('data-tab') || primeiraAba.id.replace('tab-', '');
-                if (window.showTab) {
-                    window.showTab(tabName);
-                }
-            }
-        });
-    </script>
+                        // Exibe a primeira aba ativa
+                        var primeiraAba = document.querySelector('.tab-button.active');
+                        if (primeiraAba) {
+                            var tabName = primeiraAba.getAttribute('data-tab') || primeiraAba.id.replace('tab-', '');
+                            if (window.showTab) {
+                                window.showTab(tabName);
+                            }
+                        }
+                    });
+                </script>
 </body>
 
 </html>
