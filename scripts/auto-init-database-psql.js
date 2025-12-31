@@ -30,6 +30,8 @@ async function initDatabase() {
       console.log('✅ Tabelas já existem. Verificando campos adicionais...');
       // Verifica e adiciona campos se necessário
       await addMissingFields();
+      // Verifica e cria nova tabela de risco multa
+      await checkRiscoMultaTable();
       return;
     }
 
@@ -241,6 +243,61 @@ async function addMissingFields() {
     } catch (migrationError) {
       console.warn('⚠️  Não foi possível executar migração:', migrationError.message);
     }
+  }
+}
+
+async function checkRiscoMultaTable() {
+  try {
+    // Verifica se a nova tabela já existe
+    const checkTable = await db.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'calculos_risco_multa'
+      );
+    `);
+
+    if (!checkTable.rows[0].exists) {
+      console.log('📦 Criando tabela calculos_risco_multa...');
+      const migrationPath = path.join(__dirname, '..', 'database', 'migrations', '003_refatorar_risco_multa.sql');
+      if (fs.existsSync(migrationPath)) {
+        const migration = fs.readFileSync(migrationPath, 'utf8');
+        await db.query(migration);
+        console.log('✅ Tabela calculos_risco_multa criada!');
+      } else {
+        console.warn('⚠️  Arquivo de migração não encontrado:', migrationPath);
+      }
+    } else {
+      console.log('✅ Tabela calculos_risco_multa já existe.');
+    }
+
+    // Aplica ajuste para tornar data_rescisao opcional
+    try {
+      const checkColumn = await db.query(`
+        SELECT is_nullable 
+        FROM information_schema.columns 
+        WHERE table_name = 'calculos_risco_multa' 
+        AND column_name = 'data_rescisao'
+      `);
+
+      if (checkColumn.rows.length > 0 && checkColumn.rows[0].is_nullable === 'NO') {
+        console.log('🔧 Ajustando coluna data_rescisao para permitir NULL...');
+        const ajustePath = path.join(__dirname, '..', 'database', 'migrations', '004_ajustar_risco_multa_remover_data_rescisao.sql');
+        if (fs.existsSync(ajustePath)) {
+          const ajuste = fs.readFileSync(ajustePath, 'utf8');
+          await db.query(ajuste);
+          console.log('✅ Coluna data_rescisao ajustada!');
+        } else {
+          // Aplica ajuste direto se arquivo não existir
+          await db.query('ALTER TABLE calculos_risco_multa ALTER COLUMN data_rescisao DROP NOT NULL');
+          console.log('✅ Coluna data_rescisao ajustada diretamente!');
+        }
+      }
+    } catch (ajusteError) {
+      console.warn('⚠️  Aviso ao ajustar coluna data_rescisao:', ajusteError.message);
+    }
+  } catch (error) {
+    console.warn('⚠️  Aviso ao verificar tabela calculos_risco_multa:', error.message);
   }
 }
 

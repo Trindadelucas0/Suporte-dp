@@ -1,120 +1,89 @@
 /**
  * SERVICE: RiscoMultaService
- * Cálculo do período de risco e multa da data base
+ * Análise de período de risco e multa da data base
  * 
- * BASE LEGAL: CLT Art. 477 e Art. 487
+ * BASE LEGAL: Lei nº 7.238/84 – Art 9º
+ * 
+ * LÓGICA:
+ * - Calcula exatamente 30 dias que ANTECEDEM a data base
+ * - Multa = valor integral (um salário mensal completo)
  */
 
 const moment = require('moment');
 
 class RiscoMultaService {
   /**
-   * Calcula período de risco e multa
-   * @param {Date} dataBase - Data base do contrato
-   * @param {Date} dataRescisao - Data da rescisão
-   * @param {number} salarioBase - Salário base
-   * @param {number} valorMedias - Valor das médias
+   * Calcula o período de risco a partir da data base
+   * @param {string} dataBase - Data base do contrato (YYYY-MM-DD)
    * @returns {Object}
    */
-  static calcular(dataBase, dataRescisao, salarioBase, valorMedias = 0) {
+  static calcular(dataBase) {
     const base = moment(dataBase);
-    const rescisao = moment(dataRescisao);
     
     const memoria = [];
 
+    // 1. Data Base
     memoria.push({
       passo: 1,
       descricao: `Data Base: ${base.format('DD/MM/YYYY')}`,
       valor: base.format('DD/MM/YYYY')
     });
 
+    // 2. Período de Risco: 30 dias que ANTECEDEM a data base
+    // IMPORTANTE: Exatamente 30 dias, não 31 mesmo que o mês tenha 31 dias
+    const dataInicioRisco = base.clone().subtract(30, 'days');
+    const dataFimRisco = base.clone().subtract(1, 'day'); // Até o dia anterior à data base
+
     memoria.push({
       passo: 2,
-      descricao: `Data da Rescisão: ${rescisao.format('DD/MM/YYYY')}`,
-      valor: rescisao.format('DD/MM/YYYY')
+      descricao: `Período de Risco: 30 dias que antecedem a data base`,
+      calculo: `Data base: ${base.format('DD/MM/YYYY')} - 30 dias = ${dataInicioRisco.format('DD/MM/YYYY')} até ${dataFimRisco.format('DD/MM/YYYY')}`,
+      valor: `De ${dataInicioRisco.format('DD/MM/YYYY')} até ${dataFimRisco.format('DD/MM/YYYY')}`,
+      destaque: true
     });
 
-    // Calcula período trabalhado
-    const diasTrabalhados = rescisao.diff(base, 'days') + 1;
-    const mesesTrabalhados = rescisao.diff(base, 'months', true);
-
+    // 3. Explicação da Multa
     memoria.push({
       passo: 3,
-      descricao: `Período Trabalhado: ${mesesTrabalhados.toFixed(2)} meses (${diasTrabalhados} dias)`,
-      calculo: `De ${base.format('DD/MM/YYYY')} até ${rescisao.format('DD/MM/YYYY')}`
+      descricao: `Quando ocorre a multa?`,
+      calculo: `Se a dispensa SEM JUSTA CAUSA ocorrer entre ${dataInicioRisco.format('DD/MM/YYYY')} e ${dataFimRisco.format('DD/MM/YYYY')}, o empregado terá direito à indenização adicional equivalente a um salário mensal (valor integral)`,
+      valor: 'Período crítico para dispensa',
+      destaque: true
     });
 
-    // Período de risco: 30 dias após a data base
-    const dataFimRisco = base.clone().add(30, 'days');
-    const diasNoRisco = rescisao.diff(dataFimRisco, 'days');
-    const estaNoRisco = rescisao.isBefore(dataFimRisco) || rescisao.isSame(dataFimRisco);
-
+    // 4. Dias do período
+    const diasPeriodo = 30;
     memoria.push({
       passo: 4,
-      descricao: `Período de Risco: 30 dias após a data base`,
-      calculo: `Data base: ${base.format('DD/MM/YYYY')} + 30 dias = ${dataFimRisco.format('DD/MM/YYYY')}`,
-      valor: estaNoRisco ? 'DENTRO DO PERÍODO DE RISCO' : 'FORA DO PERÍODO DE RISCO'
+      descricao: `Duração do Período de Risco`,
+      calculo: `Exatamente ${diasPeriodo} dias corridos que antecedem a data base`,
+      valor: `${diasPeriodo} dias`
     });
 
-    // Base de cálculo (salário + médias)
-    const baseCalculo = salarioBase + valorMedias;
-    
-    if (valorMedias > 0) {
-      memoria.push({
-        passo: 5,
-        descricao: `Base de Cálculo: Salário + Médias`,
-        calculo: `R$ ${salarioBase.toFixed(2)} + R$ ${valorMedias.toFixed(2)} = R$ ${baseCalculo.toFixed(2)}`,
-        valor: `R$ ${baseCalculo.toFixed(2)}`
-      });
-    }
-
-    // Multa do Art. 477 (50% sobre aviso prévio não trabalhado)
-    // Se rescisão dentro do período de risco, multa de 50% sobre salário
-    let valorMulta = 0;
-    let tipoMulta = '';
-
-    if (estaNoRisco) {
-      valorMulta = baseCalculo * 0.50;
-      tipoMulta = 'Multa do Art. 477 (50% - rescisão no período de risco)';
-      
-      memoria.push({
-        passo: 6,
-        descricao: `Multa do Art. 477: 50% sobre a base de cálculo`,
-        calculo: `R$ ${baseCalculo.toFixed(2)} × 50% = R$ ${valorMulta.toFixed(2)}`,
-        valor: `R$ ${valorMulta.toFixed(2)}`,
-        destaque: true
-      });
-    } else {
-      memoria.push({
-        passo: 6,
-        descricao: `Sem multa do Art. 477`,
-        calculo: `Rescisão fora do período de risco (após ${dataFimRisco.format('DD/MM/YYYY')})`,
-        valor: 'R$ 0,00'
-      });
-    }
+    // 5. Data de segurança (após a data base)
+    memoria.push({
+      passo: 5,
+      descricao: `Data de Segurança`,
+      calculo: `A partir de ${base.format('DD/MM/YYYY')} (data base), não há mais risco de multa por período de risco`,
+      valor: base.format('DD/MM/YYYY')
+    });
 
     return {
       dataBase: base.format('YYYY-MM-DD'),
-      dataRescisao: rescisao.format('YYYY-MM-DD'),
+      dataInicioRisco: dataInicioRisco.format('YYYY-MM-DD'),
       dataFimRisco: dataFimRisco.format('YYYY-MM-DD'),
-      salarioBase,
-      valorMedias,
-      baseCalculo: parseFloat(baseCalculo.toFixed(2)),
-      diasTrabalhados,
-      mesesTrabalhados: parseFloat(mesesTrabalhados.toFixed(2)),
-      estaNoRisco,
-      diasNoRisco: estaNoRisco ? Math.abs(diasNoRisco) : 0,
-      valorMulta: parseFloat(valorMulta.toFixed(2)),
-      tipoMulta,
+      diasPeriodo,
       memoria,
       baseLegal: {
-        titulo: 'Consolidação das Leis do Trabalho - CLT',
-        artigo: 'Art. 477 e Art. 487',
-        descricao: 'Período de risco: 30 dias após a data base. Multa de 50% sobre salário se rescisão dentro do período de risco.'
+        titulo: 'Lei nº 7.238/84',
+        artigo: 'Art. 9º',
+        descricao: 'O empregado dispensado, SEM JUSTA CAUSA no período de 30 (trinta) dias que antecede a data de sua correção salarial, terá direito à indenização adicional equivalente a um salário mensal (valor integral).'
+      },
+      observacoes: {
+        sumula182: 'TST – Súmula 182: O tempo do aviso prévio, mesmo indenizado, conta-se para efeito da indenização adicional prevista no art. 9º da Lei nº 6.708, de 30.10.1979. (mantida - Res. 121/2003, DJ 19, 20 e 21.11.2003)'
       }
     };
   }
 }
 
 module.exports = RiscoMultaService;
-

@@ -9,6 +9,7 @@ const { requireAuth } = require('../middleware/auth');
 
 router.get('/', requireAuth, RiscoMultaController.index);
 router.post('/calcular', requireAuth, RiscoMultaController.calcular);
+router.delete('/:id', requireAuth, RiscoMultaController.deletar);
 
 module.exports = router;
 
