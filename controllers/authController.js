@@ -77,6 +77,7 @@ class AuthController {
       req.session.save((err) => {
         if (err) {
           console.error('Erro ao salvar sessão:', err);
+          console.error('Detalhes:', err.message);
           return res.render('auth/login', {
             title: 'Login - Suporte DP',
             error: 'Erro ao fazer login. Tente novamente.'
@@ -86,10 +87,8 @@ class AuthController {
         const returnTo = req.session.returnTo || '/dashboard';
         delete req.session.returnTo;
         
-        // Pequeno delay para mostrar transição de loading
-        setTimeout(() => {
-          res.redirect(returnTo);
-        }, 300);
+        // Redireciona imediatamente (sem delay)
+        res.redirect(returnTo);
       });
     } catch (error) {
       console.error('Erro no login:', error);
@@ -157,6 +156,7 @@ class AuthController {
       req.session.save((err) => {
         if (err) {
           console.error('Erro ao salvar sessão após cadastro:', err);
+          console.error('Detalhes:', err.message);
           return res.render('auth/register', {
             title: 'Cadastro - Suporte DP',
             error: 'Conta criada, mas erro ao fazer login automático. Tente fazer login manualmente.'

@@ -17,6 +17,12 @@ const rateLimit = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
 
 const app = express();
+
+// Configuração de proxy para Render (importante para cookies e sessões)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1); // Confia no primeiro proxy (Render)
+}
+
 // Em modo de teste, usa porta diferente para evitar conflitos
 const PORT = process.env.NODE_ENV === 'test' 
   ? (process.env.TEST_PORT || 3001)
@@ -116,24 +122,27 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 // SESSION_SECRET já foi validado/gerado acima
 const sessionSecret = process.env.SESSION_SECRET;
 
-app.use(
-  session({
-    store: new pgSession({
-      pool: db.pool,
-      tableName: "sessions",
-    }),
-    secret: sessionSecret,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      sameSite: "strict",
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 dias
-    },
-    name: "suporte-dp.sid", // Nome customizado para evitar detecção
-  })
-);
+// Configuração de sessão otimizada para Render
+const sessionConfig = {
+  store: new pgSession({
+    pool: db.pool,
+    tableName: "sessions",
+    createTableIfMissing: true, // Cria tabela automaticamente se não existir
+  }),
+  secret: sessionSecret,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === "production", // true em produção (HTTPS)
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === "production" ? "lax" : "strict", // "lax" funciona melhor no Render
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 dias
+    // domain não é necessário no Render
+  },
+  name: "suporte-dp.sid", // Nome customizado para evitar detecção
+};
+
+app.use(session(sessionConfig));
 
 // Middleware para rastrear atividade do usuário
 const trackActivity = require('./middleware/activityTracker');
@@ -176,7 +185,7 @@ if (process.env.NODE_ENV === 'test') {
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict"
+      sameSite: process.env.NODE_ENV === "production" ? "lax" : "strict" // "lax" funciona melhor no Render
     }
   });
 
