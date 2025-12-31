@@ -90,15 +90,32 @@ class CalendarioController {
   }
 
   static async salvarAnotacao(req, res) {
-    const userId = req.session.user.id;
-    const { data, anotacao } = req.body;
-
     try {
-      const resultado = await CalendarioService.saveAnotacao(userId, data, anotacao);
+      // Verifica se usuário está autenticado
+      if (!req.session || !req.session.user || !req.session.user.id) {
+        return res.status(401).json({ error: 'Usuário não autenticado' });
+      }
+
+      const userId = req.session.user.id;
+      const { data, anotacao } = req.body;
+
+      // Validação básica
+      if (!data) {
+        return res.status(400).json({ error: 'Data é obrigatória' });
+      }
+
+      // anotacao pode ser vazia (para limpar anotação)
+      const anotacaoTexto = anotacao || '';
+
+      const resultado = await CalendarioService.saveAnotacao(userId, data, anotacaoTexto);
       res.json({ success: true, data: resultado });
     } catch (error) {
       console.error('Erro ao salvar anotação:', error);
-      res.status(500).json({ error: 'Erro ao salvar anotação' });
+      console.error('Stack:', error.stack);
+      res.status(500).json({ 
+        error: 'Erro ao salvar anotação',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
     }
   }
 

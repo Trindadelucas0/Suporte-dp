@@ -308,6 +308,18 @@
                 </div>
 
                 <script>
+                    // Disponibiliza token CSRF globalmente (deve vir primeiro)
+                    window.csrfToken = '<%= typeof csrfToken !== "undefined" && csrfToken ? csrfToken : "" %>';
+
+                    // Função helper para adicionar CSRF em requisições fetch
+                    function getCSRFHeaders() {
+                        const headers = { 'Content-Type': 'application/json' };
+                        if (window.csrfToken) {
+                            headers['X-CSRF-Token'] = window.csrfToken;
+                        }
+                        return headers;
+                    }
+
                     let dataSelecionada = '';
                     let obrigacoesAtuais = [];
 
@@ -468,24 +480,40 @@
                     }
 
                     function salvarAnotacao() {
+                        if (!dataSelecionada) {
+                            alert('Nenhuma data selecionada');
+                            return;
+                        }
+
                         const texto = document.getElementById('modalTexto').value;
+
                         fetch('/calendario/anotacao', {
                             method: 'POST',
                             headers: getCSRFHeaders(),
-                            body: JSON.stringify({ data: dataSelecionada, anotacao: texto, _csrf: window.csrfToken })
+                            body: JSON.stringify({
+                                data: dataSelecionada,
+                                anotacao: texto || ''
+                            })
                         })
-                            .then(r => r.json())
+                            .then(r => {
+                                if (!r.ok) {
+                                    return r.json().then(err => {
+                                        throw new Error(err.error || 'Erro ao salvar');
+                                    });
+                                }
+                                return r.json();
+                            })
                             .then(result => {
                                 if (result.success) {
                                     fecharModal();
                                     location.reload();
                                 } else {
-                                    alert('Erro ao salvar anotação');
+                                    alert('Erro ao salvar anotação: ' + (result.error || 'Erro desconhecido'));
                                 }
                             })
                             .catch(error => {
                                 console.error('Erro:', error);
-                                alert('Erro ao salvar anotação. Tente novamente.');
+                                alert('Erro ao salvar anotação: ' + error.message);
                             });
                     }
 
