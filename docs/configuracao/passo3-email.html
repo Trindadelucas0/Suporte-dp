@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passo 3: Configurar Email - Guia de Configuração</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            position: relative;
+            margin: 1rem 0;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+        .copy-btn:hover {
+            background: #4338ca;
+        }
+        .copy-btn.copied {
+            background: #10b981;
+        }
+        .step-number {
+            background: #4f46e5;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-50 to-indigo-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">3️⃣ Passo 3: Configurar Email</h1>
+                    <p class="text-gray-600">Configurar SMTP para envio automático de emails de ativação</p>
+                </div>
+                <a href="index.html" class="text-purple-600 hover:text-purple-700 font-semibold">← Voltar</a>
+            </div>
+        </div>
+
+        <!-- Gmail Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">📧 Configuração com Gmail</h2>
+            <p class="text-gray-600 mb-4">
+                O Gmail é a opção mais comum. Você precisa criar uma "Senha de App" para usar.
+            </p>
+
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">3.1 - Criar Senha de App no Gmail</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <span class="step-number">1</span>
+                            <div>
+                                <p class="font-semibold text-gray-800">Acesse a página de Senhas de App</p>
+                                <p class="text-gray-600 text-sm">Vá para: <a href="https://myaccount.google.com/apppasswords" target="_blank" class="text-purple-600 hover:underline">myaccount.google.com/apppasswords</a></p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <span class="step-number">2</span>
+                            <div>
+                                <p class="font-semibold text-gray-800">Faça login na sua conta Google</p>
+                                <p class="text-gray-600 text-sm">Use a mesma conta que você quer usar para enviar emails</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <span class="step-number">3</span>
+                            <div>
+                                <p class="font-semibold text-gray-800">Selecione "Mail" e "Outro (nome personalizado)"</p>
+                                <p class="text-gray-600 text-sm">Digite um nome como "Suporte DP" e clique em "Gerar"</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <span class="step-number">4</span>
+                            <div>
+                                <p class="font-semibold text-gray-800">Copie a senha gerada</p>
+                                <p class="text-gray-600 text-sm">Você verá uma senha de 16 caracteres. Copie ela!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                    <p class="text-yellow-800">
+                        <strong>⚠️ Importante:</strong> A senha de app é diferente da sua senha normal do Gmail. 
+                        Você não conseguirá fazer login no Gmail com ela, mas pode usá-la para enviar emails via SMTP.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">3.2 - Configurar no arquivo .env</h3>
+                    <p class="text-gray-600 mb-4">Abra o arquivo <code class="bg-gray-100 px-2 py-1 rounded">.env</code> e configure:</p>
+
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this, 'GMAIL_CONFIG')">Copiar</button>
+                        <code id="GMAIL_CONFIG">SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=seu-email@gmail.com
+SMTP_PASS=xxxx xxxx xxxx xxxx
+SMTP_FROM=noreply@seudominio.com</code>
+                    </div>
+
+                    <div class="bg-green-50 border-l-4 border-green-400 p-4 rounded mt-4">
+                        <p class="text-green-800">
+                            <strong>✅ Substitua:</strong>
+                        </p>
+                        <ul class="list-disc list-inside text-green-700 mt-2 space-y-1">
+                            <li><code>seu-email@gmail.com</code> pelo seu email do Gmail</li>
+                            <li><code>xxxx xxxx xxxx xxxx</code> pela senha de app que você copiou (sem espaços)</li>
+                            <li><code>noreply@seudominio.com</code> pelo email que aparecerá como remetente</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Other Providers -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">📬 Outros Provedores de Email</h2>
+            
+            <div class="space-y-4">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-gray-800 mb-2">SendGrid</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this, 'SENDGRID_CONFIG')">Copiar</button>
+                        <code id="SENDGRID_CONFIG">SMTP_HOST=smtp.sendgrid.net
+SMTP_PORT=587
+SMTP_USER=apikey
+SMTP_PASS=sua-api-key-sendgrid
+SMTP_FROM=noreply@seudominio.com</code>
+                    </div>
+                </div>
+
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-gray-800 mb-2">Mailgun</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this, 'MAILGUN_CONFIG')">Copiar</button>
+                        <code id="MAILGUN_CONFIG">SMTP_HOST=smtp.mailgun.org
+SMTP_PORT=587
+SMTP_USER=postmaster@seudominio.mailgun.org
+SMTP_PASS=sua-senha-mailgun
+SMTP_FROM=noreply@seudominio.com</code>
+                    </div>
+                </div>
+
+                <div class="bg-orange-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-gray-800 mb-2">AWS SES</h3>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this, 'AWS_SES_CONFIG')">Copiar</button>
+                        <code id="AWS_SES_CONFIG">SMTP_HOST=email-smtp.us-east-1.amazonaws.com
+SMTP_PORT=587
+SMTP_USER=sua-access-key-id
+SMTP_PASS=sua-secret-access-key
+SMTP_FROM=noreply@seudominio.com</code>
+                    </div>
+                    <p class="text-gray-600 text-sm mt-2">💡 O host varia conforme a região. Consulte a documentação da AWS.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">🧪 3.3 - Testar Configuração</h2>
+            <p class="text-gray-600 mb-4">
+                Após configurar, você pode testar se o email está funcionando. Crie um arquivo de teste:
+            </p>
+
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this, 'TEST_EMAIL')">Copiar</button>
+                <code id="TEST_EMAIL">// test-email.js
+const EmailService = require('./services/emailService');
+
+async function test() {
+  const result = await EmailService.testConnection();
+  console.log(result);
+}
+
+test();</code>
+            </div>
+
+            <p class="text-gray-600 mt-4">Execute:</p>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this, 'RUN_TEST')">Copiar</button>
+                <code id="RUN_TEST">node test-email.js</code>
+            </div>
+
+            <div class="bg-green-50 border-l-4 border-green-400 p-4 rounded mt-4">
+                <p class="text-green-800">
+                    <strong>✅ Se funcionar:</strong> Você verá uma mensagem de sucesso. 
+                    Se der erro, verifique as credenciais no arquivo .env.
+                </p>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex justify-between mt-8">
+            <a href="passo2-variaveis-ambiente.html" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition">
+                ← Passo Anterior
+            </a>
+            <a href="passo4-kiwify.html" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition">
+                Próximo Passo →
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function copyCode(btn, codeId) {
+            const codeElement = document.getElementById(codeId);
+            const text = codeElement.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                btn.textContent = 'Copiado!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copiar';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
+
