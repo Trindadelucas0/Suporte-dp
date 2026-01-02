@@ -239,9 +239,10 @@ async function marcarComoLida(notifId) {
     try {
         const headers = { 'Content-Type': 'application/json' };
         
-        // Adiciona token CSRF
+        // Adiciona token CSRF (usar minúsculo para compatibilidade)
         if (window.csrfToken) {
-            headers['X-CSRF-Token'] = window.csrfToken;
+            headers['x-csrf-token'] = window.csrfToken;
+            headers['X-CSRF-Token'] = window.csrfToken; // Duplicado para garantir
         } else if (typeof getCSRFHeaders === 'function') {
             Object.assign(headers, getCSRFHeaders());
         }
@@ -300,9 +301,10 @@ async function marcarTodasComoLidas() {
     try {
         const headers = { 'Content-Type': 'application/json' };
         
-        // Adiciona token CSRF
+        // Adiciona token CSRF (usar minúsculo para compatibilidade)
         if (window.csrfToken) {
-            headers['X-CSRF-Token'] = window.csrfToken;
+            headers['x-csrf-token'] = window.csrfToken;
+            headers['X-CSRF-Token'] = window.csrfToken; // Duplicado para garantir
         } else if (typeof getCSRFHeaders === 'function') {
             Object.assign(headers, getCSRFHeaders());
         }

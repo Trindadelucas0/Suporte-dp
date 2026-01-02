@@ -200,12 +200,29 @@ if (process.env.NODE_ENV === 'test') {
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "lax" : "strict" // "lax" funciona melhor no Render
     },
-    // Aceita token no header ou no body
+    // Aceita token no header ou no body (case-insensitive para headers)
     value: (req) => {
-      return req.body._csrf || 
-             req.headers['x-csrf-token'] || 
-             req.headers['x-csrftoken'] || 
-             req.headers['csrf-token'];
+      // Tenta do body primeiro
+      if (req.body && req.body._csrf) {
+        return req.body._csrf;
+      }
+      
+      // Tenta headers (case-insensitive)
+      const headerNames = ['x-csrf-token', 'x-csrftoken', 'csrf-token', 'X-CSRF-Token', 'X-CSRFToken', 'CSRF-Token'];
+      for (const headerName of headerNames) {
+        if (req.headers[headerName]) {
+          return req.headers[headerName];
+        }
+      }
+      
+      // Tenta buscar em qualquer header que contenha csrf (case-insensitive)
+      for (const key in req.headers) {
+        if (key.toLowerCase().includes('csrf')) {
+          return req.headers[key];
+        }
+      }
+      
+      return null;
     }
   });
 

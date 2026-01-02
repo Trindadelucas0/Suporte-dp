@@ -64,7 +64,14 @@ class NotificacoesController {
    * Busca todas as notificações do usuário
    */
   static async getAll(req, res) {
-    const userId = req.session.user.id;
+    const userId = req.session.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'Usuário não autenticado'
+      });
+    }
 
     try {
       const result = await db.query(
@@ -121,38 +128,32 @@ class NotificacoesController {
     }
 
     try {
-      console.log('Marcando notificação como lida:', { id, userId, idType: typeof id });
+      console.log('=== MARCAR COMO LIDA ===');
+      console.log('ID recebido:', id);
+      console.log('Tipo do ID:', typeof id);
+      console.log('User ID:', userId);
+      console.log('Tipo do User ID:', typeof userId);
       
-      // Tenta atualizar usando UUID diretamente primeiro
-      let result;
-      try {
-        result = await db.query(
-          `UPDATE notificacoes 
-           SET lida = true 
-           WHERE id = $1::uuid AND user_id = $2::uuid
-           RETURNING *`,
-          [id, userId]
-        );
-      } catch (uuidError) {
-        // Se falhar com UUID, tenta como texto
-        console.log('Tentando como texto:', uuidError.message);
-        result = await db.query(
-          `UPDATE notificacoes 
-           SET lida = true 
-           WHERE id::text = $1 AND user_id::text = $2
-           RETURNING *`,
-          [id, userId]
-        );
-      }
+      // Query simplificada - PostgreSQL aceita UUID como string diretamente
+      const result = await db.query(
+        `UPDATE notificacoes 
+         SET lida = true 
+         WHERE id = $1 AND user_id = $2
+         RETURNING id, user_id, lida`,
+        [id, userId]
+      );
 
-      console.log('Resultado da atualização:', result.rows.length);
+      console.log('Linhas afetadas:', result.rowCount);
+      console.log('Resultado:', result.rows);
 
-      if (result.rows.length === 0) {
+      if (result.rowCount === 0) {
         // Verifica se a notificação existe
         const checkResult = await db.query(
-          `SELECT id, user_id, lida FROM notificacoes WHERE id::text = $1 OR id = $1::uuid`,
+          `SELECT id, user_id, lida FROM notificacoes WHERE id = $1`,
           [id]
         );
+        
+        console.log('Verificação de existência:', checkResult.rows);
         
         if (checkResult.rows.length === 0) {
           return res.status(404).json({
@@ -162,7 +163,10 @@ class NotificacoesController {
         }
         
         const notif = checkResult.rows[0];
-        if (notif.user_id.toString() !== userId.toString()) {
+        const notifUserId = notif.user_id?.toString() || notif.user_id;
+        const currentUserId = userId?.toString() || userId;
+        
+        if (notifUserId !== currentUserId) {
           return res.status(403).json({
             success: false,
             error: 'Notificação não pertence ao usuário'
@@ -178,7 +182,7 @@ class NotificacoesController {
         
         return res.status(500).json({
           success: false,
-          error: 'Erro ao atualizar notificação'
+          error: 'Erro ao atualizar notificação (nenhuma linha afetada)'
         });
       }
 
@@ -187,8 +191,11 @@ class NotificacoesController {
         message: 'Notificação marcada como lida'
       });
     } catch (error) {
-      console.error('Erro ao marcar notificação como lida:', error);
+      console.error('=== ERRO AO MARCAR COMO LIDA ===');
+      console.error('Erro:', error.message);
       console.error('Stack:', error.stack);
+      console.error('Código do erro:', error.code);
+      
       res.status(500).json({
         success: false,
         error: 'Erro ao marcar notificação como lida: ' + error.message
@@ -200,10 +207,17 @@ class NotificacoesController {
    * Marca todas as notificações como lidas
    */
   static async marcarTodasComoLidas(req, res) {
-    const userId = req.session.user.id;
+    const userId = req.session.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'Usuário não autenticado'
+      });
+    }
 
     try {
-      await db.query(
+      const result = await db.query(
         `UPDATE notificacoes 
          SET lida = true 
          WHERE user_id = $1 AND lida = false`,
@@ -212,13 +226,14 @@ class NotificacoesController {
 
       res.json({
         success: true,
-        message: 'Todas as notificações foram marcadas como lidas'
+        message: 'Todas as notificações foram marcadas como lidas',
+        count: result.rowCount
       });
     } catch (error) {
       console.error('Erro ao marcar todas como lidas:', error);
       res.status(500).json({
         success: false,
-        error: 'Erro ao marcar notificações como lidas'
+        error: 'Erro ao marcar notificações como lidas: ' + error.message
       });
     }
   }
@@ -227,7 +242,14 @@ class NotificacoesController {
    * Conta notificações não lidas
    */
   static async getCount(req, res) {
-    const userId = req.session.user.id;
+    const userId = req.session.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'Usuário não autenticado'
+      });
+    }
 
     try {
       const result = await db.query(
@@ -252,4 +274,3 @@ class NotificacoesController {
 }
 
 module.exports = NotificacoesController;
-
