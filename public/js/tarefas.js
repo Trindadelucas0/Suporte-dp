@@ -74,6 +74,82 @@ function abrirModalNova() {
 }
 
 /**
+ * Abre modal para visualizar tarefa (somente leitura)
+ */
+function abrirModalVisualizar(tarefa) {
+    modoEdicao = false;
+    const modal = document.getElementById('modalTarefa');
+    const form = document.getElementById('formTarefa');
+    const titulo = document.getElementById('modalTitulo');
+    const statusContainer = document.getElementById('statusContainer');
+    const btnSalvar = document.querySelector('#formTarefa button[type="submit"]');
+
+    // Preenche formulário (somente leitura)
+    document.getElementById('tarefaId').value = tarefa.id;
+    document.getElementById('nome').value = tarefa.nome || '';
+    document.getElementById('nome').readOnly = true;
+    document.getElementById('tipo').value = tarefa.tipo || '';
+    document.getElementById('tipo').disabled = true;
+    document.getElementById('prioridade').value = tarefa.prioridade || 'media';
+    document.getElementById('prioridade').disabled = true;
+    document.getElementById('data_vencimento').value = tarefa.data_vencimento || '';
+    document.getElementById('data_vencimento').readOnly = true;
+    document.getElementById('status').value = tarefa.status || 'nao_iniciado';
+    document.getElementById('status').disabled = true;
+    document.getElementById('descricao').value = tarefa.descricao || '';
+    document.getElementById('descricao').readOnly = true;
+
+    // Mostra campo de status
+    if (statusContainer) {
+        statusContainer.style.display = 'block';
+    }
+
+    // Esconde botão salvar e mostra botão editar
+    if (btnSalvar) {
+        btnSalvar.style.display = 'none';
+    }
+
+    // Adiciona botão de editar se não existir
+    let btnEditar = document.getElementById('btnEditarTarefa');
+    if (!btnEditar) {
+        btnEditar = document.createElement('button');
+        btnEditar.id = 'btnEditarTarefa';
+        btnEditar.type = 'button';
+        btnEditar.className = 'px-4 py-2 bg-primary-red hover:bg-red-700 text-white rounded-lg transition';
+        btnEditar.innerHTML = '<i class="fas fa-edit mr-2"></i>Editar';
+        btnEditar.onclick = () => {
+            // Habilita edição
+            modoEdicao = true;
+            document.getElementById('nome').readOnly = false;
+            document.getElementById('tipo').disabled = false;
+            document.getElementById('prioridade').disabled = false;
+            document.getElementById('data_vencimento').readOnly = false;
+            document.getElementById('status').disabled = false;
+            document.getElementById('descricao').readOnly = false;
+            if (btnSalvar) {
+                btnSalvar.style.display = 'block';
+            }
+            btnEditar.style.display = 'none';
+            titulo.textContent = 'Editar Tarefa';
+        };
+        const formActions = form.querySelector('.flex.justify-end');
+        if (formActions) {
+            formActions.insertBefore(btnEditar, formActions.firstChild);
+        }
+    } else {
+        btnEditar.style.display = 'block';
+    }
+    
+    // Garante que o botão salvar está escondido
+    if (btnSalvar) {
+        btnSalvar.style.display = 'none';
+    }
+
+    titulo.textContent = 'Visualizar Tarefa';
+    modal.classList.remove('hidden');
+}
+
+/**
  * Abre modal para editar tarefa
  */
 function abrirModalEditar(tarefa) {
@@ -82,19 +158,35 @@ function abrirModalEditar(tarefa) {
     const form = document.getElementById('formTarefa');
     const titulo = document.getElementById('modalTitulo');
     const statusContainer = document.getElementById('statusContainer');
+    const btnSalvar = document.querySelector('#formTarefa button[type="submit"]');
+    const btnEditar = document.getElementById('btnEditarTarefa');
 
     // Preenche formulário
     document.getElementById('tarefaId').value = tarefa.id;
     document.getElementById('nome').value = tarefa.nome || '';
+    document.getElementById('nome').readOnly = false;
     document.getElementById('tipo').value = tarefa.tipo || '';
+    document.getElementById('tipo').disabled = false;
     document.getElementById('prioridade').value = tarefa.prioridade || 'media';
+    document.getElementById('prioridade').disabled = false;
     document.getElementById('data_vencimento').value = tarefa.data_vencimento || '';
+    document.getElementById('data_vencimento').readOnly = false;
     document.getElementById('status').value = tarefa.status || 'nao_iniciado';
+    document.getElementById('status').disabled = false;
     document.getElementById('descricao').value = tarefa.descricao || '';
+    document.getElementById('descricao').readOnly = false;
 
     // Mostra campo de status na edição
     if (statusContainer) {
         statusContainer.style.display = 'block';
+    }
+
+    // Mostra botão salvar e esconde botão editar
+    if (btnSalvar) {
+        btnSalvar.style.display = 'block';
+    }
+    if (btnEditar) {
+        btnEditar.style.display = 'none';
     }
 
     titulo.textContent = 'Editar Tarefa';
@@ -109,12 +201,27 @@ function fecharModal() {
     modal.classList.add('hidden');
     const form = document.getElementById('formTarefa');
     form.reset();
+    
+    // Remove readonly/disabled de todos os campos
+    const campos = form.querySelectorAll('input, select, textarea');
+    campos.forEach(campo => {
+        campo.readOnly = false;
+        campo.disabled = false;
+    });
+    
+    // Esconde botão editar se existir
+    const btnEditar = document.getElementById('btnEditarTarefa');
+    if (btnEditar) {
+        btnEditar.style.display = 'none';
+    }
 }
 
 /**
  * Busca tarefa por ID
+ * @param {string} id - ID da tarefa
+ * @param {boolean} modoEdicaoDireto - Se true, abre direto em modo de edição. Se false, abre em visualização.
  */
-async function buscarTarefa(id) {
+async function buscarTarefa(id, modoEdicaoDireto = false) {
     try {
         const headers = typeof getCSRFHeaders === 'function' ? getCSRFHeaders() : { 'Content-Type': 'application/json' };
         
@@ -125,7 +232,11 @@ async function buscarTarefa(id) {
         const data = await response.json();
         
         if (data.success) {
-            abrirModalEditar(data.data);
+            if (modoEdicaoDireto) {
+                abrirModalEditar(data.data);
+            } else {
+                abrirModalVisualizar(data.data);
+            }
         } else {
             alert('Erro ao buscar tarefa: ' + (data.error || 'Tarefa não encontrada'));
         }

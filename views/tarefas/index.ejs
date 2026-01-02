@@ -450,11 +450,30 @@
     <script src="/js/tarefas.js"></script>
     <script src="/js/tarefas-inline.js"></script>
     <script>
-        // Abrir modal se tarefa foi selecionada
+        // Destaca a tarefa na tabela se foi selecionada via link (sem abrir modal)
         <% if (tarefaSelecionada) { %>
             document.addEventListener('DOMContentLoaded', () => {
                 const tarefa = <%- JSON.stringify(tarefaSelecionada) %>;
-                abrirModalEditar(tarefa);
+                
+                // Apenas destaca a linha da tarefa na tabela
+                const row = document.querySelector(`tr[data-id="${tarefa.id}"]`);
+                if (row) {
+                    // Remove o parâmetro ?id= da URL para limpar
+                    if (window.location.search.includes('id=')) {
+                        const url = new URL(window.location);
+                        url.searchParams.delete('id');
+                        window.history.replaceState({}, '', url);
+                    }
+                    
+                    // Rola até a tarefa e destaca
+                    setTimeout(() => {
+                        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        row.classList.add('bg-yellow-100', 'border-2', 'border-yellow-400');
+                        setTimeout(() => {
+                            row.classList.remove('bg-yellow-100', 'border-2', 'border-yellow-400');
+                        }, 3000);
+                    }, 100);
+                }
             });
         <% } %>
 
