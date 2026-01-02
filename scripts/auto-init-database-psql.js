@@ -110,6 +110,9 @@ async function initDatabase() {
       // Não interrompe o servidor se houver erro
     }
 
+    // Verifica e cria dados de exemplo de tarefas
+    await criarTarefasExemplo();
+
   } catch (error) {
     console.error('❌ Erro ao inicializar banco de dados:', error.message);
     console.log('⚠️  Tentando método alternativo...');
@@ -308,6 +311,162 @@ async function checkRiscoMultaTable() {
     }
   } catch (error) {
     console.warn('⚠️  Aviso ao verificar tabela calculos_risco_multa:', error.message);
+  }
+}
+
+// Cria tarefas de exemplo automaticamente
+async function criarTarefasExemplo() {
+  try {
+    // Verifica se a tabela tarefas existe
+    const checkTarefasTable = await db.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'tarefas'
+      );
+    `);
+
+    if (!checkTarefasTable.rows[0].exists) {
+      console.log('⚠️  Tabela tarefas não existe ainda. Execute a migration 006_create_tarefas.sql primeiro.');
+      return;
+    }
+
+    // Verifica se já existem tarefas
+    const checkTarefas = await db.query('SELECT COUNT(*) as count FROM tarefas');
+    const countTarefas = parseInt(checkTarefas.rows[0].count || 0);
+
+    if (countTarefas > 0) {
+      console.log(`✅ Já existem ${countTarefas} tarefa(s) no banco. Pulando criação de exemplos.`);
+      return;
+    }
+
+    // Busca o primeiro usuário (ou admin) para criar tarefas de exemplo
+    const usuarios = await db.query('SELECT id FROM users LIMIT 1');
+    
+    if (usuarios.rows.length === 0) {
+      console.log('⚠️  Nenhum usuário encontrado. Crie um usuário primeiro.');
+      return;
+    }
+
+    const userId = usuarios.rows[0].id;
+    const hoje = new Date();
+    const amanha = new Date(hoje);
+    amanha.setDate(amanha.getDate() + 1);
+    const proximaSemana = new Date(hoje);
+    proximaSemana.setDate(proximaSemana.getDate() + 7);
+    const proximoMes = new Date(hoje);
+    proximoMes.setMonth(proximoMes.getMonth() + 1);
+
+    console.log('📝 Criando tarefas de exemplo...');
+
+    const tarefasExemplo = [
+      {
+        nome: 'Férias João Silva',
+        tipo: 'FÉRIAS',
+        status: 'nao_iniciado',
+        prioridade: 'alta',
+        data_vencimento: proximaSemana.toISOString().split('T')[0],
+        descricao: 'Processar férias do colaborador João Silva',
+        ordem: 1
+      },
+      {
+        nome: 'Fechamento folha março',
+        tipo: null,
+        status: 'em_andamento',
+        prioridade: 'alta',
+        data_vencimento: amanha.toISOString().split('T')[0],
+        descricao: 'Fechar folha de pagamento do mês de março',
+        ordem: 2
+      },
+      {
+        nome: 'Rescisão colaborador X',
+        tipo: 'RESCISÃO',
+        status: 'nao_iniciado',
+        prioridade: 'media',
+        data_vencimento: proximaSemana.toISOString().split('T')[0],
+        descricao: 'Processar rescisão do colaborador X',
+        ordem: 3
+      },
+      {
+        nome: 'Enviar obrigação acessória',
+        tipo: null,
+        status: 'em_andamento',
+        prioridade: 'media',
+        data_vencimento: hoje.toISOString().split('T')[0],
+        descricao: 'DCTF Web do mês anterior',
+        ordem: 4
+      },
+      {
+        nome: '13° Adiantamento Maria',
+        tipo: '13° ADIANTAMENTO',
+        status: 'feito',
+        prioridade: 'baixa',
+        data_vencimento: new Date(hoje.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        descricao: '13° adiantamento já processado',
+        ordem: 5
+      },
+      {
+        nome: 'Admissão novo colaborador',
+        tipo: 'ADMISSÃO',
+        status: 'feito',
+        prioridade: 'alta',
+        data_vencimento: new Date(hoje.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        descricao: 'Processo de admissão completo',
+        ordem: 6
+      },
+      {
+        nome: 'Alteração salarial equipe',
+        tipo: 'ALTERAÇÃO SALARIAL',
+        status: 'feito',
+        prioridade: 'media',
+        data_vencimento: new Date(hoje.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        descricao: null,
+        ordem: 7
+      },
+      {
+        nome: 'Afastamento INSS',
+        tipo: 'AFASTAMENTO',
+        status: 'nao_iniciado',
+        prioridade: 'media',
+        data_vencimento: proximoMes.toISOString().split('T')[0],
+        descricao: 'Processar afastamento por INSS',
+        ordem: 8
+      }
+    ];
+
+    for (const tarefa of tarefasExemplo) {
+      try {
+        await db.query(
+          `INSERT INTO tarefas (
+            user_id, nome, tipo, descricao, status, prioridade, data_vencimento, ordem
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [
+            userId,
+            tarefa.nome,
+            tarefa.tipo,
+            tarefa.descricao,
+            tarefa.status,
+            tarefa.prioridade,
+            tarefa.data_vencimento,
+            tarefa.ordem
+          ]
+        );
+      } catch (error) {
+        console.warn(`⚠️  Erro ao criar tarefa "${tarefa.nome}":`, error.message);
+      }
+    }
+
+    // Atualiza data_conclusao para tarefas concluídas
+    await db.query(
+      `UPDATE tarefas 
+       SET data_conclusao = data_vencimento 
+       WHERE status = 'feito' AND data_conclusao IS NULL`
+    );
+
+    console.log(`✅ ${tarefasExemplo.length} tarefas de exemplo criadas com sucesso!`);
+  } catch (error) {
+    console.warn('⚠️  Aviso ao criar tarefas de exemplo:', error.message);
+    // Não interrompe o servidor se houver erro
   }
 }
 

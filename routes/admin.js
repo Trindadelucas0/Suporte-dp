@@ -19,5 +19,9 @@ router.get('/usuarios/:id', AdminController.usuarioDetalhes);
 router.post('/usuarios/:id/atualizar', AdminController.atualizarUsuario);
 router.post('/usuarios/:id/resetar-senha', AdminController.resetarSenha);
 
+// Notificações administrativas
+router.get('/notificacoes', AdminController.notificacoes);
+router.post('/notificacoes/criar', AdminController.criarNotificacao);
+
 module.exports = router;
 

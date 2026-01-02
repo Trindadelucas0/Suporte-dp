@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            red: '#DC2626',
+                            yellow: '#FBBF24'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <%- include('../partials/navbar') %>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                <i class="fas fa-bell text-primary-red mr-2"></i>
+                Notificações Administrativas
+            </h1>
+            <p class="text-gray-600">
+                Envie notificações para todos os usuários ou para usuários específicos
+            </p>
+        </div>
+
+        <!-- Formulário de Nova Notificação -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Nova Notificação</h2>
+            <form id="formNotificacao" class="space-y-4">
+                <div>
+                    <label for="titulo" class="block text-sm font-medium text-gray-700 mb-2">
+                        Título <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="titulo" 
+                        name="titulo" 
+                        required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-transparent"
+                        placeholder="Ex: Lembrete: Fechamento de folha"
+                    >
+                </div>
+
+                <div>
+                    <label for="mensagem" class="block text-sm font-medium text-gray-700 mb-2">
+                        Mensagem <span class="text-red-500">*</span>
+                    </label>
+                    <textarea 
+                        id="mensagem" 
+                        name="mensagem" 
+                        required
+                        rows="4"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-transparent"
+                        placeholder="Digite a mensagem da notificação..."
+                    ></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="tipo" class="block text-sm font-medium text-gray-700 mb-2">
+                            Tipo <span class="text-red-500">*</span>
+                        </label>
+                        <select 
+                            id="tipo" 
+                            name="tipo" 
+                            required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-transparent"
+                        >
+                            <option value="info">ℹ️ Info</option>
+                            <option value="warning">⚠️ Aviso</option>
+                            <option value="success">✅ Sucesso</option>
+                            <option value="error">❌ Erro</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="destinatario" class="block text-sm font-medium text-gray-700 mb-2">
+                            Destinatário <span class="text-red-500">*</span>
+                        </label>
+                        <select 
+                            id="destinatario" 
+                            name="destinatario" 
+                            required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-transparent"
+                        >
+                            <option value="todos">Todos os usuários</option>
+                            <% if (usuarios && usuarios.length > 0) { %>
+                                <% usuarios.forEach(usuario => { %>
+                                    <% if (!usuario.is_admin) { %>
+                                        <option value="<%= usuario.id %>"><%= usuario.nome %> (<%= usuario.email %>)</option>
+                                    <% } %>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button 
+                        type="submit"
+                        class="px-6 py-2 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-lg font-semibold hover:opacity-90 transition"
+                    >
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Enviar Notificação
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Histórico -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Histórico de Notificações</h2>
+            <% if (historico && historico.length > 0) { %>
+                <div class="space-y-3">
+                    <% historico.forEach(notif => { %>
+                        <div class="border-l-4 p-4 rounded 
+                            <%= notif.tipo === 'info' ? 'border-blue-500 bg-blue-50' :
+                               notif.tipo === 'warning' ? 'border-yellow-500 bg-yellow-50' :
+                               notif.tipo === 'success' ? 'border-green-500 bg-green-50' :
+                               'border-red-500 bg-red-50' %>">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-gray-900"><%= notif.titulo %></h3>
+                                    <p class="text-gray-700 mt-1"><%= notif.mensagem %></p>
+                                    <div class="mt-2 text-sm text-gray-600">
+                                        <i class="fas fa-user mr-1"></i>
+                                        <%= notif.usuario_nome || 'Todos os usuários' %>
+                                        <span class="mx-2">•</span>
+                                        <i class="fas fa-clock mr-1"></i>
+                                        <%= new Date(notif.created_at).toLocaleString('pt-BR') %>
+                                    </div>
+                                </div>
+                                <span class="px-2 py-1 rounded text-xs font-semibold
+                                    <%= notif.tipo === 'info' ? 'bg-blue-200 text-blue-800' :
+                                       notif.tipo === 'warning' ? 'bg-yellow-200 text-yellow-800' :
+                                       notif.tipo === 'success' ? 'bg-green-200 text-green-800' :
+                                       'bg-red-200 text-red-800' %>">
+                                    <%= notif.tipo.toUpperCase() %>
+                                </span>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <p class="text-gray-500 text-center py-8">Nenhuma notificação enviada ainda.</p>
+            <% } %>
+        </div>
+    </main>
+
+    <script>
+        // Disponibiliza token CSRF globalmente
+        window.csrfToken = '<%= typeof csrfToken !== "undefined" && csrfToken ? csrfToken : "" %>';
+        
+        function getCSRFHeaders() {
+            const headers = { 'Content-Type': 'application/json' };
+            if (window.csrfToken) {
+                headers['X-CSRF-Token'] = window.csrfToken;
+            }
+            return headers;
+        }
+
+        document.getElementById('formNotificacao').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const data = {
+                titulo: formData.get('titulo'),
+                mensagem: formData.get('mensagem'),
+                tipo: formData.get('tipo'),
+                destinatario: formData.get('destinatario')
+            };
+
+            // Adiciona CSRF token
+            if (window.csrfToken) {
+                data._csrf = window.csrfToken;
+            }
+
+            try {
+                const headers = getCSRFHeaders();
+                
+                const response = await fetch('/admin/notificacoes/criar', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(data),
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Erro ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ ' + result.message);
+                    e.target.reset();
+                    location.reload();
+                } else {
+                    alert('❌ Erro: ' + (result.error || 'Erro ao criar notificação'));
+                }
+            } catch (error) {
+                console.error('Erro ao criar notificação:', error);
+                alert('❌ Erro ao criar notificação: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
+

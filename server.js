@@ -199,6 +199,13 @@ if (process.env.NODE_ENV === 'test') {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "lax" : "strict" // "lax" funciona melhor no Render
+    },
+    // Aceita token no header ou no body
+    value: (req) => {
+      return req.body._csrf || 
+             req.headers['x-csrf-token'] || 
+             req.headers['x-csrftoken'] || 
+             req.headers['csrf-token'];
     }
   });
 
@@ -236,6 +243,8 @@ const contratoExperienciaRoutes = require("./routes/contrato-experiencia");
 const periculosidadeRoutes = require("./routes/periculosidade");
 const custoRoutes = require("./routes/custo");
 const checklistRoutes = require("./routes/checklist");
+const tarefasRoutes = require("./routes/tarefas");
+const notificacoesRoutes = require("./routes/notificacoes");
 const perfilRoutes = require("./routes/perfil");
 const adminRoutes = require("./routes/admin");
 
@@ -258,6 +267,8 @@ app.use("/contrato-experiencia", contratoExperienciaRoutes);
 app.use("/periculosidade", periculosidadeRoutes);
 app.use("/custo", custoRoutes);
 app.use("/checklist", checklistRoutes);
+app.use("/tarefas", tarefasRoutes);
+app.use("/notificacoes", notificacoesRoutes);
 app.use("/perfil", perfilRoutes);
 app.use("/admin", adminRoutes);
 

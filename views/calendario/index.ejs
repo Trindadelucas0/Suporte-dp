@@ -95,19 +95,22 @@
                                             dia.isFeriado && dia.feriadoTipo === 'facultativo' ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-400 hover:border-orange-500 hover:from-orange-100 hover:to-orange-200' :
                                             dia.diaSemana === 0 ? 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-400 hover:border-gray-500' : 
                                             dia.diaSemana === 6 ? 'bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-400 hover:border-yellow-500' :
-                                            dia.anotacao || (dia.obrigacoes && dia.obrigacoes.length > 0) ? 'bg-gradient-to-br from-yellow-100 to-yellow-200 border-yellow-500 hover:border-yellow-600 hover:from-yellow-200 hover:to-yellow-300' : 
+                                            dia.anotacao || (dia.obrigacoes && dia.obrigacoes.length > 0) || (dia.tarefas && dia.tarefas.length > 0) ? 'bg-gradient-to-br from-yellow-100 to-yellow-200 border-yellow-500 hover:border-yellow-600 hover:from-yellow-200 hover:to-yellow-300' : 
                                             'bg-gradient-to-br from-white to-gray-50 border-gray-300 hover:border-primary-red hover:from-primary-red hover:to-primary-yellow hover:text-white' %>">
                                                         <div class="flex justify-between items-start mb-1">
                                                             <span
                                                                 class="text-base sm:text-lg font-bold <%= dia.isFeriado && dia.feriadoTipo === 'nacional' ? 'text-red-700' : dia.isFeriado && dia.feriadoTipo === 'facultativo' ? 'text-orange-700' : dia.diaSemana === 0 ? 'text-gray-600' : 'text-gray-900' %> dia-numero">
                                                                 <%= typeof dia.dia !=='undefined' ? dia.dia : '' %>
                                                             </span>
-                                                            <% if (dia.obrigacoes && dia.obrigacoes.length> 0) { %>
+                                                            <% 
+                                                                const totalEventos = (dia.obrigacoes ? dia.obrigacoes.length : 0) + (dia.tarefas ? dia.tarefas.length : 0);
+                                                            %>
+                                                            <% if (totalEventos > 0) { %>
                                                                 <span
                                                                     class="text-xs sm:text-sm bg-gradient-to-r from-primary-yellow to-primary-red text-white px-1.5 sm:px-2 py-0.5 rounded-full font-bold shadow-md transform hover:scale-110 transition-transform">
-                                                                    <%= dia.obrigacoes.length %>
+                                                                    <%= totalEventos %>
                                                                 </span>
-                                                                <% } %>
+                                                            <% } %>
                                                         </div>
 
                                                         <% if (dia.isFeriado) { %>
@@ -140,6 +143,37 @@
                                                                                     <% } %>
                                                                     </div>
                                                                     <% } %>
+
+                                                                        <% if (dia.tarefas && dia.tarefas.length > 0) { %>
+                                                                            <div class="space-y-1 mt-1">
+                                                                                <% dia.tarefas.slice(0, 2).forEach(tarefa => { %>
+                                                                                    <% 
+                                                                                        const corTipo = tarefa.tipo === 'FÉRIAS' ? 'text-blue-700 bg-blue-100' :
+                                                                                                       tarefa.tipo === '13° ADIANTAMENTO' || tarefa.tipo === '13° INTEGRAL' ? 'text-orange-700 bg-orange-100' :
+                                                                                                       tarefa.tipo === 'RESCISÃO' ? 'text-red-700 bg-red-100' :
+                                                                                                       tarefa.tipo === 'ADMISSÃO' ? 'text-green-700 bg-green-100' :
+                                                                                                       tarefa.tipo === 'AFASTAMENTO' ? 'text-yellow-700 bg-yellow-100' :
+                                                                                                       tarefa.tipo === 'ALTERAÇÃO SALARIAL' ? 'text-purple-700 bg-purple-100' :
+                                                                                                       tarefa.tipo === 'ALTERAÇÃO DE CARGO' ? 'text-indigo-700 bg-indigo-100' :
+                                                                                                       tarefa.prioridade === 'alta' ? 'text-red-700 bg-red-100' :
+                                                                                                       tarefa.prioridade === 'media' ? 'text-yellow-700 bg-yellow-100' :
+                                                                                                       'text-green-700 bg-green-100';
+                                                                                        const concluida = tarefa.status === 'feito';
+                                                                                    %>
+                                                                                    <a href="/tarefas?id=<%= tarefa.id %>" 
+                                                                                       class="block text-xs <%= corTipo %> px-1 py-0.5 rounded truncate <%= concluida ? 'opacity-60 line-through' : '' %> hover:opacity-100"
+                                                                                       title="<%= tarefa.nome %>">
+                                                                                        <i class="fas fa-<%= concluida ? 'check-circle' : 'tasks' %> mr-1"></i>
+                                                                                        <%= tarefa.nome %>
+                                                                                    </a>
+                                                                                <% }); %>
+                                                                                <% if (dia.tarefas.length > 2) { %>
+                                                                                    <div class="text-xs text-gray-600">
+                                                                                        +<%= dia.tarefas.length - 2 %> tarefas
+                                                                                    </div>
+                                                                                <% } %>
+                                                                            </div>
+                                                                        <% } %>
 
                                                                         <% if (dia.anotacao) { %>
                                                                             <div class="text-xs text-yellow-700 mt-1 truncate"

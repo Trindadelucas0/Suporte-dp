@@ -158,6 +158,21 @@ class CalendarioService {
       }
     }
 
+    // Busca tarefas do mês
+    let tarefas = { rows: [] };
+    try {
+      tarefas = await db.query(
+        `SELECT id, nome, tipo, status, prioridade, data_vencimento, data_conclusao 
+         FROM tarefas 
+         WHERE user_id = $1 AND data_vencimento >= $2 AND data_vencimento <= $3`,
+        [userId, inicio.format('YYYY-MM-DD'), fim.format('YYYY-MM-DD')]
+      );
+    } catch (error) {
+      // Se a tabela não existir, continua sem tarefas
+      console.warn('Tabela tarefas não encontrada. Tarefas não serão exibidas no calendário.');
+      tarefas = { rows: [] };
+    }
+
     const [feriados, anotacoes] = await Promise.all([
       Feriado.findAll(ano),
       db.query(
@@ -188,6 +203,16 @@ class CalendarioService {
       }
       obrigacoesMap.get(dataStr).push(o);
     });
+
+    const tarefasMap = new Map();
+    tarefas.rows.forEach(t => {
+      // Garante que a data está no formato correto
+      const dataStr = moment(t.data_vencimento).format('YYYY-MM-DD');
+      if (!tarefasMap.has(dataStr)) {
+        tarefasMap.set(dataStr, []);
+      }
+      tarefasMap.get(dataStr).push(t);
+    });
     
     const calendario = [];
     let current = inicio.clone();
@@ -204,7 +229,8 @@ class CalendarioService {
         feriadoNome: feriado?.nome || null,
         feriadoTipo: feriado?.tipo || null, // 'nacional' ou 'facultativo'
         anotacao: anotacoesMap.get(dataStr) || null,
-        obrigacoes: obrigacoesMap.get(dataStr) || []
+        obrigacoes: obrigacoesMap.get(dataStr) || [],
+        tarefas: tarefasMap.get(dataStr) || []
       });
 
       current.add(1, 'day');

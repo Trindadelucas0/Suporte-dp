@@ -1,0 +1,73 @@
+/* Estilos Notion para Tarefas */
+
+body {
+    background-color: #ffffff;
+}
+
+#tabelaTarefas {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+#tabelaTarefas thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #f9fafb;
+}
+
+#tabelaTarefas tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+#tabelaTarefas tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+#tabelaTarefas tbody tr:active {
+    background-color: #f3f4f6;
+}
+
+/* Estilo para células editáveis */
+.editable-cell {
+    position: relative;
+}
+
+.editable-text {
+    display: inline-block;
+    min-height: 20px;
+    transition: background-color 0.15s ease;
+}
+
+.editable-text:hover {
+    background-color: #f3f4f6;
+}
+
+.editable-input {
+    min-width: 120px;
+    font-size: 0.75rem;
+}
+
+.editable-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* Scrollbar personalizada */
+.overflow-x-auto::-webkit-scrollbar {
+    height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+

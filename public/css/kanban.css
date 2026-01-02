@@ -1,0 +1,57 @@
+/* Kanban Styles */
+
+.kanban-board {
+    min-height: 500px;
+}
+
+.kanban-column {
+    transition: all 0.3s ease;
+}
+
+.kanban-column.drag-over {
+    background-color: #e5e7eb;
+    border: 2px dashed #dc2626;
+}
+
+.kanban-card {
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.kanban-card.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+}
+
+.kanban-card:hover {
+    transform: translateY(-2px);
+}
+
+.kanban-cards {
+    transition: all 0.3s ease;
+}
+
+/* Border colors por prioridade */
+.kanban-card[data-prioridade="alta"] {
+    border-left-color: #dc2626;
+}
+
+.kanban-card[data-prioridade="media"] {
+    border-left-color: #fbbf24;
+}
+
+.kanban-card[data-prioridade="baixa"] {
+    border-left-color: #10b981;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .kanban-board {
+        grid-template-columns: 1fr;
+    }
+    
+    .kanban-column {
+        margin-bottom: 1rem;
+    }
+}
+

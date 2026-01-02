@@ -1,0 +1,54 @@
+<div class="kanban-card bg-white rounded-lg shadow-md p-4 cursor-move hover:shadow-lg transition-all border-l-4" 
+     data-id="<%= tarefa.id %>" 
+     data-status="<%= tarefa.status %>"
+     data-prioridade="<%= tarefa.prioridade %>"
+     draggable="true">
+    
+    <!-- Prioridade -->
+    <div class="flex items-center justify-between mb-2">
+        <% if (tarefa.prioridade === 'alta') { %>
+            <span class="text-xs font-semibold text-red-600 bg-red-100 px-2 py-1 rounded">🔴 ALTA</span>
+        <% } else if (tarefa.prioridade === 'media') { %>
+            <span class="text-xs font-semibold text-yellow-600 bg-yellow-100 px-2 py-1 rounded">🟡 MÉDIA</span>
+        <% } else { %>
+            <span class="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded">🟢 BAIXA</span>
+        <% } %>
+        
+        <% if (tarefa.tipo) { %>
+            <span class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded"><%= tarefa.tipo %></span>
+        <% } %>
+    </div>
+
+    <!-- Nome da Tarefa -->
+    <h3 class="font-semibold text-gray-900 mb-2"><%= tarefa.nome %></h3>
+
+    <!-- Data de Vencimento -->
+    <div class="flex items-center text-sm text-gray-600 mb-3">
+        <i class="fas fa-calendar-alt mr-2"></i>
+        <span><%= new Date(tarefa.data_vencimento).toLocaleDateString('pt-BR') %></span>
+    </div>
+
+    <!-- Descrição (se houver) -->
+    <% if (tarefa.descricao) { %>
+        <p class="text-sm text-gray-600 mb-3 line-clamp-2"><%= tarefa.descricao %></p>
+    <% } %>
+
+    <!-- Ações -->
+    <div class="flex justify-end gap-2 pt-2 border-t">
+        <button 
+            type="button"
+            class="btn-editar text-blue-600 hover:text-blue-800 text-sm"
+            data-id="<%= tarefa.id %>"
+            title="Editar">
+            <i class="fas fa-edit"></i>
+        </button>
+        <button 
+            type="button"
+            class="btn-excluir text-red-600 hover:text-red-800 text-sm"
+            data-id="<%= tarefa.id %>"
+            title="Excluir">
+            <i class="fas fa-trash"></i>
+        </button>
+    </div>
+</div>
+

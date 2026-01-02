@@ -64,6 +64,10 @@
                     class="text-white hover:text-yellow-200 px-2 lg:px-3 xl:px-4 py-2 rounded-md text-xs sm:text-sm lg:text-base xl:text-lg font-semibold flex items-center h-full">
                     <i class="fas fa-calendar mr-1"></i><span class="hidden lg:inline">Calendário</span>
                 </a>
+                <a href="/tarefas"
+                    class="text-white hover:text-yellow-200 px-2 lg:px-3 xl:px-4 py-2 rounded-md text-xs sm:text-sm lg:text-base xl:text-lg font-semibold flex items-center h-full">
+                    <i class="fas fa-tasks mr-1"></i><span class="hidden lg:inline">Tarefas</span>
+                </a>
                 <a href="/checklist"
                     class="text-white hover:text-yellow-200 px-2 lg:px-3 xl:px-4 py-2 rounded-md text-xs sm:text-sm lg:text-base xl:text-lg font-semibold flex items-center h-full">
                     <i class="fas fa-check-square mr-1"></i><span class="hidden lg:inline">Checklists</span>
@@ -72,6 +76,29 @@
                     class="text-white hover:text-yellow-200 px-2 lg:px-3 xl:px-4 py-2 rounded-md text-xs sm:text-sm lg:text-base xl:text-lg font-semibold flex items-center h-full">
                     <i class="fas fa-user mr-1"></i><span class="hidden lg:inline">Perfil</span>
                 </a>
+                <!-- Notificações -->
+                <div class="relative group flex items-center h-full">
+                    <button 
+                        id="btnNotificacoes"
+                        class="text-white hover:text-yellow-200 px-2 lg:px-3 xl:px-4 py-2 rounded-md text-xs sm:text-sm lg:text-base xl:text-lg font-semibold flex items-center h-full relative">
+                        <i class="fas fa-bell mr-1"></i>
+                        <span id="notificacaoCount" class="absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                    </button>
+                    <!-- Dropdown de Notificações -->
+                    <div id="notificacoesDropdown" class="hidden absolute right-0 top-full mt-2 w-80 lg:w-96 bg-white rounded-lg shadow-2xl border-2 border-primary-red z-50 max-h-96 overflow-hidden">
+                        <div class="bg-gradient-to-r from-primary-red to-primary-yellow p-3 border-b-2 border-primary-red flex items-center justify-between">
+                            <h3 class="text-white font-bold text-sm lg:text-base flex items-center">
+                                <i class="fas fa-bell mr-2"></i>Notificações
+                            </h3>
+                            <button id="btnMarcarTodasLidas" class="text-white text-xs hover:underline">Marcar todas como lidas</button>
+                        </div>
+                        <div id="notificacoesList" class="overflow-y-auto max-h-80">
+                            <div class="p-4 text-center text-gray-500">
+                                <i class="fas fa-spinner fa-spin"></i> Carregando...
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <% if (typeof isAdmin !=='undefined' && isAdmin) { %>
                     <a href="/admin"
                         class="text-white hover:text-yellow-200 px-2 lg:px-3 xl:px-4 py-2 rounded-md text-xs sm:text-sm lg:text-base xl:text-lg font-semibold flex items-center h-full">
@@ -127,12 +154,38 @@
                 <a href="/calendario" class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-semibold">
                     <i class="fas fa-calendar mr-2"></i>Calendário
                 </a>
+                <a href="/tarefas" class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-semibold">
+                    <i class="fas fa-tasks mr-2"></i>Tarefas
+                </a>
                 <a href="/checklist" class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-semibold">
                     <i class="fas fa-check-square mr-2"></i>Checklists
                 </a>
                 <a href="/perfil" class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-semibold">
                     <i class="fas fa-user mr-2"></i>Perfil
                 </a>
+                <!-- Notificações Mobile -->
+                <div class="relative">
+                    <button 
+                        id="btnNotificacoesMobile"
+                        class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-semibold flex items-center relative w-full">
+                        <i class="fas fa-bell mr-2"></i>Notificações
+                        <span id="notificacaoCountMobile" class="ml-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                    </button>
+                    <!-- Dropdown Mobile (mesmo ID, CSS responsivo cuida) -->
+                    <div id="notificacoesDropdownMobile" class="hidden mt-2 w-full bg-white rounded-lg shadow-2xl border-2 border-primary-red z-50 max-h-96 overflow-hidden">
+                        <div class="bg-gradient-to-r from-primary-red to-primary-yellow p-3 border-b-2 border-primary-red flex items-center justify-between">
+                            <h3 class="text-white font-bold text-sm flex items-center">
+                                <i class="fas fa-bell mr-2"></i>Notificações
+                            </h3>
+                            <button id="btnMarcarTodasLidasMobile" class="text-white text-xs hover:underline">Marcar todas</button>
+                        </div>
+                        <div id="notificacoesListMobile" class="overflow-y-auto max-h-80">
+                            <div class="p-4 text-center text-gray-500">
+                                <i class="fas fa-spinner fa-spin"></i> Carregando...
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <% if (typeof isAdmin !=='undefined' && isAdmin) { %>
                     <a href="/admin" class="text-white hover:text-yellow-200 px-3 py-2 rounded-md text-sm font-semibold">
                         <i class="fas fa-cog mr-2"></i>Admin
@@ -147,6 +200,7 @@
     </div>
 </nav>
 
+<script src="/js/notificacoes.js"></script>
 <script>
     function toggleMobileMenu() {
         const menu = document.getElementById('mobileMenu');

@@ -251,6 +251,115 @@ class AdminController {
     }
   }
 
+  /**
+   * Página de notificações administrativas
+   */
+  static async notificacoes(req, res) {
+    if (!req.session.user || !req.session.user.is_admin) {
+      return res.status(403).render('error', {
+        title: 'Acesso Negado',
+        error: 'Você não tem permissão para acessar esta página.'
+      });
+    }
+
+    try {
+      // Busca histórico de notificações enviadas pelo admin
+      const historico = await db.query(
+        `SELECT n.*, u.nome as usuario_nome 
+         FROM notificacoes n
+         LEFT JOIN users u ON n.user_id = u.id
+         WHERE n.tarefa_id IS NULL
+         ORDER BY n.created_at DESC
+         LIMIT 100`
+      );
+
+      // Busca lista de usuários para seleção
+      const usuarios = await User.findAll({});
+
+      res.render('admin/notificacoes', {
+        title: 'Notificações Administrativas - Suporte DP',
+        historico: historico.rows || [],
+        usuarios: usuarios || []
+      });
+    } catch (error) {
+      console.error('Erro ao carregar notificações:', error);
+      res.render('admin/notificacoes', {
+        title: 'Notificações Administrativas - Suporte DP',
+        historico: [],
+        usuarios: [],
+        error: 'Erro ao carregar notificações'
+      });
+    }
+  }
+
+  /**
+   * Cria notificação administrativa
+   */
+  static async criarNotificacao(req, res) {
+    if (!req.session.user || !req.session.user.is_admin) {
+      return res.status(403).json({ success: false, error: 'Acesso negado' });
+    }
+
+    try {
+      const { titulo, mensagem, tipo, destinatario } = req.body;
+
+      // Validações
+      if (!titulo || titulo.trim().length === 0) {
+        return res.json({ success: false, error: 'Título é obrigatório' });
+      }
+
+      if (!mensagem || mensagem.trim().length === 0) {
+        return res.json({ success: false, error: 'Mensagem é obrigatória' });
+      }
+
+      if (!tipo || !['info', 'warning', 'success', 'error'].includes(tipo)) {
+        return res.json({ success: false, error: 'Tipo inválido' });
+      }
+
+      let usuariosParaNotificar = [];
+
+      if (destinatario === 'todos') {
+        // Busca todos os usuários exceto admin
+        const usuarios = await User.findAll({});
+        usuariosParaNotificar = usuarios.filter(u => !u.is_admin);
+      } else if (destinatario) {
+        // Usuário específico
+        const usuario = await User.findById(destinatario);
+        if (usuario) {
+          usuariosParaNotificar = [usuario];
+        }
+      } else {
+        return res.json({ success: false, error: 'Destinatário não especificado' });
+      }
+
+      // Cria notificação para cada usuário
+      const notificacoesCriadas = [];
+      for (const usuario of usuariosParaNotificar) {
+        try {
+          const result = await db.query(
+            `INSERT INTO notificacoes (user_id, tipo, titulo, mensagem, lida, tarefa_id, link)
+             VALUES ($1, $2, $3, $4, false, NULL, NULL)
+             RETURNING *`,
+            [usuario.id, tipo, titulo.trim(), mensagem.trim()]
+          );
+          notificacoesCriadas.push(result.rows[0]);
+        } catch (error) {
+          console.error(`Erro ao criar notificação para usuário ${usuario.id}:`, error);
+          // Continua para os próximos usuários mesmo se um falhar
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        message: `${notificacoesCriadas.length} notificação(ões) criada(s) com sucesso`,
+        count: notificacoesCriadas.length
+      });
+    } catch (error) {
+      console.error('Erro ao criar notificação:', error);
+      res.json({ success: false, error: 'Erro ao criar notificação' });
+    }
+  }
+
 }
 
 module.exports = AdminController;
