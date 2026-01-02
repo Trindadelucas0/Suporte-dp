@@ -24,7 +24,7 @@
 <body class="bg-gray-50">
     <%- include('../partials/navbar') %>
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
+    <main class="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 py-4 sm:py-8">
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">
                 <i class="fas fa-bell text-primary-red mr-2"></i>
@@ -36,7 +36,7 @@
         </div>
 
         <!-- Formulário de Nova Notificação -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6 sm:mb-8">
             <h2 class="text-xl font-bold text-gray-900 mb-4">Nova Notificação</h2>
             <form id="formNotificacao" class="space-y-4">
                 <div>
@@ -89,28 +89,47 @@
                         <label for="destinatario" class="block text-sm font-medium text-gray-700 mb-2">
                             Destinatário <span class="text-red-500">*</span>
                         </label>
-                        <select 
-                            id="destinatario" 
-                            name="destinatario" 
-                            required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-transparent"
-                        >
-                            <option value="todos">Todos os usuários</option>
-                            <% if (usuarios && usuarios.length > 0) { %>
-                                <% usuarios.forEach(usuario => { %>
-                                    <% if (!usuario.is_admin) { %>
-                                        <option value="<%= usuario.id %>"><%= usuario.nome %> (<%= usuario.email %>)</option>
-                                    <% } %>
-                                <% }); %>
-                            <% } %>
-                        </select>
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="buscarDestinatario" 
+                                placeholder="🔍 Buscar usuário por nome ou email..."
+                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-transparent mb-2 text-sm sm:text-base"
+                                onkeyup="filtrarUsuarios(this.value)"
+                            >
+                            <select 
+                                id="destinatario" 
+                                name="destinatario" 
+                                required
+                                size="6"
+                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-transparent overflow-y-auto text-sm sm:text-base"
+                            >
+                                <option value="todos">📢 Todos os usuários</option>
+                                <% if (usuarios && usuarios.length > 0) { %>
+                                    <% usuarios.forEach(usuario => { %>
+                                        <% if (!usuario.is_admin) { %>
+                                            <option value="<%= usuario.id %>" data-nome="<%= usuario.nome.toLowerCase() %>" data-email="<%= usuario.email.toLowerCase() %>">
+                                                <%= usuario.nome %> (<%= usuario.email %>)
+                                            </option>
+                                        <% } %>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1" id="contadorUsuarios">
+                                <% if (usuarios && usuarios.length > 0) { %>
+                                    <%= usuarios.filter(u => !u.is_admin).length %> usuário(s) disponível(is)
+                                <% } else { %>
+                                    Nenhum usuário disponível
+                                <% } %>
+                            </p>
+                        </div>
                     </div>
                 </div>
 
                 <div class="flex justify-end">
                     <button 
                         type="submit"
-                        class="px-6 py-2 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-lg font-semibold hover:opacity-90 transition"
+                        class="w-full sm:w-auto px-4 sm:px-6 py-2 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-lg font-semibold hover:opacity-90 transition text-sm sm:text-base"
                     >
                         <i class="fas fa-paper-plane mr-2"></i>
                         Enviar Notificação
@@ -170,6 +189,52 @@
             }
             return headers;
         }
+
+        // Função para filtrar usuários no select
+        function filtrarUsuarios(busca) {
+            const select = document.getElementById('destinatario');
+            const options = select.querySelectorAll('option');
+            const buscaLower = busca.toLowerCase().trim();
+            let contador = 0;
+
+            options.forEach(option => {
+                if (option.value === 'todos') {
+                    option.style.display = buscaLower === '' ? 'block' : 'none';
+                    if (buscaLower === '') contador++;
+                } else {
+                    const nome = option.getAttribute('data-nome') || '';
+                    const email = option.getAttribute('data-email') || '';
+                    
+                    if (buscaLower === '' || nome.includes(buscaLower) || email.includes(buscaLower)) {
+                        option.style.display = 'block';
+                        contador++;
+                    } else {
+                        option.style.display = 'none';
+                    }
+                }
+            });
+
+            // Atualiza contador
+            const contadorEl = document.getElementById('contadorUsuarios');
+            if (contadorEl) {
+                contadorEl.textContent = `${contador} usuário(s) encontrado(s)`;
+            }
+        }
+
+        // Limpa filtro ao selecionar
+        document.addEventListener('DOMContentLoaded', () => {
+            const select = document.getElementById('destinatario');
+            const buscarInput = document.getElementById('buscarDestinatario');
+            
+            if (select) {
+                select.addEventListener('change', () => {
+                    if (buscarInput) {
+                        buscarInput.value = '';
+                        filtrarUsuarios('');
+                    }
+                });
+            }
+        });
 
         document.getElementById('formNotificacao').addEventListener('submit', async (e) => {
             e.preventDefault();

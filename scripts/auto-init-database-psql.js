@@ -27,11 +27,15 @@ async function initDatabase() {
     `);
 
     if (checkTable.rows[0].exists) {
-      console.log('✅ Tabelas já existem. Verificando campos adicionais...');
+      console.log('✅ Tabelas já existem. Verificando campos adicionais e migrations...');
       // Verifica e adiciona campos se necessário
       await addMissingFields();
       // Verifica e cria nova tabela de risco multa
       await checkRiscoMultaTable();
+      // Verifica e executa migrations pendentes
+      await executarMigrations();
+      // Verifica e cria dados de exemplo de tarefas
+      await criarTarefasExemplo();
       return;
     }
 
@@ -109,6 +113,9 @@ async function initDatabase() {
       console.warn('⚠️  Aviso ao verificar feriados de 2026:', error.message);
       // Não interrompe o servidor se houver erro
     }
+
+    // Verifica e executa todas as migrations pendentes
+    await executarMigrations();
 
     // Verifica e cria dados de exemplo de tarefas
     await criarTarefasExemplo();
@@ -467,6 +474,91 @@ async function criarTarefasExemplo() {
   } catch (error) {
     console.warn('⚠️  Aviso ao criar tarefas de exemplo:', error.message);
     // Não interrompe o servidor se houver erro
+  }
+}
+
+// Executa todas as migrations pendentes
+async function executarMigrations() {
+  try {
+    console.log('🔄 Verificando migrations pendentes...');
+    
+    const migrationsDir = path.join(__dirname, '..', 'database', 'migrations');
+    
+    if (!fs.existsSync(migrationsDir)) {
+      console.log('⚠️  Diretório de migrations não encontrado.');
+      return;
+    }
+    
+    const migrationFiles = fs.readdirSync(migrationsDir)
+      .filter(file => file.endsWith('.sql'))
+      .sort();
+
+    for (const file of migrationFiles) {
+      const migrationPath = path.join(migrationsDir, file);
+      const migration = fs.readFileSync(migrationPath, 'utf8');
+      
+      try {
+        // Remove comentários e divide em comandos
+        let migrationClean = migration.replace(/^--.*$/gm, '');
+        
+        // Divide respeitando blocos $$
+        const commands = [];
+        let current = '';
+        let inBlock = false;
+        let blockTag = '';
+        
+        const lines = migrationClean.split('\n');
+        for (const line of lines) {
+          if (line.includes('$$') && !inBlock) {
+            const match = line.match(/\$[^$]*\$/);
+            if (match) {
+              inBlock = true;
+              blockTag = match[0];
+            }
+          }
+          
+          current += line + '\n';
+          
+          if (inBlock && line.includes(blockTag)) {
+            inBlock = false;
+          }
+          
+          if (!inBlock && line.trim().endsWith(';')) {
+            const trimmed = current.trim();
+            if (trimmed.length > 20) {
+              commands.push(trimmed);
+            }
+            current = '';
+          }
+        }
+        
+        // Adiciona último comando se houver
+        if (current.trim().length > 20) {
+          commands.push(current.trim());
+        }
+
+        for (const command of commands) {
+          try {
+            await db.query(command);
+          } catch (error) {
+            // Ignora erros de "já existe" ou "duplicado"
+            if (!error.message.includes('already exists') && 
+                !error.message.includes('duplicate') &&
+                !error.message.includes('já existe') &&
+                !error.message.includes('does not exist')) {
+              console.warn(`⚠️  Aviso na migration ${file}:`, error.message);
+            }
+          }
+        }
+        console.log(`✅ Migration ${file} verificada`);
+      } catch (error) {
+        console.warn(`⚠️  Erro ao executar migration ${file}:`, error.message);
+      }
+    }
+    
+    console.log('✅ Todas as migrations verificadas!');
+  } catch (error) {
+    console.warn('⚠️  Aviso ao executar migrations:', error.message);
   }
 }
 
