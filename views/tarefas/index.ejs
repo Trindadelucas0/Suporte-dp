@@ -450,6 +450,20 @@
     <script src="/js/tarefas.js"></script>
     <script src="/js/tarefas-inline.js"></script>
     <script>
+        // Disponibiliza token CSRF globalmente
+        window.csrfToken = '<%= typeof csrfToken !== "undefined" && csrfToken ? csrfToken : "" %>';
+        
+        // Função helper para adicionar CSRF em requisições fetch
+        function getCSRFHeaders() {
+            const headers = { 'Content-Type': 'application/json' };
+            if (window.csrfToken) {
+                headers['x-csrf-token'] = window.csrfToken;
+                headers['X-CSRF-Token'] = window.csrfToken;
+                headers['csrf-token'] = window.csrfToken;
+            }
+            return headers;
+        }
+
         // Destaca a tarefa na tabela se foi selecionada via link (sem abrir modal)
         <% if (tarefaSelecionada) { %>
             document.addEventListener('DOMContentLoaded', () => {

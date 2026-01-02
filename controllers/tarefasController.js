@@ -37,7 +37,8 @@ class TarefasController {
         kanban,
         estatisticas,
         tarefaSelecionada,
-        user: req.session.user
+        user: req.session.user,
+        csrfToken: res.locals.csrfToken || req.csrfToken ? req.csrfToken() : null
       });
     } catch (error) {
       console.error('Erro ao carregar tarefas:', error);

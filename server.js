@@ -198,11 +198,14 @@ if (process.env.NODE_ENV === 'test') {
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "lax" : "strict" // "lax" funciona melhor no Render
+      sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax", // "lax" funciona melhor
+      key: '_csrf'
     },
+    // Ignora métodos GET, HEAD, OPTIONS (mas ainda gera tokens)
+    ignoreMethods: ['GET', 'HEAD', 'OPTIONS'],
     // Aceita token no header ou no body (case-insensitive para headers)
     value: (req) => {
-      // Tenta do body primeiro
+      // Tenta do body primeiro (após parsing)
       if (req.body && req.body._csrf) {
         return req.body._csrf;
       }

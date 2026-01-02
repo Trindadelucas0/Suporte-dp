@@ -236,21 +236,39 @@ async function marcarComoLida(notifId) {
 
     console.log('Marcando notificação como lida:', notifId);
 
+    // Verifica se o token CSRF está disponível
+    if (!window.csrfToken || window.csrfToken === '') {
+        console.error('Token CSRF não disponível. Tentando obter...');
+        // Tenta obter do helper se disponível
+        if (typeof getCSRFHeaders === 'function') {
+            const tempHeaders = getCSRFHeaders();
+            if (tempHeaders['X-CSRF-Token']) {
+                window.csrfToken = tempHeaders['X-CSRF-Token'];
+            } else {
+                console.error('Token CSRF não encontrado. Recarregando página...');
+                alert('Token de segurança não encontrado. A página será recarregada.');
+                window.location.reload();
+                return;
+            }
+        } else {
+            console.error('Token CSRF não encontrado. Recarregando página...');
+            alert('Token de segurança não encontrado. A página será recarregada.');
+            window.location.reload();
+            return;
+        }
+    }
+
     try {
         const headers = { 'Content-Type': 'application/json' };
         
-        // Adiciona token CSRF (usar minúsculo para compatibilidade)
-        if (window.csrfToken) {
-            headers['x-csrf-token'] = window.csrfToken;
-            headers['X-CSRF-Token'] = window.csrfToken; // Duplicado para garantir
-        } else if (typeof getCSRFHeaders === 'function') {
-            Object.assign(headers, getCSRFHeaders());
-        }
+        // Adiciona token CSRF em múltiplos formatos para garantir compatibilidade
+        headers['x-csrf-token'] = window.csrfToken;
+        headers['X-CSRF-Token'] = window.csrfToken;
+        headers['csrf-token'] = window.csrfToken;
 
-        const body = {};
-        if (window.csrfToken) {
-            body._csrf = window.csrfToken;
-        }
+        const body = {
+            _csrf: window.csrfToken
+        };
 
         console.log('Enviando requisição para:', `/notificacoes/api/${notifId}/marcar-lida`);
         console.log('Headers:', headers);
@@ -298,21 +316,38 @@ async function marcarComoLida(notifId) {
 }
 
 async function marcarTodasComoLidas() {
+    // Verifica se o token CSRF está disponível
+    if (!window.csrfToken || window.csrfToken === '') {
+        console.error('Token CSRF não disponível. Tentando obter...');
+        if (typeof getCSRFHeaders === 'function') {
+            const tempHeaders = getCSRFHeaders();
+            if (tempHeaders['X-CSRF-Token']) {
+                window.csrfToken = tempHeaders['X-CSRF-Token'];
+            } else {
+                console.error('Token CSRF não encontrado. Recarregando página...');
+                alert('Token de segurança não encontrado. A página será recarregada.');
+                window.location.reload();
+                return;
+            }
+        } else {
+            console.error('Token CSRF não encontrado. Recarregando página...');
+            alert('Token de segurança não encontrado. A página será recarregada.');
+            window.location.reload();
+            return;
+        }
+    }
+
     try {
         const headers = { 'Content-Type': 'application/json' };
         
-        // Adiciona token CSRF (usar minúsculo para compatibilidade)
-        if (window.csrfToken) {
-            headers['x-csrf-token'] = window.csrfToken;
-            headers['X-CSRF-Token'] = window.csrfToken; // Duplicado para garantir
-        } else if (typeof getCSRFHeaders === 'function') {
-            Object.assign(headers, getCSRFHeaders());
-        }
+        // Adiciona token CSRF em múltiplos formatos
+        headers['x-csrf-token'] = window.csrfToken;
+        headers['X-CSRF-Token'] = window.csrfToken;
+        headers['csrf-token'] = window.csrfToken;
 
-        const body = {};
-        if (window.csrfToken) {
-            body._csrf = window.csrfToken;
-        }
+        const body = {
+            _csrf: window.csrfToken
+        };
 
         const response = await fetch('/notificacoes/api/marcar-todas-lidas', {
             method: 'POST',
