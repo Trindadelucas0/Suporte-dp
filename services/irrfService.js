@@ -188,8 +188,9 @@ class IRRFService {
       faixaAplicavel = FAIXAS[FAIXAS.length - 1];
     }
 
-    // Calcula IRRF
-    const valorIRRF = (baseCalculo * faixaAplicavel.aliquota / 100) - faixaAplicavel.deducao;
+    // Calcula IRRF pela tabela progressiva
+    let valorIRRF = (baseCalculo * faixaAplicavel.aliquota / 100) - faixaAplicavel.deducao;
+    valorIRRF = Math.max(0, valorIRRF); // Garante que não seja negativo
 
     memoria.push({
       passo: memoria.length + 1,
@@ -199,9 +200,63 @@ class IRRFService {
 
     memoria.push({
       passo: memoria.length + 1,
-      descricao: `Cálculo: (R$ ${baseCalculo.toFixed(2)} × ${faixaAplicavel.aliquota}%) - R$ ${faixaAplicavel.deducao.toFixed(2)}`,
-      calculo: `R$ ${(baseCalculo * faixaAplicavel.aliquota / 100).toFixed(2)} - R$ ${faixaAplicavel.deducao.toFixed(2)} = R$ ${Math.max(0, valorIRRF).toFixed(2)}`,
-      valor: Math.max(0, valorIRRF).toFixed(2),
+      descricao: `Cálculo pela tabela: (R$ ${baseCalculo.toFixed(2)} × ${faixaAplicavel.aliquota}%) - R$ ${faixaAplicavel.deducao.toFixed(2)}`,
+      calculo: `R$ ${(baseCalculo * faixaAplicavel.aliquota / 100).toFixed(2)} - R$ ${faixaAplicavel.deducao.toFixed(2)} = R$ ${valorIRRF.toFixed(2)}`,
+      valor: valorIRRF.toFixed(2)
+    });
+
+    // NOVA REGRA DE ISENÇÃO (a partir de 2026)
+    // Aplicar desconto progressivo APÓS calcular pela tabela
+    if (anoUsado >= 2026 && valorIRRF > 0) {
+      let descontoPercentual = 0;
+      let valorDesconto = 0;
+      let valorIRRFFinal = valorIRRF;
+
+      // Regra: desconto progressivo entre R$ 5.000 e R$ 7.000
+      if (baseCalculo <= 5000) {
+        // Até R$ 5.000,00 → IR = R$ 0,00 (100% de desconto)
+        descontoPercentual = 100;
+        valorDesconto = valorIRRF;
+        valorIRRFFinal = 0;
+      } else if (baseCalculo >= 7000) {
+        // Acima de R$ 7.000,00 → sem desconto (cálculo normal)
+        descontoPercentual = 0;
+        valorDesconto = 0;
+        valorIRRFFinal = valorIRRF;
+      } else {
+        // Entre R$ 5.000 e R$ 7.000 → desconto progressivo
+        // Fórmula: desconto = 100% - ((baseCalculo - 5000) / 2000) * 100%
+        // Exemplos:
+        // R$ 5.500 → desconto = 100% - (500/2000)*100% = 100% - 25% = 75%
+        // R$ 6.000 → desconto = 100% - (1000/2000)*100% = 100% - 50% = 50%
+        // R$ 6.500 → desconto = 100% - (1500/2000)*100% = 100% - 75% = 25%
+        descontoPercentual = 100 - ((baseCalculo - 5000) / 2000) * 100;
+        valorDesconto = (valorIRRF * descontoPercentual) / 100;
+        valorIRRFFinal = valorIRRF - valorDesconto;
+      }
+
+      if (descontoPercentual > 0) {
+        memoria.push({
+          passo: memoria.length + 1,
+          descricao: `Nova Regra de Isenção 2026: Base de cálculo entre R$ 5.000 e R$ 7.000`,
+          valor: `Desconto de ${descontoPercentual.toFixed(1)}%`
+        });
+
+        memoria.push({
+          passo: memoria.length + 1,
+          descricao: `(-) Desconto por isenção: R$ ${valorDesconto.toFixed(2)} (${descontoPercentual.toFixed(1)}%)`,
+          calculo: `R$ ${valorIRRF.toFixed(2)} × ${descontoPercentual.toFixed(1)}% = R$ ${valorDesconto.toFixed(2)}`,
+          valor: `-${valorDesconto.toFixed(2)}`
+        });
+
+        valorIRRF = valorIRRFFinal;
+      }
+    }
+
+    memoria.push({
+      passo: memoria.length + 1,
+      descricao: `IRRF Final: R$ ${valorIRRF.toFixed(2)}`,
+      valor: valorIRRF.toFixed(2),
       destaque: true
     });
 
@@ -226,9 +281,18 @@ class IRRFService {
         artigo: deducaoSimplificada 
           ? 'Lei 13.670/2018 - Art. 1º e IN RFB 1500/2014 - Art. 1º'
           : 'Art. 1º e Anexo I',
-        descricao: deducaoSimplificada
-          ? `Dedução simplificada: Valor fixo mensal de R$ 607,20 (Lei 15.191/2025 e MP 1.294/2025). Substitui todas as deduções legais (INSS, dependentes, pensão). Aplica-se exclusivamente ao IRRF mensal.`
-          : `Tabela progressiva do Imposto de Renda Retido na Fonte ${anoUsado}, com dedução por dependente de R$ ${VALOR_DEPENDENTE.toFixed(2)}.`
+        descricao: (() => {
+          let desc = deducaoSimplificada
+            ? `Dedução simplificada: Valor fixo mensal de R$ 607,20 (Lei 15.191/2025 e MP 1.294/2025). Substitui todas as deduções legais (INSS, dependentes, pensão). Aplica-se exclusivamente ao IRRF mensal.`
+            : `Tabela progressiva do Imposto de Renda Retido na Fonte ${anoUsado}, com dedução por dependente de R$ ${VALOR_DEPENDENTE.toFixed(2)}.`;
+          
+          // Adiciona informação sobre nova regra de isenção 2026
+          if (anoUsado >= 2026) {
+            desc += ` A partir de 2026, aplica-se ampliação da isenção: base de cálculo até R$ 5.000,00 é totalmente isenta; entre R$ 5.000,00 e R$ 7.000,00 há desconto progressivo; acima de R$ 7.000,00 aplica-se cálculo normal pela tabela progressiva. Esta regra aplica-se APENAS ao IRRF mensal (folha de pagamento), não se confunde com tributação mínima anual.`;
+          }
+          
+          return desc;
+        })()
       }
     };
   }

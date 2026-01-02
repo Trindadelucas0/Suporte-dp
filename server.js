@@ -114,16 +114,8 @@ const registerLimiter = rateLimit({
 // Cookie Parser (necessário para CSRF)
 app.use(cookieParser());
 
-// Middleware de parsing JSON (configurado para não consumir stream de webhooks)
-app.use(express.json({ 
-  limit: "10mb",
-  verify: (req, res, buf, encoding) => {
-    // Captura body raw apenas para rotas de webhook
-    if (req.path && req.path.startsWith('/webhook')) {
-      req.rawBody = buf.toString(encoding || 'utf8');
-    }
-  }
-}));
+// Middleware de parsing JSON
+app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Configuração de sessão com PostgreSQL
@@ -152,7 +144,20 @@ const sessionConfig = {
 
 app.use(session(sessionConfig));
 
-// Middleware para rastrear atividade do usuário
+// Middleware para verificar inatividade (deve vir ANTES do trackActivity)
+const { checkInactivity } = require('./middleware/activityTracker');
+app.use((req, res, next) => {
+  // Aplica verificação de inatividade apenas para usuários autenticados
+  if (req.session && req.session.user) {
+    const canContinue = checkInactivity(req, res);
+    if (canContinue === false) {
+      return; // Sessão expirada, já redirecionou
+    }
+  }
+  next();
+});
+
+// Middleware para rastrear atividade do usuário (atualiza lastActivity)
 const trackActivity = require('./middleware/activityTracker');
 app.use(trackActivity);
 
@@ -219,8 +224,6 @@ if (process.env.NODE_ENV === 'test') {
 
 // Rotas
 const authRoutes = require("./routes/auth");
-const webhookRoutes = require("./routes/webhook");
-const activationRoutes = require("./routes/activation");
 const dashboardRoutes = require("./routes/dashboard");
 const calendarioRoutes = require("./routes/calendario");
 const inssRoutes = require("./routes/inss");
@@ -237,9 +240,6 @@ const perfilRoutes = require("./routes/perfil");
 const adminRoutes = require("./routes/admin");
 
 // Rotas públicas (sem CSRF protection)
-// Webhooks devem vir ANTES do body parser para capturar raw body
-app.use("/webhook", webhookRoutes);
-app.use("/ativar", activationRoutes);
 app.use("/", authRoutes);
 
 // Rotas protegidas (com CSRF protection)
