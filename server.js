@@ -152,20 +152,7 @@ const sessionConfig = {
 
 app.use(session(sessionConfig));
 
-// Middleware para verificar inatividade (deve vir ANTES do trackActivity)
-const { checkInactivity } = require('./middleware/activityTracker');
-app.use((req, res, next) => {
-  // Aplica verificação de inatividade apenas para usuários autenticados
-  if (req.session && req.session.user) {
-    const canContinue = checkInactivity(req, res);
-    if (canContinue === false) {
-      return; // Sessão expirada, já redirecionou
-    }
-  }
-  next();
-});
-
-// Middleware para rastrear atividade do usuário (atualiza lastActivity)
+// Middleware para rastrear atividade do usuário
 const trackActivity = require('./middleware/activityTracker');
 app.use(trackActivity);
 

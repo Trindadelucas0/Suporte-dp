@@ -3,48 +3,18 @@
  * Protege rotas que requerem login
  */
 
-const { checkInactivity } = require('./activityTracker');
-
 function requireAuth(req, res, next) {
-  // Verifica se está autenticado primeiro
-  if (!req.session || !req.session.user) {
-    if (req.session) {
-      req.session.returnTo = req.originalUrl;
-    }
-    return res.redirect('/login');
-  }
-
-  // Depois verifica inatividade (10 minutos)
-  // checkInactivity retorna false se expirou (e já redirecionou)
-  const canContinue = checkInactivity(req, res);
-  
-  // Se não expirou, continua normalmente
-  if (canContinue !== false) {
+  if (req.session && req.session.user) {
     return next();
   }
-  // Se expirou, checkInactivity já fez o redirecionamento, não precisa fazer nada
+  req.session.returnTo = req.originalUrl;
+  res.redirect('/login');
 }
 
 function requireAdmin(req, res, next) {
-  // Verifica se está autenticado primeiro
-  if (!req.session || !req.session.user) {
-    if (req.session) {
-      req.session.returnTo = req.originalUrl;
-    }
-    return res.redirect('/login');
-  }
-
-  // Verifica inatividade (10 minutos)
-  const canContinue = checkInactivity(req, res);
-  if (canContinue === false) {
-    return; // Sessão expirou, já redirecionou
-  }
-
-  // Verifica se é admin
-  if (req.session.user.is_admin) {
+  if (req.session && req.session.user && req.session.user.is_admin) {
     return next();
   }
-  
   res.status(403).render('error', {
     title: 'Acesso Negado',
     error: 'Você não tem permissão para acessar esta página.'

@@ -10,13 +10,9 @@ const { validationResult } = require('express-validator');
 class AuthController {
   static async login(req, res) {
     if (req.method === 'GET') {
-      const error = req.query.expired 
-        ? 'Sua sessão expirou por inatividade (10 minutos). Por favor, faça login novamente.' 
-        : null;
-      
       return res.render('auth/login', {
         title: 'Login - Suporte DP',
-        error: error
+        error: null
       });
     }
 
@@ -76,9 +72,6 @@ class AuthController {
         email: user.email,
         is_admin: user.is_admin
       };
-      
-      // Salva timestamp da última atividade na sessão
-      req.session.lastActivity = Date.now();
 
       // Salva a sessão antes de redirecionar
       req.session.save((err) => {
@@ -158,9 +151,6 @@ class AuthController {
         email: user.email,
         is_admin: user.is_admin
       };
-      
-      // Salva timestamp da última atividade na sessão
-      req.session.lastActivity = Date.now();
 
       // Salva a sessão antes de redirecionar
       req.session.save((err) => {

@@ -94,28 +94,24 @@
             </main>
 
             <script src="/js/loading.js"></script>
-            <% if (typeof user !=='undefined' && user) { %>
-                <!-- Script de aviso de inatividade (apenas para usuários logados) -->
-                <script src="/js/inactivity-warning.js"></script>
-                <% } %>
-                    <script>
-                        // Disponibiliza token CSRF globalmente para requisições AJAX
-                        window.csrfToken = '<%= typeof csrfToken !== "undefined" && csrfToken ? csrfToken : "" %>';
+            <script>
+                // Disponibiliza token CSRF globalmente para requisições AJAX
+                window.csrfToken = '<%= typeof csrfToken !== "undefined" && csrfToken ? csrfToken : "" %>';
 
-                        // Função helper para adicionar CSRF em requisições fetch
-                        function getCSRFHeaders() {
-                            const headers = { 'Content-Type': 'application/json' };
-                            if (window.csrfToken) {
-                                headers['X-CSRF-Token'] = window.csrfToken;
-                            }
-                            return headers;
-                        }
+                // Função helper para adicionar CSRF em requisições fetch
+                function getCSRFHeaders() {
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (window.csrfToken) {
+                        headers['X-CSRF-Token'] = window.csrfToken;
+                    }
+                    return headers;
+                }
 
-                        // Mobile menu toggle (se necessário)
-                        document.addEventListener('DOMContentLoaded', function () {
-                            // Adicionar scripts específicos aqui
-                        });
-                    </script>
+                // Mobile menu toggle (se necessário)
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Adicionar scripts específicos aqui
+                });
+            </script>
 </body>
 
 </html>
