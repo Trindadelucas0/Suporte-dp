@@ -29,61 +29,76 @@ const feriados2026 = [
 
 async function adicionarFeriados2026() {
   try {
-    console.log('📅 Adicionando feriados de 2026...\n');
+    console.log('📅 Verificando e adicionando feriados de 2026...\n');
 
     let adicionados = 0;
     let jaExistem = 0;
+    let atualizados = 0;
 
     for (const feriado of feriados2026) {
       try {
-        await db.query(
-          'INSERT INTO feriados (data, nome, tipo) VALUES ($1, $2, $3) ON CONFLICT (data) DO NOTHING',
-          [feriado.data, feriado.nome, feriado.tipo]
-        );
-
-        // Verifica se foi inserido
+        // Primeiro verifica se já existe
         const check = await db.query(
-          'SELECT COUNT(*) as count FROM feriados WHERE data = $1',
+          'SELECT id, nome, tipo FROM feriados WHERE data = $1',
           [feriado.data]
         );
 
-        if (parseInt(check.rows[0].count) > 0) {
-          const existing = await db.query(
-            'SELECT nome FROM feriados WHERE data = $1',
-            [feriado.data]
-          );
-          
-          if (existing.rows[0].nome === feriado.nome) {
-            console.log(`✅ ${feriado.data} - ${feriado.nome}`);
-            adicionados++;
+        if (check.rows.length > 0) {
+          // Já existe - verifica se precisa atualizar
+          const existente = check.rows[0];
+          if (existente.nome !== feriado.nome || existente.tipo !== feriado.tipo) {
+            // Atualiza se nome ou tipo for diferente
+            await db.query(
+              'UPDATE feriados SET nome = $1, tipo = $2 WHERE data = $3',
+              [feriado.nome, feriado.tipo, feriado.data]
+            );
+            console.log(`🔄 ${feriado.data} - Atualizado: ${feriado.nome} (${feriado.tipo})`);
+            atualizados++;
           } else {
-            console.log(`⚠️  ${feriado.data} - Já existe com nome diferente: ${existing.rows[0].nome}`);
+            console.log(`✓ ${feriado.data} - ${feriado.nome} (já existe)`);
             jaExistem++;
           }
         } else {
-          jaExistem++;
+          // Não existe - adiciona
+          await db.query(
+            'INSERT INTO feriados (data, nome, tipo) VALUES ($1, $2, $3)',
+            [feriado.data, feriado.nome, feriado.tipo]
+          );
+          console.log(`✅ ${feriado.data} - ${feriado.nome} (${feriado.tipo}) - ADICIONADO`);
+          adicionados++;
         }
       } catch (error) {
         if (error.code === '23505') { // Unique violation
           console.log(`⚠️  ${feriado.data} - Já existe no banco`);
           jaExistem++;
         } else {
-          console.error(`❌ Erro ao adicionar ${feriado.data}:`, error.message);
+          console.error(`❌ Erro ao processar ${feriado.data}:`, error.message);
         }
       }
     }
 
     console.log(`\n✅ Processo concluído!`);
     console.log(`   - Adicionados: ${adicionados}`);
+    console.log(`   - Atualizados: ${atualizados}`);
     console.log(`   - Já existiam: ${jaExistem}`);
     console.log(`   - Total: ${feriados2026.length}`);
 
-    process.exit(0);
+    if (typeof process !== 'undefined' && process.exit) {
+      process.exit(0);
+    }
   } catch (error) {
     console.error('❌ Erro ao adicionar feriados:', error);
-    process.exit(1);
+    if (typeof process !== 'undefined' && process.exit) {
+      process.exit(1);
+    }
+    throw error;
   }
 }
 
-adicionarFeriados2026();
+// Permite executar diretamente ou como módulo
+if (require.main === module) {
+  adicionarFeriados2026();
+} else {
+  module.exports = adicionarFeriados2026;
+}
 

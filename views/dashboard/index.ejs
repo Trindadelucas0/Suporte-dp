@@ -18,11 +18,16 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&family=Dela+Gothic+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .bungee-inline-regular {
             font-family: "Bungee Inline", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+        .dela-gothic-one-regular {
+            font-family: "Dela Gothic One", sans-serif;
             font-weight: 400;
             font-style: normal;
         }
@@ -35,13 +40,12 @@
 
     <main class="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
         <div class="mb-4 sm:mb-6">
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p class="mt-2 text-sm sm:text-base text-gray-600">
-                Bem-vindo, <span class="font-semibold text-primary-red"><%= typeof user !== 'undefined' && user ? user.nome : 'Usuário' %></span>!
-            </p>
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+                <strong>Bem-vindo,</strong> <span class="font-semibold text-primary-red"><%= typeof user !== 'undefined' && user ? user.nome : 'Usuário' %></span>!
+            </h1>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
             <!-- Menu Lateral de Acesso Rápido (Lado Esquerdo) -->
             <div class="lg:col-span-3 order-2 lg:order-1 space-y-4 sm:space-y-6">
                 <!-- Acesso Rápido -->

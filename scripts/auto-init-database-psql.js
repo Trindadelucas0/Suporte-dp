@@ -100,6 +100,16 @@ async function initDatabase() {
       console.log('💡 Execute "npm run create-admin" para criar o usuário administrador');
     }
 
+    // Sempre verifica e adiciona feriados de 2026 (se não existirem)
+    console.log('📅 Verificando feriados de 2026...');
+    try {
+      const adicionarFeriados2026 = require('./add-feriados-2026');
+      await adicionarFeriados2026();
+    } catch (error) {
+      console.warn('⚠️  Aviso ao verificar feriados de 2026:', error.message);
+      // Não interrompe o servidor se houver erro
+    }
+
   } catch (error) {
     console.error('❌ Erro ao inicializar banco de dados:', error.message);
     console.log('⚠️  Tentando método alternativo...');
