@@ -39,15 +39,15 @@
     <% } %>
 
     <main class="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
-        <div class="mb-4 sm:mb-6">
-            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
-                <strong>Bem-vindo,</strong> <span class="font-semibold text-primary-red"><%= typeof user !== 'undefined' && user ? user.nome : 'Usuário' %></span>!
-            </h1>
-        </div>
-
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
             <!-- Menu Lateral de Acesso Rápido (Lado Esquerdo) -->
             <div class="lg:col-span-3 order-2 lg:order-1 space-y-4 sm:space-y-6">
+                <!-- Bem-vindo -->
+                <div class="mb-3 sm:mb-4">
+                    <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-2100">
+                        <strong>Bem-vindo,</strong> <span class="font-semibold text-primary-red"><%= typeof user !== 'undefined' && user ? user.nome : 'Usuário' %></span>!
+                    </h1>
+                </div>
                 <!-- Acesso Rápido -->
                 <div class="bg-white rounded-xl shadow-xl p-4 sm:p-6 border-4 border-primary-red hover:border-primary-yellow transition-all duration-300 transform hover:shadow-2xl lg:sticky lg:top-6">
                     <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-primary-red">
@@ -146,6 +146,13 @@
             </div>
             <!-- Calendário (Lado Direito) -->
             <div class="lg:col-span-9 order-1 lg:order-2">
+                <!-- Título Suporte DP -->
+                <div class="mb-3 sm:mb-4 text-center">
+                    <h2 class="dela-gothic-one-regular text-2xl sm:text-3xl lg:text-4xl xl:text-5xl bg-gradient-to-r from-primary-red to-primary-yellow bg-clip-text text-transparent drop-shadow-lg flex items-center justify-center">
+                        <i class="fas fa-calculator mr-2 sm:mr-3 text-2xl sm:text-3xl lg:text-4xl xl:text-5xl bg-gradient-to-r from-primary-red to-primary-yellow bg-clip-text text-transparent"></i>
+                        <span>Suporte DP</span>
+                    </h2>
+                </div>
                 <!-- 
                     CALENDÁRIO DE OBRIGAÇÕES
                     =========================
