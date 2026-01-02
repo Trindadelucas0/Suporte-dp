@@ -52,3 +52,4 @@ CREATE TRIGGER update_sugestoes_updated_at BEFORE UPDATE ON sugestoes_bugs
 UPDATE users SET ativo = TRUE WHERE ativo IS NULL;
 UPDATE users SET bloqueado = FALSE WHERE bloqueado IS NULL;
 
+

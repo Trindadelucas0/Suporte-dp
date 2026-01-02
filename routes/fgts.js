@@ -12,3 +12,4 @@ router.post('/calcular', requireAuth, FGTSController.calcular);
 
 module.exports = router;
 
+

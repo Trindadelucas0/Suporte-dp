@@ -101,3 +101,4 @@ class SugestaoBug {
 
 module.exports = SugestaoBug;
 
+

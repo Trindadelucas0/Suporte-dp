@@ -12,3 +12,4 @@ router.post('/calcular', requireAuth, INSSController.calcular);
 
 module.exports = router;
 
+

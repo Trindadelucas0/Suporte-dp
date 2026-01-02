@@ -11,3 +11,4 @@ router.get('/', requireAuth, DashboardController.index);
 
 module.exports = router;
 
+

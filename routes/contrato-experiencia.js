@@ -12,3 +12,4 @@ router.post('/calcular', requireAuth, ContratoExperienciaController.calcular);
 
 module.exports = router;
 
+

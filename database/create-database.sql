@@ -24,3 +24,4 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- psql -U postgres -d suporte_dp -f database/schema.sql
 -- ============================================
 
+

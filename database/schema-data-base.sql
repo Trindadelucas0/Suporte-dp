@@ -38,3 +38,4 @@ CREATE TABLE IF NOT EXISTS calculos_contrato_experiencia (
 -- Índice para histórico do usuário
 CREATE INDEX idx_calculos_contrato_user ON calculos_contrato_experiencia(user_id, created_at DESC);
 
+

@@ -12,3 +12,4 @@ router.post('/calcular', requireAuth, PericulosidadeController.calcular);
 
 module.exports = router;
 
+

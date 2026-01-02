@@ -51,3 +51,4 @@ END $$;
 -- Índice para busca por última atividade
 CREATE INDEX IF NOT EXISTS idx_users_ultima_atividade ON users(ultima_atividade DESC);
 
+

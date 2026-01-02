@@ -12,3 +12,4 @@ router.post('/calcular', requireAuth, AvosController.calcular);
 
 module.exports = router;
 
+

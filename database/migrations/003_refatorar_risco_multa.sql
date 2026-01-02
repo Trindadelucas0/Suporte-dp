@@ -91,3 +91,4 @@ COMMENT ON COLUMN calculos_risco_multa.esta_no_periodo_risco IS 'Indica se a res
 COMMENT ON COLUMN calculos_risco_multa.aviso_previo_gera_multa IS 'Indica se o aviso prévio cai nos 30 dias que antecedem a multa';
 COMMENT ON COLUMN calculos_risco_multa.gera_multa IS 'Resultado final: se gera multa ou não';
 
+

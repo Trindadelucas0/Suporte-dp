@@ -12,3 +12,4 @@ router.post('/calcular', requireAuth, FeriasController.calcular);
 
 module.exports = router;
 
+
