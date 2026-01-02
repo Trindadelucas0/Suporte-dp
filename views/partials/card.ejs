@@ -1,0 +1,50 @@
+<%#
+    PARTIAL: Card Padrão
+    =====================
+    Card reutilizável para padronizar visual do sistema
+    
+    Parâmetros:
+    - title: Título do card (opcional)
+    - icon: Ícone FontAwesome (opcional)
+    - borderColor: Cor da borda ('red', 'yellow', 'gray') - padrão: 'red'
+    - padding: Padding interno ('sm', 'md', 'lg') - padrão: 'md'
+    - hover: Se deve ter efeito hover (true/false) - padrão: true
+    - class: Classes CSS adicionais (opcional)
+-%>
+<%
+    const borderColor = typeof borderColor !== 'undefined' ? borderColor : 'red';
+    const padding = typeof padding !== 'undefined' ? padding : 'md';
+    const hover = typeof hover !== 'undefined' ? hover : true;
+    
+    const borderClasses = {
+        'red': 'border-primary-red hover:border-primary-yellow',
+        'yellow': 'border-primary-yellow hover:border-primary-red',
+        'gray': 'border-gray-300 hover:border-gray-400'
+    };
+    
+    const paddingClasses = {
+        'sm': 'p-4',
+        'md': 'p-4 sm:p-6',
+        'lg': 'p-6 sm:p-8'
+    };
+    
+    const hoverClasses = hover ? 'transition-all duration-300 transform hover:shadow-2xl' : '';
+%>
+<div class="bg-white rounded-xl shadow-xl <%= paddingClasses[padding] %> border-4 <%= borderClasses[borderColor] %> <%= hoverClasses %> <%= typeof class !== 'undefined' ? class : '' %>">
+    <% if (typeof title !== 'undefined' && title) { %>
+        <div class="mb-4 sm:mb-6">
+            <% if (typeof icon !== 'undefined' && icon) { %>
+                <h2 class="text-xl sm:text-2xl font-bold capitalize bg-gradient-to-r from-primary-red to-primary-yellow bg-clip-text text-transparent">
+                    <i class="<%= icon %> text-primary-red mr-2"></i>
+                    <%= title %>
+                </h2>
+            <% } else { %>
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
+                    <%= title %>
+                </h2>
+            <% } %>
+        </div>
+    <% } %>
+    <%- body %>
+</div>
+

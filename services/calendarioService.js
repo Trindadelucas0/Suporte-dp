@@ -202,6 +202,7 @@ class CalendarioService {
         diaSemana: current.day(),
         isFeriado: !!feriado,
         feriadoNome: feriado?.nome || null,
+        feriadoTipo: feriado?.tipo || null, // 'nacional' ou 'facultativo'
         anotacao: anotacoesMap.get(dataStr) || null,
         obrigacoes: obrigacoesMap.get(dataStr) || []
       });

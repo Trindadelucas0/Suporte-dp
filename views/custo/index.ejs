@@ -31,8 +31,10 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-1">
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h2 class="text-xl font-bold mb-4">Dados de Entrada</h2>
+                <div class="bg-white rounded-xl shadow-xl p-4 sm:p-6 border-4 border-primary-red hover:border-primary-yellow transition-all duration-300 transform hover:shadow-2xl">
+                    <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-primary-red to-primary-yellow bg-clip-text text-transparent">
+                        <i class="fas fa-calculator text-primary-red mr-2"></i>Dados de Entrada
+                    </h2>
                     
                     <% if (error) { %>
                         <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
@@ -91,7 +93,7 @@
 
             <div class="lg:col-span-2">
                 <% if (resultado) { %>
-                    <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="bg-white rounded-xl shadow-xl p-4 sm:p-6 border-4 border-primary-red hover:border-primary-yellow transition-all duration-300 transform hover:shadow-2xl">
                         <div class="bg-gradient-to-r from-primary-red to-primary-yellow rounded-lg p-6 text-white mb-6">
                             <h3 class="text-2xl font-bold mb-4">Custo Total do Funcionário</h3>
                             <div class="grid grid-cols-2 gap-4">
