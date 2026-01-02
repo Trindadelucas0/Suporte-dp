@@ -11,7 +11,7 @@ class AuthController {
   static async login(req, res) {
     if (req.method === 'GET') {
       const error = req.query.expired 
-        ? 'Sua sessão expirou por inatividade (5 minutos). Por favor, faça login novamente.' 
+        ? 'Sua sessão expirou por inatividade (10 minutos). Por favor, faça login novamente.' 
         : null;
       
       return res.render('auth/login', {

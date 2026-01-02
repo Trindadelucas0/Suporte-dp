@@ -14,7 +14,7 @@ function requireAuth(req, res, next) {
     return res.redirect('/login');
   }
 
-  // Depois verifica inatividade (5 minutos)
+  // Depois verifica inatividade (10 minutos)
   const canContinue = checkInactivity(req, res);
   if (canContinue === false) {
     return; // Sessão expirada, já redirecionou
@@ -32,7 +32,7 @@ function requireAdmin(req, res, next) {
     return res.redirect('/login');
   }
 
-  // Verifica inatividade (5 minutos)
+  // Verifica inatividade (10 minutos)
   const canContinue = checkInactivity(req, res);
   if (canContinue === false) {
     return; // Sessão expirada, já redirecionou

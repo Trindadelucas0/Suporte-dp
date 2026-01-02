@@ -1,17 +1,17 @@
 /**
  * MIDDLEWARE: Activity Tracker
  * Rastreia última atividade do usuário para identificar usuários online
- * E controla timeout de inatividade (5 minutos)
+ * E controla timeout de inatividade (10 minutos)
  */
 
 const db = require('../config/database');
 
-// Timeout de inatividade: 5 minutos em milissegundos
-const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutos
+// Timeout de inatividade: 10 minutos em milissegundos
+const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutos
 
 /**
  * Middleware para verificar timeout de inatividade
- * Redireciona para login se inativo por mais de 5 minutos
+ * Redireciona para login se inativo por mais de 10 minutos
  * Retorna false se sessão expirou (e já redirecionou), true caso contrário
  */
 function checkInactivity(req, res) {
@@ -28,7 +28,7 @@ function checkInactivity(req, res) {
     const lastActivity = req.session.lastActivity;
     const timeSinceLastActivity = now - lastActivity;
 
-    // Se passou mais de 5 minutos desde a última atividade
+    // Se passou mais de 10 minutos desde a última atividade
     if (timeSinceLastActivity > INACTIVITY_TIMEOUT) {
       console.log(`Sessão expirou por inatividade. Tempo: ${Math.round(timeSinceLastActivity / 1000)} segundos`);
       // Destrói a sessão e redireciona para login
