@@ -11,7 +11,10 @@ class TarefasController {
    * Exibe página Kanban de tarefas
    */
   static async index(req, res) {
-    const userId = req.session.user.id;
+    const userId = req.session.user?.id;
+    if (!userId) {
+      return res.status(401).redirect('/login');
+    }
 
     try {
       // Cria notificações automáticas ao acessar
@@ -57,7 +60,10 @@ class TarefasController {
    * Cria nova tarefa (POST)
    */
   static async create(req, res) {
-    const userId = req.session.user.id;
+    const userId = req.session.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Usuário não autenticado' });
+    }
 
     try {
       const errors = validationResult(req);
@@ -87,7 +93,10 @@ class TarefasController {
    * Atualiza tarefa (PUT)
    */
   static async update(req, res) {
-    const userId = req.session.user.id;
+    const userId = req.session.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Usuário não autenticado' });
+    }
     const { id } = req.params;
 
     try {
@@ -125,7 +134,10 @@ class TarefasController {
    * Deleta tarefa (DELETE)
    */
   static async delete(req, res) {
-    const userId = req.session.user.id;
+    const userId = req.session.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Usuário não autenticado' });
+    }
     const { id } = req.params;
 
     try {
@@ -155,7 +167,10 @@ class TarefasController {
    * Busca tarefa por ID (GET)
    */
   static async show(req, res) {
-    const userId = req.session.user.id;
+    const userId = req.session.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Usuário não autenticado' });
+    }
     const { id } = req.params;
 
     try {
@@ -186,7 +201,10 @@ class TarefasController {
    * Atualiza ordem das tarefas (drag & drop) (POST)
    */
   static async updateOrder(req, res) {
-    const userId = req.session.user.id;
+    const userId = req.session.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Usuário não autenticado' });
+    }
     const { tarefas } = req.body;
 
     try {
@@ -216,7 +234,10 @@ class TarefasController {
    * API: Busca tarefas para calendário
    */
   static async getForCalendar(req, res) {
-    const userId = req.session.user.id;
+    const userId = req.session.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Usuário não autenticado' });
+    }
     const ano = parseInt(req.query.ano) || new Date().getFullYear();
     const mes = parseInt(req.query.mes) || new Date().getMonth() + 1;
 
@@ -239,7 +260,10 @@ class TarefasController {
    * API: Estatísticas
    */
   static async getStats(req, res) {
-    const userId = req.session.user.id;
+    const userId = req.session.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'Usuário não autenticado' });
+    }
 
     try {
       const estatisticas = await TarefasService.getEstatisticas(userId);
