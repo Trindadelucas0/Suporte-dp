@@ -239,22 +239,30 @@ async function marcarComoLida(notifId) {
     // Verifica se o token CSRF está disponível
     if (!window.csrfToken || window.csrfToken === '') {
         console.error('Token CSRF não disponível. Tentando obter...');
+        
         // Tenta obter do helper se disponível
         if (typeof getCSRFHeaders === 'function') {
             const tempHeaders = getCSRFHeaders();
-            if (tempHeaders['X-CSRF-Token']) {
+            if (tempHeaders && tempHeaders['X-CSRF-Token']) {
                 window.csrfToken = tempHeaders['X-CSRF-Token'];
-            } else {
-                console.error('Token CSRF não encontrado. Recarregando página...');
-                alert('Token de segurança não encontrado. A página será recarregada.');
-                window.location.reload();
-                return;
+                console.log('Token CSRF obtido via getCSRFHeaders');
             }
-        } else {
-            console.error('Token CSRF não encontrado. Recarregando página...');
-            alert('Token de segurança não encontrado. A página será recarregada.');
-            window.location.reload();
-            return;
+        }
+        
+        // Se ainda não tiver token, tenta buscar em um input hidden (fallback)
+        if (!window.csrfToken || window.csrfToken === '') {
+            const csrfInput = document.querySelector('input[name="_csrf"]');
+            if (csrfInput && csrfInput.value) {
+                window.csrfToken = csrfInput.value;
+                console.log('Token CSRF obtido via input hidden');
+            }
+        }
+        
+        // Se ainda não tiver, mostra erro mas não recarrega (pode ser que a página não tenha token ainda)
+        if (!window.csrfToken || window.csrfToken === '') {
+            console.error('Token CSRF não encontrado. A requisição pode falhar.');
+            // Não recarrega automaticamente, apenas loga o erro
+            // O servidor retornará erro 403 se o token estiver realmente ausente
         }
     }
 
@@ -319,21 +327,28 @@ async function marcarTodasComoLidas() {
     // Verifica se o token CSRF está disponível
     if (!window.csrfToken || window.csrfToken === '') {
         console.error('Token CSRF não disponível. Tentando obter...');
+        
+        // Tenta obter do helper se disponível
         if (typeof getCSRFHeaders === 'function') {
             const tempHeaders = getCSRFHeaders();
-            if (tempHeaders['X-CSRF-Token']) {
+            if (tempHeaders && tempHeaders['X-CSRF-Token']) {
                 window.csrfToken = tempHeaders['X-CSRF-Token'];
-            } else {
-                console.error('Token CSRF não encontrado. Recarregando página...');
-                alert('Token de segurança não encontrado. A página será recarregada.');
-                window.location.reload();
-                return;
+                console.log('Token CSRF obtido via getCSRFHeaders');
             }
-        } else {
-            console.error('Token CSRF não encontrado. Recarregando página...');
-            alert('Token de segurança não encontrado. A página será recarregada.');
-            window.location.reload();
-            return;
+        }
+        
+        // Se ainda não tiver token, tenta buscar em um input hidden (fallback)
+        if (!window.csrfToken || window.csrfToken === '') {
+            const csrfInput = document.querySelector('input[name="_csrf"]');
+            if (csrfInput && csrfInput.value) {
+                window.csrfToken = csrfInput.value;
+                console.log('Token CSRF obtido via input hidden');
+            }
+        }
+        
+        // Se ainda não tiver, mostra erro mas não recarrega
+        if (!window.csrfToken || window.csrfToken === '') {
+            console.error('Token CSRF não encontrado. A requisição pode falhar.');
         }
     }
 

@@ -200,8 +200,24 @@
     </div>
 </nav>
 
-<script src="/js/notificacoes.js"></script>
 <script>
+    // Disponibiliza token CSRF globalmente ANTES de carregar notificacoes.js
+    // Isso garante que o token esteja disponível quando o script de notificações for executado
+    window.csrfToken = window.csrfToken || '<%= typeof csrfToken !== "undefined" && csrfToken ? csrfToken : "" %>';
+    
+    // Função helper para adicionar CSRF em requisições fetch (se ainda não existir)
+    if (typeof getCSRFHeaders === 'undefined') {
+        function getCSRFHeaders() {
+            const headers = { 'Content-Type': 'application/json' };
+            if (window.csrfToken) {
+                headers['x-csrf-token'] = window.csrfToken;
+                headers['X-CSRF-Token'] = window.csrfToken;
+                headers['csrf-token'] = window.csrfToken;
+            }
+            return headers;
+        }
+    }
+    
     function toggleMobileMenu() {
         const menu = document.getElementById('mobileMenu');
         const icon = document.getElementById('menuIcon');
@@ -215,3 +231,4 @@
         }
     }
 </script>
+<script src="/js/notificacoes.js"></script>
