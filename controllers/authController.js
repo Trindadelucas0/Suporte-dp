@@ -63,6 +63,29 @@ class AuthController {
         });
       }
 
+      // Verifica se está bloqueado por pagamento
+      if (user.bloqueado_pagamento === true) {
+        // Permite login mas redireciona para página de bloqueio
+        req.session.user = {
+          id: user.id,
+          nome: user.nome,
+          email: user.email,
+          is_admin: user.is_admin
+        };
+        req.session.lastActivity = Date.now();
+        req.session.save((err) => {
+          if (err) {
+            console.error('Erro ao salvar sessão:', err);
+            return res.render('auth/login', {
+              title: 'Login - Suporte DP',
+              error: 'Erro ao fazer login. Tente novamente.'
+            });
+          }
+          res.redirect('/cobranca/blocked');
+        });
+        return;
+      }
+
       // Atualiza último login e última atividade
       await User.updateLastLogin(user.id);
       // Tenta atualizar última atividade (campo pode não existir)
@@ -109,6 +132,154 @@ class AuthController {
       res.render('auth/login', {
         title: 'Login - Suporte DP',
         error: 'Erro ao fazer login. Tente novamente. ' + (process.env.NODE_ENV === 'development' ? error.message : '')
+      });
+    }
+  }
+
+  /**
+   * Cadastro via link de ativação (após assinatura)
+   */
+  static async cadastroViaLink(req, res) {
+    const { token } = req.params;
+
+    if (req.method === 'GET') {
+      // Valida token
+      const cadastroService = require('../services/cadastroService');
+      const validacao = await cadastroService.validarTokenCadastro(token);
+
+      if (!validacao.success) {
+        return res.render('error', {
+          title: 'Erro - Suporte DP',
+          error: validacao.error || 'Link inválido ou expirado'
+        });
+      }
+
+      // Renderiza formulário de cadastro com email pré-preenchido
+      res.render('auth/cadastro-link', {
+        title: 'Complete seu Cadastro - Suporte DP',
+        token: token,
+        email: validacao.email,
+        nome: validacao.nome || ''
+      });
+      return;
+    }
+
+    // POST: Processa cadastro
+    const { nome, email, senha, confirmarSenha } = req.body;
+
+    // Valida token novamente
+    const cadastroService = require('../services/cadastroService');
+    const validacao = await cadastroService.validarTokenCadastro(token);
+
+    if (!validacao.success) {
+      return res.render('error', {
+        title: 'Erro - Suporte DP',
+        error: 'Link inválido ou expirado'
+      });
+    }
+
+    // Validações
+    if (!nome || !senha || !confirmarSenha) {
+      return res.render('auth/cadastro-link', {
+        title: 'Complete seu Cadastro - Suporte DP',
+        token: token,
+        email: validacao.email,
+        nome: nome || validacao.nome || '',
+        error: 'Todos os campos são obrigatórios.'
+      });
+    }
+
+    if (senha !== confirmarSenha) {
+      return res.render('auth/cadastro-link', {
+        title: 'Complete seu Cadastro - Suporte DP',
+        token: token,
+        email: validacao.email,
+        nome: nome,
+        error: 'As senhas não coincidem.'
+      });
+    }
+
+    if (senha.length < 6) {
+      return res.render('auth/cadastro-link', {
+        title: 'Complete seu Cadastro - Suporte DP',
+        token: token,
+        email: validacao.email,
+        nome: nome,
+        error: 'A senha deve ter pelo menos 6 caracteres.'
+      });
+    }
+
+    // Verifica se email do token corresponde
+    if (email !== validacao.email) {
+      return res.render('auth/cadastro-link', {
+        title: 'Complete seu Cadastro - Suporte DP',
+        token: token,
+        email: validacao.email,
+        nome: nome,
+        error: 'Email não corresponde ao link de ativação.'
+      });
+    }
+
+    try {
+      // Busca usuário existente pelo email
+      let user = await User.findByEmail(email);
+
+      if (user) {
+        // Usuário já existe: atualiza senha e nome
+        const bcrypt = require('bcrypt');
+        const senhaHash = await bcrypt.hash(senha, 10);
+        
+        await db.query(
+          'UPDATE users SET nome = $1, senha_hash = $2 WHERE email = $3',
+          [nome, senhaHash, email]
+        );
+
+        user = await User.findByEmail(email);
+      } else {
+        // Cria novo usuário
+        user = await User.create(nome, email, senha, false);
+      }
+
+      // Marca token como usado
+      await cadastroService.marcarTokenComoUsado(token);
+
+      // Libera acesso (se estiver bloqueado)
+      await db.query(
+        'UPDATE users SET bloqueado_pagamento = FALSE WHERE id = $1',
+        [user.id]
+      );
+
+      // Login automático
+      req.session.user = {
+        id: user.id,
+        nome: user.nome,
+        email: user.email,
+        is_admin: user.is_admin
+      };
+      req.session.lastActivity = Date.now();
+
+      req.session.save((err) => {
+        if (err) {
+          console.error('Erro ao salvar sessão:', err);
+          return res.render('auth/cadastro-link', {
+            title: 'Complete seu Cadastro - Suporte DP',
+            token: token,
+            email: email,
+            nome: nome,
+            error: 'Cadastro concluído, mas erro ao fazer login. Tente fazer login manualmente.'
+          });
+        }
+
+        res.redirect('/dashboard');
+      });
+    } catch (error) {
+      console.error('Erro no cadastro via link:', error);
+      res.render('auth/cadastro-link', {
+        title: 'Complete seu Cadastro - Suporte DP',
+        token: token,
+        email: validacao.email,
+        nome: nome,
+        error: 'Erro ao completar cadastro. Tente novamente.'
       });
     }
   }

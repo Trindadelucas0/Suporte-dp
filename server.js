@@ -267,9 +267,13 @@ const tarefasRoutes = require("./routes/tarefas");
 const notificacoesRoutes = require("./routes/notificacoes");
 const perfilRoutes = require("./routes/perfil");
 const adminRoutes = require("./routes/admin");
+const cobrancaRoutes = require("./routes/cobranca");
+const webhookRoutes = require("./routes/webhook");
 
 // Rotas públicas (sem CSRF protection)
 app.use("/", authRoutes);
+// Webhook é público (sem CSRF)
+app.use("/webhook", webhookRoutes);
 
 // Rotas protegidas (com CSRF protection)
 // Aplicamos CSRF apenas nas rotas protegidas
@@ -291,6 +295,7 @@ app.use("/tarefas", tarefasRoutes);
 app.use("/notificacoes", notificacoesRoutes);
 app.use("/perfil", perfilRoutes);
 app.use("/admin", adminRoutes);
+app.use("/cobranca", cobrancaRoutes);
 
 // Rota raiz - página de boas-vindas (prioriza cadastro)
 app.get("/", (req, res) => {
@@ -342,6 +347,11 @@ if (process.env.NODE_ENV !== 'test') {
       // Inicializa banco de dados automaticamente (cria tabelas se não existirem)
       const initDatabase = require("./scripts/auto-init-database-psql");
       await initDatabase();
+
+      // Inicializa scheduler de cobrança
+      const scheduler = require("./jobs/scheduler");
+      scheduler.init();
+      console.log("✅ Scheduler de cobrança inicializado");
     } catch (error) {
       console.error("❌ Erro ao conectar com PostgreSQL:", error.message);
       

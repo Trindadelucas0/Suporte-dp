@@ -47,6 +47,23 @@ async function verificarStatusUsuario(req, res, next) {
         });
         return;
       }
+
+      // Verifica se está bloqueado por pagamento
+      if (user.bloqueado_pagamento === true) {
+        console.log('⚠️ [AUTH] Usuário bloqueado por pagamento:', {
+          id: user.id,
+          nome: user.nome
+        });
+        // Redireciona para página de bloqueio (não destrói sessão para mostrar dados)
+        if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+          return res.status(403).json({ 
+            error: 'Acesso bloqueado por falta de pagamento',
+            redirect: '/cobranca/blocked'
+          });
+        }
+        res.redirect('/cobranca/blocked');
+        return;
+      }
     } catch (error) {
       console.error('❌ [AUTH] Erro ao verificar status do usuário:', error);
       // Em caso de erro, permite continuar (não bloqueia o acesso)

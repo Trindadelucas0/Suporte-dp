@@ -63,6 +63,10 @@ router.post('/login', loginLimiter, loginValidation, AuthController.login);
 router.get('/register', AuthController.register);
 router.post('/register', registerLimiter, registerValidation, AuthController.register);
 
+// Cadastro via link (após assinatura)
+router.get('/cadastro/:token', AuthController.cadastroViaLink);
+router.post('/cadastro/:token', AuthController.cadastroViaLink);
+
 router.get('/logout', AuthController.logout);
 
 module.exports = router;
