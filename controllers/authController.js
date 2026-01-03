@@ -10,9 +10,15 @@ const { validationResult } = require('express-validator');
 class AuthController {
   static async login(req, res) {
     if (req.method === 'GET') {
-      const error = req.query.expired 
-        ? 'Sua sessão expirou por inatividade (10 minutos). Por favor, faça login novamente.' 
-        : null;
+      let error = null;
+      
+      if (req.query.expired) {
+        error = 'Sua sessão expirou por inatividade (10 minutos). Por favor, faça login novamente.';
+      } else if (req.query.error === 'conta_bloqueada') {
+        error = 'Sua conta está desativada ou bloqueada. Entre em contato com o administrador.';
+      } else if (req.query.error === 'usuario_nao_encontrado') {
+        error = 'Usuário não encontrado. Por favor, faça login novamente.';
+      }
       
       return res.render('auth/login', {
         title: 'Login - Suporte DP',

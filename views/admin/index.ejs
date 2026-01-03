@@ -42,194 +42,95 @@
         <%- include('../partials/navbar') %>
             <% } %>
 
-                <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-                    <div class="mb-6">
-                        <h1 class="text-3xl font-bold text-gray-900">Painel Administrativo</h1>
-                        <p class="mt-2 text-gray-600">Gerenciamento de usuários e sistema</p>
+                <main class="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
+                    <div class="mb-8">
+                        <div class="flex items-center gap-4 mb-2">
+                            <div class="bg-gradient-to-r from-primary-red to-primary-yellow rounded-lg p-3">
+                                <i class="fas fa-shield-alt text-white text-2xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-4xl font-bold text-gray-900">Painel Administrativo</h1>
+                                <p class="mt-1 text-gray-600 text-lg">Gerenciamento completo do sistema</p>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Cards de Estatísticas -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+                    <!-- Card de Estatísticas de Usuários -->
+                    <div class="mb-8">
+                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-8 text-white">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-gray-600 text-sm">Total de Usuários</p>
-                                    <p class="text-3xl font-bold text-gray-900 mt-2">
+                                    <p class="text-blue-100 text-sm font-medium mb-1">Total de Usuários</p>
+                                    <p class="text-5xl font-bold mb-3">
                                         <%= stats.usuarios.total || 0 %>
                                     </p>
-                                    <div class="mt-2 text-xs text-gray-500">
-                                        <span class="text-green-600">
-                                            <%= stats.usuarios.ativos || 0 %> ativos
-                                        </span> |
-                                        <span class="text-red-600">
-                                            <%= stats.usuarios.bloqueados || 0 %> bloqueados
-                                        </span>
+                                    <div class="flex gap-6 text-sm">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-3 h-3 rounded-full bg-green-300"></div>
+                                            <span class="text-blue-100">
+                                                <%= stats.usuarios.ativos || 0 %> ativos
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-3 h-3 rounded-full bg-red-300"></div>
+                                            <span class="text-blue-100">
+                                                <%= stats.usuarios.bloqueados || 0 %> bloqueados
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-3 h-3 rounded-full bg-gray-300"></div>
+                                            <span class="text-blue-100">
+                                                <%= stats.usuarios.inativos || 0 %> inativos
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                                <i class="fas fa-users text-blue-500 text-4xl"></i>
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-gray-600 text-sm">Total de Cálculos</p>
-                                    <p class="text-3xl font-bold text-gray-900 mt-2">
-                                        <%= stats.calculos || 0 %>
-                                    </p>
-                                    <p class="mt-2 text-xs text-gray-500">Realizados no sistema</p>
+                                <div class="bg-white bg-opacity-20 rounded-full p-6">
+                                    <i class="fas fa-users text-6xl"></i>
                                 </div>
-                                <i class="fas fa-calculator text-green-500 text-4xl"></i>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Usuários Online -->
-                    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                        <h2 class="text-xl font-bold text-gray-900 mb-4">
-                            <i class="fas fa-circle text-green-500 mr-2"></i>Usuários Online Agora
-                        </h2>
-                        <% if (typeof onlineUsers !=='undefined' && onlineUsers && onlineUsers.length> 0) { %>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Nome</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Email</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Tipo</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Última Atividade</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        <% onlineUsers.forEach(user=> { %>
-                                            <tr>
-                                                <td
-                                                    class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                    <%= user.nome %>
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                                    <%= user.email %>
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap">
-                                                    <% if (user.is_admin) { %>
-                                                        <span
-                                                            class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Admin</span>
-                                                        <% } else { %>
-                                                            <span
-                                                                class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Usuário</span>
-                                                            <% } %>
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                                    <% if (user.ultima_atividade) { %>
-                                                        <%= new Date(user.ultima_atividade).toLocaleString('pt-BR') %>
-                                                            <% } else { %>
-                                                                Agora
-                                                                <% } %>
-                                                </td>
-                                            </tr>
-                                            <% }); %>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <% } else { %>
-                                <p class="text-gray-500 text-center py-4">Nenhum usuário online no momento</p>
-                                <% } %>
-                    </div>
-
-                    <!-- Usuários Offline -->
-                    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                        <h2 class="text-xl font-bold text-gray-900 mb-4">
-                            <i class="fas fa-circle text-gray-400 mr-2"></i>Usuários Offline
-                        </h2>
-                        <% if (typeof offlineUsers !=='undefined' && offlineUsers && offlineUsers.length> 0) { %>
-                            <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Nome</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Email</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Tipo</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Último Login</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        <% offlineUsers.forEach(user=> { %>
-                                            <tr>
-                                                <td
-                                                    class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                    <%= user.nome %>
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                                    <%= user.email %>
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap">
-                                                    <% if (user.is_admin) { %>
-                                                        <span
-                                                            class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Admin</span>
-                                                        <% } else { %>
-                                                            <span
-                                                                class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Usuário</span>
-                                                            <% } %>
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                                    <% if (user.last_login) { %>
-                                                        <%= new Date(user.last_login).toLocaleString('pt-BR') %>
-                                                            <% } else { %>
-                                                                <span class="text-gray-400">Nunca</span>
-                                                                <% } %>
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap">
-                                                    <% if (user.status==='bloqueada' ) { %>
-                                                        <span
-                                                            class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Bloqueada</span>
-                                                        <% } else if (user.status==='inativa' ) { %>
-                                                            <span
-                                                                class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Inativa</span>
-                                                            <% } else { %>
-                                                                <span
-                                                                    class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativa</span>
-                                                                <% } %>
-                                                </td>
-                                            </tr>
-                                            <% }); %>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <% } else { %>
-                                <p class="text-gray-500 text-center py-4">Nenhum usuário offline encontrado</p>
-                                <% } %>
                     </div>
 
                     <!-- Menu de Ações Rápidas -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <a href="/admin/usuarios"
-                            class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-l-4 border-blue-500">
-                            <div class="flex items-center">
-                                <i class="fas fa-users-cog text-blue-500 text-3xl mr-4"></i>
-                                <div>
-                                    <h3 class="text-lg font-bold text-gray-900">Gerenciar Usuários</h3>
-                                    <p class="text-sm text-gray-600 mt-1">Visualizar, bloquear, ativar e gerenciar todos
-                                        os usuários do sistema</p>
+                            class="group bg-white rounded-xl shadow-md p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-blue-500">
+                            <div class="flex items-start">
+                                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 mr-6 group-hover:scale-110 transition-transform duration-300">
+                                    <i class="fas fa-users-cog text-white text-3xl"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                                        Gerenciar Usuários
+                                    </h3>
+                                    <p class="text-sm text-gray-600 leading-relaxed">
+                                        Visualizar, bloquear, ativar e gerenciar todos os usuários do sistema. Controle completo de permissões e acessos.
+                                    </p>
+                                    <div class="mt-4 flex items-center text-blue-600 text-sm font-medium">
+                                        <span>Acessar</span>
+                                        <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                                    </div>
                                 </div>
                             </div>
                         </a>
                         <a href="/admin/notificacoes"
-                            class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-l-4 border-yellow-500">
-                            <div class="flex items-center">
-                                <i class="fas fa-bell text-yellow-500 text-3xl mr-4"></i>
-                                <div>
-                                    <h3 class="text-lg font-bold text-gray-900">Notificações</h3>
-                                    <p class="text-sm text-gray-600 mt-1">Enviar notificações para todos os usuários ou usuários específicos</p>
+                            class="group bg-white rounded-xl shadow-md p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-yellow-500">
+                            <div class="flex items-start">
+                                <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 mr-6 group-hover:scale-110 transition-transform duration-300">
+                                    <i class="fas fa-bell text-white text-3xl"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-yellow-600 transition-colors">
+                                        Notificações
+                                    </h3>
+                                    <p class="text-sm text-gray-600 leading-relaxed">
+                                        Enviar notificações para todos os usuários ou usuários específicos. Avisos importantes e comunicados do sistema.
+                                    </p>
+                                    <div class="mt-4 flex items-center text-yellow-600 text-sm font-medium">
+                                        <span>Acessar</span>
+                                        <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                                    </div>
                                 </div>
                             </div>
                         </a>

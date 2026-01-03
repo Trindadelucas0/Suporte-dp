@@ -205,6 +205,19 @@
                             </div>
 
                             <script>
+                                // Define CSRF token e função helper se não existirem
+                                window.csrfToken = window.csrfToken || '<%= typeof csrfToken !== "undefined" && csrfToken ? csrfToken : "" %>';
+                                
+                                function getCSRFHeaders() {
+                                    const headers = { 'Content-Type': 'application/json' };
+                                    if (window.csrfToken) {
+                                        headers['x-csrf-token'] = window.csrfToken;
+                                        headers['X-CSRF-Token'] = window.csrfToken;
+                                        headers['csrf-token'] = window.csrfToken;
+                                    }
+                                    return headers;
+                                }
+
                                 async function toggleStatus(userId, campo, valor) {
                                     // Converte string para boolean se necessário
                                     const valorBool = valor === 'true' || valor === true;
@@ -214,21 +227,38 @@
                                     }
 
                                     try {
+                                        const headers = getCSRFHeaders();
+                                        const body = { [campo]: valorBool };
+                                        if (window.csrfToken) {
+                                            body._csrf = window.csrfToken;
+                                        }
+
                                         const response = await fetch('/admin/usuarios/' + userId + '/atualizar', {
                                             method: 'POST',
-                                            headers: getCSRFHeaders(),
-                                            body: JSON.stringify({ [campo]: valorBool, _csrf: window.csrfToken })
+                                            headers: headers,
+                                            body: JSON.stringify(body),
+                                            credentials: 'same-origin'
                                         });
 
+                                        if (!response.ok) {
+                                            const errorText = await response.text();
+                                            console.error('Erro HTTP:', response.status, errorText);
+                                            throw new Error(`Erro ${response.status}: ${errorText || 'Resposta inválida do servidor'}`);
+                                        }
+
                                         const data = await response.json();
+                                        console.log('Resposta do servidor:', data);
+                                        
                                         if (data.success) {
+                                            alert('✅ ' + acao.charAt(0).toUpperCase() + acao.slice(1) + ' realizado com sucesso!');
                                             location.reload();
                                         } else {
-                                            alert('Erro: ' + (data.error || 'Erro ao atualizar usuário'));
+                                            alert('❌ Erro: ' + (data.error || 'Erro ao atualizar usuário'));
+                                            console.error('Erro na resposta:', data);
                                         }
                                     } catch (error) {
-                                        alert('Erro ao atualizar usuário');
-                                        console.error(error);
+                                        console.error('Erro completo ao atualizar usuário:', error);
+                                        alert('❌ Erro ao atualizar usuário: ' + error.message);
                                     }
                                 }
 
@@ -243,10 +273,17 @@
                                         return;
                                     }
 
+                                    const headers = getCSRFHeaders();
+                                    const body = { novaSenha: novaSenha };
+                                    if (window.csrfToken) {
+                                        body._csrf = window.csrfToken;
+                                    }
+
                                     fetch('/admin/usuarios/' + userId + '/resetar-senha', {
                                         method: 'POST',
-                                        headers: getCSRFHeaders(),
-                                        body: JSON.stringify({ novaSenha: novaSenha, _csrf: window.csrfToken })
+                                        headers: headers,
+                                        body: JSON.stringify(body),
+                                        credentials: 'same-origin'
                                     })
                                         .then(res => res.json())
                                         .then(data => {

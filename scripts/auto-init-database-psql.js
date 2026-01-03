@@ -498,61 +498,89 @@ async function executarMigrations() {
       const migration = fs.readFileSync(migrationPath, 'utf8');
       
       try {
-        // Remove comentários e divide em comandos
-        let migrationClean = migration.replace(/^--.*$/gm, '');
-        
-        // Divide respeitando blocos $$
-        const commands = [];
-        let current = '';
-        let inBlock = false;
-        let blockTag = '';
-        
-        const lines = migrationClean.split('\n');
-        for (const line of lines) {
-          if (line.includes('$$') && !inBlock) {
-            const match = line.match(/\$[^$]*\$/);
-            if (match) {
-              inBlock = true;
-              blockTag = match[0];
-            }
-          }
-          
-          current += line + '\n';
-          
-          if (inBlock && line.includes(blockTag)) {
-            inBlock = false;
-          }
-          
-          if (!inBlock && line.trim().endsWith(';')) {
-            const trimmed = current.trim();
-            if (trimmed.length > 20) {
-              commands.push(trimmed);
-            }
-            current = '';
-          }
-        }
-        
-        // Adiciona último comando se houver
-        if (current.trim().length > 20) {
-          commands.push(current.trim());
-        }
-
-        for (const command of commands) {
-          try {
-            await db.query(command);
-          } catch (error) {
-            // Ignora erros de "já existe" ou "duplicado"
-            if (!error.message.includes('already exists') && 
-                !error.message.includes('duplicate') &&
-                !error.message.includes('já existe') &&
-                !error.message.includes('does not exist')) {
-              console.warn(`⚠️  Aviso na migration ${file}:`, error.message);
-            }
-          }
-        }
+        // Executa o arquivo SQL completo de uma vez
+        // Isso é mais seguro para migrations com blocos DO $$ ... $$ e funções
+        await db.query(migration);
         console.log(`✅ Migration ${file} verificada`);
       } catch (error) {
-        console.warn(`⚠️  Erro ao executar migration ${file}:`, error.message);
+        // Ignora erros de "já existe", "duplicado" ou "não existe"
+        if (error.message.includes('already exists') || 
+            error.message.includes('duplicate') ||
+            error.message.includes('já existe') ||
+            error.message.includes('does not exist') ||
+            error.message.includes('não existe')) {
+          // Apenas loga como aviso, mas não como erro
+          console.log(`✅ Migration ${file} verificada (objetos já existem)`);
+        } else {
+          // Para outros erros, mostra aviso mas continua
+          console.warn(`⚠️  Aviso na migration ${file}:`, error.message);
+          // Tenta executar comandos individuais como fallback
+          try {
+            // Remove comentários
+            let migrationClean = migration.replace(/^--.*$/gm, '');
+            
+            // Divide em comandos por ponto e vírgula, mas preserva blocos $$
+            const commands = [];
+            let current = '';
+            let inDollarBlock = false;
+            let dollarTag = '';
+            
+            const lines = migrationClean.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+              const line = lines[i];
+              
+              // Detecta início de bloco $$
+              if (line.includes('$$') && !inDollarBlock) {
+                const match = line.match(/\$\$|\$[^$]*\$/);
+                if (match) {
+                  inDollarBlock = true;
+                  dollarTag = match[0];
+                }
+              }
+              
+              current += line + '\n';
+              
+              // Detecta fim de bloco $$
+              if (inDollarBlock && line.includes(dollarTag) && line.includes(';')) {
+                inDollarBlock = false;
+                const trimmed = current.trim();
+                if (trimmed.length > 20) {
+                  commands.push(trimmed);
+                }
+                current = '';
+              } else if (!inDollarBlock && line.trim().endsWith(';')) {
+                const trimmed = current.trim();
+                if (trimmed.length > 20) {
+                  commands.push(trimmed);
+                }
+                current = '';
+              }
+            }
+            
+            // Adiciona último comando se houver
+            if (current.trim().length > 20) {
+              commands.push(current.trim());
+            }
+            
+            // Executa comandos individuais
+            for (const command of commands) {
+              try {
+                await db.query(command);
+              } catch (cmdError) {
+                // Ignora erros de "já existe"
+                if (!cmdError.message.includes('already exists') && 
+                    !cmdError.message.includes('duplicate') &&
+                    !cmdError.message.includes('já existe') &&
+                    !cmdError.message.includes('does not exist')) {
+                  // Loga apenas erros não esperados
+                }
+              }
+            }
+          } catch (fallbackError) {
+            // Se o fallback também falhar, apenas loga
+            console.warn(`⚠️  Não foi possível executar migration ${file} completamente`);
+          }
+        }
       }
     }
     

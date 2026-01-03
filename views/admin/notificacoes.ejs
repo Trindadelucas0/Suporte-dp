@@ -95,32 +95,77 @@
                                 id="buscarDestinatario" 
                                 placeholder="🔍 Buscar usuário por nome ou email..."
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-transparent mb-2 text-sm sm:text-base"
-                                onkeyup="filtrarUsuarios(this.value)"
+                                autocomplete="off"
                             >
                             <select 
                                 id="destinatario" 
                                 name="destinatario" 
                                 required
-                                size="6"
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-transparent overflow-y-auto text-sm sm:text-base"
+                                size="10"
+                                class="w-full px-3 sm:px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-primary-red text-sm sm:text-base bg-white"
+                                style="min-height: 250px; max-height: 300px;"
                             >
                                 <option value="todos">📢 Todos os usuários</option>
-                                <% if (usuarios && usuarios.length > 0) { %>
-                                    <% usuarios.forEach(usuario => { %>
-                                        <% if (!usuario.is_admin) { %>
-                                            <option value="<%= usuario.id %>" data-nome="<%= usuario.nome.toLowerCase() %>" data-email="<%= usuario.email.toLowerCase() %>">
-                                                <%= usuario.nome %> (<%= usuario.email %>)
-                                            </option>
-                                        <% } %>
-                                    <% }); %>
+                                <% 
+                                // Debug: verifica o que está sendo recebido
+                                let usuariosArray = [];
+                                
+                                // Verifica se usuarios existe e seu tipo
+                                if (typeof usuarios !== 'undefined' && usuarios !== null) {
+                                    if (Array.isArray(usuarios)) {
+                                        usuariosArray = usuarios;
+                                    }
+                                }
+                                
+                                // Filtra usuários não-admin
+                                const usuariosNaoAdmin = usuariosArray.filter(u => {
+                                    if (!u || !u.id) return false;
+                                    // Verifica se é admin (pode ser boolean true ou string 'true')
+                                    // No PostgreSQL, boolean pode vir como true/false ou 't'/'f'
+                                    const isAdmin = u.is_admin === true || 
+                                                   u.is_admin === 'true' || 
+                                                   u.is_admin === 1 || 
+                                                   u.is_admin === 't' ||
+                                                   String(u.is_admin).toLowerCase() === 'true';
+                                    return !isAdmin;
+                                });
+                                %>
+                                <% if (usuariosArray.length > 0) { %>
+                                    <% if (usuariosNaoAdmin.length > 0) { %>
+                                        <% usuariosNaoAdmin.forEach(usuario => { %>
+                                            <% if (usuario && usuario.id) { %>
+                                                <option 
+                                                    value="<%= usuario.id %>" 
+                                                    data-nome="<%= (usuario.nome || '').toLowerCase() %>" 
+                                                    data-email="<%= (usuario.email || '').toLowerCase() %>">
+                                                    <%= usuario.nome || 'Sem nome' %> (<%= usuario.email || 'Sem email' %>)
+                                                </option>
+                                            <% } %>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <option value="" disabled>⚠️ Todos os usuários cadastrados são administradores</option>
+                                    <% } %>
+                                <% } else { %>
+                                    <option value="" disabled>❌ Nenhum usuário encontrado no sistema</option>
                                 <% } %>
                             </select>
                             <p class="text-xs text-gray-500 mt-1" id="contadorUsuarios">
-                                <% if (usuarios && usuarios.length > 0) { %>
-                                    <%= usuarios.filter(u => !u.is_admin).length %> usuário(s) disponível(is)
-                                <% } else { %>
-                                    Nenhum usuário disponível
-                                <% } %>
+                                <% 
+                                if (typeof usuarios !== 'undefined' && usuarios && Array.isArray(usuarios) && usuarios.length > 0) {
+                                    const usuariosNaoAdmin = usuarios.filter(u => {
+                                        if (!u || !u.id) return false;
+                                        const isAdmin = u.is_admin === true || u.is_admin === 'true' || u.is_admin === 1;
+                                        return !isAdmin;
+                                    });
+                                    if (usuariosNaoAdmin.length > 0) {
+                                        %><%= usuariosNaoAdmin.length %> usuário(s) disponível(is)<%
+                                    } else {
+                                        %>⚠️ Todos os usuários são administradores<%
+                                    }
+                                } else {
+                                    %>❌ Nenhum usuário encontrado no sistema<%
+                                }
+                                %>
                             </p>
                         </div>
                     </div>
@@ -190,49 +235,192 @@
             return headers;
         }
 
-        // Função para filtrar usuários no select
-        function filtrarUsuarios(busca) {
-            const select = document.getElementById('destinatario');
-            const options = select.querySelectorAll('option');
-            const buscaLower = busca.toLowerCase().trim();
-            let contador = 0;
+        // Função para filtrar e destacar usuários no select
+        window.filtrarUsuarios = function(busca) {
+            try {
+                const select = document.getElementById('destinatario');
+                if (!select) {
+                    console.error('Select de destinatário não encontrado');
+                    return;
+                }
 
-            options.forEach(option => {
-                if (option.value === 'todos') {
-                    option.style.display = buscaLower === '' ? 'block' : 'none';
-                    if (buscaLower === '') contador++;
-                } else {
-                    const nome = option.getAttribute('data-nome') || '';
-                    const email = option.getAttribute('data-email') || '';
-                    
-                    if (buscaLower === '' || nome.includes(buscaLower) || email.includes(buscaLower)) {
-                        option.style.display = 'block';
-                        contador++;
+                const options = Array.from(select.querySelectorAll('option'));
+                if (options.length === 0) {
+                    console.warn('Nenhuma opção encontrada no select');
+                    return;
+                }
+
+                const buscaLower = (busca || '').toLowerCase().trim();
+                let contador = 0;
+
+                options.forEach(option => {
+                    if (!option) return;
+
+                    // Remove estilos anteriores
+                    option.style.opacity = '';
+                    option.style.fontWeight = '';
+                    option.style.display = '';
+                    option.style.visibility = '';
+                    option.removeAttribute('hidden');
+                    option.removeAttribute('disabled');
+                    option.removeAttribute('data-hidden');
+
+                    if (option.value === 'todos') {
+                        // Opção "Todos os usuários" sempre visível e contabilizada
+                        if (buscaLower === '') contador++;
                     } else {
-                        option.style.display = 'none';
+                        // Busca nos atributos e texto
+                        const nome = (option.getAttribute('data-nome') || '').toLowerCase();
+                        const email = (option.getAttribute('data-email') || '').toLowerCase();
+                        const texto = option.textContent.toLowerCase();
+                        
+                        const corresponde = buscaLower === '' || 
+                            nome.includes(buscaLower) || 
+                            email.includes(buscaLower) ||
+                            texto.includes(buscaLower);
+
+                        if (corresponde) {
+                            contador++;
+                            // Destaca opções que correspondem à busca
+                            if (buscaLower !== '') {
+                                option.style.backgroundColor = '#fef3c7';
+                                option.style.fontWeight = '600';
+                            }
+                        } else if (buscaLower !== '') {
+                            // Para opções que não correspondem, apenas reduz opacidade
+                            // MAS MANTÉM SELECIONÁVEL
+                            option.style.opacity = '0.4';
+                        }
+                    }
+                });
+
+                // Atualiza contador
+                const contadorEl = document.getElementById('contadorUsuarios');
+                if (contadorEl) {
+                    if (buscaLower === '') {
+                        const total = options.filter(o => o.value !== 'todos').length;
+                        contadorEl.textContent = `${total} usuário(s) disponível(is)`;
+                    } else {
+                        contadorEl.textContent = `${contador} usuário(s) encontrado(s)`;
                     }
                 }
-            });
-
-            // Atualiza contador
-            const contadorEl = document.getElementById('contadorUsuarios');
-            if (contadorEl) {
-                contadorEl.textContent = `${contador} usuário(s) encontrado(s)`;
+            } catch (error) {
+                console.error('Erro ao filtrar usuários:', error);
             }
-        }
+        };
 
         // Limpa filtro ao selecionar
         document.addEventListener('DOMContentLoaded', () => {
             const select = document.getElementById('destinatario');
             const buscarInput = document.getElementById('buscarDestinatario');
             
-            if (select) {
-                select.addEventListener('change', () => {
-                    if (buscarInput) {
-                        buscarInput.value = '';
-                        filtrarUsuarios('');
+            console.log('🔍 [CLIENTE] Verificando elementos de destinatário...');
+            console.log('🔍 [CLIENTE] Select encontrado:', !!select);
+            console.log('🔍 [CLIENTE] Input encontrado:', !!buscarInput);
+            
+            if (!select) {
+                console.error('❌ [CLIENTE] Select de destinatário não encontrado no DOMContentLoaded');
+                return;
+            }
+
+            if (!buscarInput) {
+                console.error('❌ [CLIENTE] Input de busca não encontrado');
+                return;
+            }
+
+            // Verifica quantas opções existem no select
+            const options = Array.from(select.querySelectorAll('option'));
+            console.log('📋 [CLIENTE] Total de opções no select:', options.length);
+            
+            if (options.length === 0) {
+                console.error('❌ [CLIENTE] Nenhuma opção encontrada no select!');
+            } else {
+                console.log('✅ [CLIENTE] Opções encontradas:');
+                options.forEach((opt, index) => {
+                    if (index < 10) { // Mostra até 10 opções
+                        console.log(`  ${index + 1}. value="${opt.value}" - text="${opt.textContent.substring(0, 50)}" - disabled=${opt.disabled}`);
                     }
                 });
+                
+                // Verifica se há opções além de "todos"
+                const opcoesUsuarios = options.filter(opt => opt.value !== 'todos' && !opt.disabled && opt.value !== '');
+                console.log('👥 [CLIENTE] Opções de usuários disponíveis (não "todos" e não disabled):', opcoesUsuarios.length);
+                
+                if (opcoesUsuarios.length === 0) {
+                    console.warn('⚠️ [CLIENTE] Nenhum usuário disponível para seleção!');
+                    console.warn('   Verifique se há usuários não-admin no banco de dados.');
+                    console.warn('   Verifique os logs do servidor para ver quantos usuários foram encontrados.');
+                } else {
+                    console.log('✅ [CLIENTE] Usuários disponíveis para seleção:');
+                    opcoesUsuarios.forEach((opt, index) => {
+                        if (index < 5) {
+                            console.log(`  ${index + 1}. ${opt.textContent}`);
+                        }
+                    });
+                }
+            }
+
+            // Event listener para mudança no select - permite seleção normal
+            select.addEventListener('change', (e) => {
+                const valorSelecionado = e.target.value;
+                console.log('✅ Usuário selecionado:', valorSelecionado);
+                
+                // Valida se a seleção foi bem-sucedida
+                if (valorSelecionado && valorSelecionado !== '') {
+                    const opcaoSelecionada = Array.from(select.options).find(opt => opt.value === valorSelecionado);
+                    if (opcaoSelecionada) {
+                        console.log('✅ Opção encontrada:', opcaoSelecionada.textContent);
+                    }
+                }
+            });
+
+            // Event listener para clique - garante que funciona
+            select.addEventListener('click', (e) => {
+                console.log('🖱️ Select clicado');
+                e.stopPropagation();
+            });
+
+            // Event listener para foco - garante que está ativo
+            select.addEventListener('focus', () => {
+                console.log('👁️ Select recebeu foco');
+            });
+
+            // Event listener para input de busca (além do onkeyup inline)
+            buscarInput.addEventListener('input', (e) => {
+                window.filtrarUsuarios(e.target.value);
+            });
+
+            // Event listener para tecla Enter (evita submit e foca no select)
+            buscarInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    // Foca no select após Enter para facilitar seleção
+                    setTimeout(() => select.focus(), 100);
+                }
+            });
+
+            // Garante que o select é totalmente interativo
+            select.style.pointerEvents = 'auto';
+            select.style.cursor = 'pointer';
+            select.style.userSelect = 'auto';
+
+            // Remove qualquer overlay que possa estar bloqueando
+            const parentDiv = select.closest('.relative');
+            if (parentDiv) {
+                parentDiv.style.pointerEvents = 'auto';
+            }
+
+            // Inicializa contador
+            window.filtrarUsuarios('');
+            
+            // Debug: verifica dados recebidos do servidor (se disponível via script tag)
+            console.log('🔍 [CLIENTE] Verificando dados do servidor...');
+            const selectOptions = Array.from(select.querySelectorAll('option'));
+            console.log('🔍 [CLIENTE] Total de opções renderizadas:', selectOptions.length);
+            if (selectOptions.length <= 2) {
+                console.error('❌ [CLIENTE] PROBLEMA: Apenas', selectOptions.length, 'opções foram renderizadas!');
+                console.error('   Isso indica que a variável "usuarios" não está sendo passada corretamente do servidor.');
+                console.error('   Verifique os logs do servidor para ver quantos usuários foram encontrados.');
             }
         });
 

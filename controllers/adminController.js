@@ -3,9 +3,8 @@
  * Painel administrativo completo
  */
 
-const db = require('../config/database');
 const User = require('../models/User');
-const UserActivityService = require('../services/userActivityService');
+const db = require('../config/database');
 
 class AdminController {
   /**
@@ -21,42 +20,21 @@ class AdminController {
     }
 
     try {
-      const [userStats, calculosStats, onlineUsers, offlineUsers] = await Promise.all([
-        User.getStats(),
-        db.query(`
-          SELECT 
-            (SELECT COUNT(*) FROM calculos_inss) +
-            (SELECT COUNT(*) FROM calculos_irrf) +
-            (SELECT COUNT(*) FROM calculos_fgts) +
-            (SELECT COUNT(*) FROM calculos_avos) +
-            (SELECT COUNT(*) FROM calculos_periculosidade) +
-            (SELECT COUNT(*) FROM calculos_custo) +
-            (SELECT COUNT(*) FROM calculos_data_base) +
-            (SELECT COUNT(*) FROM calculos_contrato_experiencia) as total
-        `),
-        UserActivityService.getOnlineUsers().catch(() => []),
-        UserActivityService.getOfflineUsers().catch(() => [])
-      ]);
+      const userStats = await User.getStats();
 
       res.render('admin/index', {
         title: 'Painel Administrativo - Suporte DP',
         stats: {
-          usuarios: userStats,
-          calculos: parseInt(calculosStats.rows[0]?.total || 0)
-        },
-        onlineUsers: onlineUsers || [],
-        offlineUsers: offlineUsers || []
+          usuarios: userStats
+        }
       });
     } catch (error) {
       console.error('Erro no painel admin:', error);
       res.render('admin/index', {
         title: 'Painel Administrativo - Suporte DP',
         stats: {
-          usuarios: { total: 0, ativos: 0, inativos: 0, bloqueados: 0 },
-          calculos: 0
-        },
-        onlineUsers: [],
-        offlineUsers: []
+          usuarios: { total: 0, ativos: 0, inativos: 0, bloqueados: 0 }
+        }
       });
     }
   }
@@ -79,7 +57,8 @@ class AdminController {
         title: 'Gestão de Usuários - Suporte DP',
         usuarios: usuarios || [],
         filtroAtivo: req.query.ativo,
-        filtroBloqueado: req.query.bloqueado
+        filtroBloqueado: req.query.bloqueado,
+        csrfToken: req.csrfToken ? req.csrfToken() : null
       });
     } catch (error) {
       console.error('Erro ao listar usuários:', error);
@@ -197,21 +176,46 @@ class AdminController {
       const { id } = req.params;
       const { ativo, bloqueado, is_admin } = req.body;
 
+      console.log('📝 [ATUALIZAR USUÁRIO] Recebida requisição:', { id, ativo, bloqueado, is_admin });
+
       const data = {};
-      if (ativo !== undefined) data.ativo = ativo === 'true' || ativo === true;
-      if (bloqueado !== undefined) data.bloqueado = bloqueado === 'true' || bloqueado === true;
-      if (is_admin !== undefined) data.is_admin = is_admin === 'true' || is_admin === true;
+      if (ativo !== undefined) {
+        data.ativo = ativo === 'true' || ativo === true;
+        console.log('📝 [ATUALIZAR USUÁRIO] Campo ativo:', data.ativo);
+      }
+      if (bloqueado !== undefined) {
+        data.bloqueado = bloqueado === 'true' || bloqueado === true;
+        console.log('📝 [ATUALIZAR USUÁRIO] Campo bloqueado:', data.bloqueado);
+      }
+      if (is_admin !== undefined) {
+        data.is_admin = is_admin === 'true' || is_admin === true;
+        console.log('📝 [ATUALIZAR USUÁRIO] Campo is_admin:', data.is_admin);
+      }
+
+      if (Object.keys(data).length === 0) {
+        console.warn('⚠️ [ATUALIZAR USUÁRIO] Nenhum campo para atualizar');
+        return res.json({ success: false, error: 'Nenhum campo para atualizar' });
+      }
 
       const usuario = await User.updateStatus(id, data);
       
       if (!usuario) {
+        console.error('❌ [ATUALIZAR USUÁRIO] Usuário não encontrado:', id);
         return res.json({ success: false, error: 'Usuário não encontrado' });
       }
 
+      console.log('✅ [ATUALIZAR USUÁRIO] Usuário atualizado com sucesso:', {
+        id: usuario.id,
+        nome: usuario.nome,
+        ativo: usuario.ativo,
+        bloqueado: usuario.bloqueado
+      });
+
       res.json({ success: true, usuario });
     } catch (error) {
-      console.error('Erro ao atualizar usuário:', error);
-      res.json({ success: false, error: 'Erro ao atualizar usuário' });
+      console.error('❌ [ATUALIZAR USUÁRIO] Erro ao atualizar usuário:', error);
+      console.error('❌ [ATUALIZAR USUÁRIO] Stack:', error.stack);
+      res.status(500).json({ success: false, error: 'Erro ao atualizar usuário: ' + error.message });
     }
   }
 
@@ -274,12 +278,62 @@ class AdminController {
       );
 
       // Busca lista de usuários para seleção
-      const usuarios = await User.findAll({});
+      let usuarios = [];
+      try {
+        usuarios = await User.findAll({});
+        console.log('📊 [NOTIFICAÇÕES] Total de usuários encontrados:', usuarios ? usuarios.length : 0);
+        
+        if (usuarios && usuarios.length > 0) {
+          console.log('📋 [NOTIFICAÇÕES] Primeiros 3 usuários:', usuarios.slice(0, 3).map(u => ({
+            id: u.id,
+            nome: u.nome,
+            email: u.email,
+            is_admin: u.is_admin,
+            tipo_is_admin: typeof u.is_admin
+          })));
+          
+          const usuariosNaoAdmin = usuarios.filter(u => {
+            const isAdmin = u.is_admin === true || u.is_admin === 'true' || u.is_admin === 1;
+            return !isAdmin;
+          });
+          console.log('👥 [NOTIFICAÇÕES] Usuários não-admin:', usuariosNaoAdmin.length);
+          console.log('👥 [NOTIFICAÇÕES] Detalhes dos não-admin:', usuariosNaoAdmin.map(u => ({
+            nome: u.nome,
+            email: u.email,
+            is_admin: u.is_admin
+          })));
+        } else {
+          console.warn('⚠️ [NOTIFICAÇÕES] Nenhum usuário retornado do banco!');
+        }
+      } catch (userError) {
+        console.error('❌ [NOTIFICAÇÕES] Erro ao buscar usuários:', userError);
+        console.error('❌ [NOTIFICAÇÕES] Stack:', userError.stack);
+        usuarios = [];
+      }
+
+      // Garante que usuarios é sempre um array
+      if (!Array.isArray(usuarios)) {
+        console.warn('⚠️ [NOTIFICAÇÕES] usuarios não é um array, convertendo...');
+        usuarios = [];
+      }
+
+      console.log('✅ [NOTIFICAÇÕES] Renderizando view com', usuarios.length, 'usuários');
+      console.log('✅ [NOTIFICAÇÕES] Tipo de usuarios:', typeof usuarios, '| É array?', Array.isArray(usuarios));
+      if (usuarios && usuarios.length > 0) {
+        console.log('✅ [NOTIFICAÇÕES] Primeiro usuário exemplo:', {
+          id: usuarios[0].id,
+          nome: usuarios[0].nome,
+          email: usuarios[0].email,
+          is_admin: usuarios[0].is_admin,
+          tipo_is_admin: typeof usuarios[0].is_admin
+        });
+      }
 
       res.render('admin/notificacoes', {
         title: 'Notificações Administrativas - Suporte DP',
         historico: historico.rows || [],
-        usuarios: usuarios || []
+        usuarios: usuarios || [], // Garante que sempre é um array
+        csrfToken: req.csrfToken ? req.csrfToken() : null
       });
     } catch (error) {
       console.error('Erro ao carregar notificações:', error);

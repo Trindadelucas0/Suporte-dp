@@ -82,6 +82,103 @@
                     <span>Nova tarefa</span>
                 </button>
             </div>
+
+            <!-- Filtros -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+                <div class="flex items-center justify-between mb-4">
+                    <button 
+                        type="button"
+                        id="btnToggleFiltros"
+                        class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition">
+                        <i class="fas fa-filter"></i>
+                        <span>Filtros</span>
+                        <i class="fas fa-chevron-down text-xs transition-transform" id="iconFiltros"></i>
+                    </button>
+                    <button 
+                        type="button"
+                        id="btnLimparFiltros"
+                        class="text-xs text-gray-500 hover:text-gray-700 hidden">
+                        <i class="fas fa-times mr-1"></i>
+                        Limpar filtros
+                    </button>
+                </div>
+                
+                <div id="painelFiltros" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Filtro Status -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">
+                            <i class="fas fa-circle-notch mr-1"></i>Status
+                        </label>
+                        <select 
+                            id="filtroStatus"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Todos</option>
+                            <option value="nao_iniciado">Não Iniciado</option>
+                            <option value="em_andamento">Em Andamento</option>
+                            <option value="feito">Finalizada</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro Prioridade -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">
+                            <i class="fas fa-exclamation-circle mr-1"></i>Prioridade
+                        </label>
+                        <select 
+                            id="filtroPrioridade"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Todas</option>
+                            <option value="alta">🔴 Alta</option>
+                            <option value="media">🟡 Média</option>
+                            <option value="baixa">🟢 Baixa</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro Tipo -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">
+                            <i class="fas fa-tag mr-1"></i>Tipo
+                        </label>
+                        <select 
+                            id="filtroTipo"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Todos</option>
+                            <option value="FÉRIAS">FÉRIAS</option>
+                            <option value="13° ADIANTAMENTO">13° ADIANTAMENTO</option>
+                            <option value="13° INTEGRAL">13° INTEGRAL</option>
+                            <option value="RESCISÃO">RESCISÃO</option>
+                            <option value="ADMISSÃO">ADMISSÃO</option>
+                            <option value="AFASTAMENTO">AFASTAMENTO</option>
+                            <option value="ALTERAÇÃO SALARIAL">ALTERAÇÃO SALARIAL</option>
+                            <option value="ALTERAÇÃO DE CARGO">ALTERAÇÃO DE CARGO</option>
+                            <option value="OUTROS">OUTROS</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro Data Vencimento -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-2">
+                            <i class="fas fa-calendar mr-1"></i>Prazo Limite
+                        </label>
+                        <select 
+                            id="filtroDataVencimento"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Todas as datas</option>
+                            <option value="hoje">Hoje</option>
+                            <option value="amanha">Amanhã</option>
+                            <option value="esta_semana">Esta semana</option>
+                            <option value="proxima_semana">Próxima semana</option>
+                            <option value="este_mes">Este mês</option>
+                            <option value="vencidas">Vencidas</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Contador de resultados -->
+                <div id="contadorFiltros" class="mt-3 text-xs text-gray-500 hidden">
+                    <span id="textoContador">Mostrando <strong id="numResultados">0</strong> de <strong id="numTotal">0</strong> tarefas</span>
+                </div>
+            </div>
         </div>
 
         <!-- Tabela estilo Notion -->
@@ -463,6 +560,175 @@
             }
             return headers;
         }
+
+        // Sistema de Filtros
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnToggleFiltros = document.getElementById('btnToggleFiltros');
+            const painelFiltros = document.getElementById('painelFiltros');
+            const iconFiltros = document.getElementById('iconFiltros');
+            const btnLimparFiltros = document.getElementById('btnLimparFiltros');
+            const contadorFiltros = document.getElementById('contadorFiltros');
+            
+            const filtroStatus = document.getElementById('filtroStatus');
+            const filtroPrioridade = document.getElementById('filtroPrioridade');
+            const filtroTipo = document.getElementById('filtroTipo');
+            const filtroDataVencimento = document.getElementById('filtroDataVencimento');
+
+            // Toggle painel de filtros
+            if (btnToggleFiltros) {
+                btnToggleFiltros.addEventListener('click', () => {
+                    painelFiltros.classList.toggle('hidden');
+                    iconFiltros.classList.toggle('rotate-180');
+                });
+            }
+
+            // Função para aplicar filtros
+            function aplicarFiltros() {
+                const linhas = document.querySelectorAll('#tabelaTarefas tbody tr.tarefa-row');
+                let visiveis = 0;
+                const total = linhas.length;
+
+                const statusFiltro = filtroStatus ? filtroStatus.value : '';
+                const prioridadeFiltro = filtroPrioridade ? filtroPrioridade.value : '';
+                const tipoFiltro = filtroTipo ? filtroTipo.value : '';
+                const dataVencimentoFiltro = filtroDataVencimento ? filtroDataVencimento.value : '';
+
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
+                const amanha = new Date(hoje);
+                amanha.setDate(amanha.getDate() + 1);
+                const inicioSemana = new Date(hoje);
+                inicioSemana.setDate(hoje.getDate() - hoje.getDay());
+                const fimSemana = new Date(inicioSemana);
+                fimSemana.setDate(inicioSemana.getDate() + 6);
+                const proximaSemanaInicio = new Date(fimSemana);
+                proximaSemanaInicio.setDate(fimSemana.getDate() + 1);
+                const proximaSemanaFim = new Date(proximaSemanaInicio);
+                proximaSemanaFim.setDate(proximaSemanaInicio.getDate() + 6);
+                const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+                const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+
+                linhas.forEach(linha => {
+                    let mostrar = true;
+
+                    // Filtro Status
+                    if (statusFiltro) {
+                        const statusCell = linha.querySelector('.editable-cell[data-field="status"]');
+                        if (statusCell) {
+                            const select = statusCell.querySelector('select');
+                            const statusValue = select ? select.value : '';
+                            if (statusValue !== statusFiltro) {
+                                mostrar = false;
+                            }
+                        }
+                    }
+
+                    // Filtro Prioridade
+                    if (mostrar && prioridadeFiltro) {
+                        const prioridadeCell = linha.querySelector('.editable-cell[data-field="prioridade"]');
+                        if (prioridadeCell) {
+                            const select = prioridadeCell.querySelector('select');
+                            const prioridadeValue = select ? select.value : '';
+                            if (prioridadeValue !== prioridadeFiltro) {
+                                mostrar = false;
+                            }
+                        }
+                    }
+
+                    // Filtro Tipo
+                    if (mostrar && tipoFiltro) {
+                        const tipoCell = linha.querySelector('.editable-cell[data-field="tipo"]');
+                        if (tipoCell) {
+                            const select = tipoCell.querySelector('select');
+                            const tipoValue = select ? select.value : '';
+                            if (tipoValue !== tipoFiltro) {
+                                mostrar = false;
+                            }
+                        }
+                    }
+
+                    // Filtro Data Vencimento
+                    if (mostrar && dataVencimentoFiltro) {
+                        const dataCell = linha.querySelector('.editable-cell[data-field="data_vencimento"]');
+                        if (dataCell) {
+                            const input = dataCell.querySelector('input[type="date"]');
+                            if (input && input.value) {
+                                const dataVencimento = new Date(input.value + 'T00:00:00');
+                                dataVencimento.setHours(0, 0, 0, 0);
+
+                                let dentroPeriodo = false;
+                                switch (dataVencimentoFiltro) {
+                                    case 'hoje':
+                                        dentroPeriodo = dataVencimento.getTime() === hoje.getTime();
+                                        break;
+                                    case 'amanha':
+                                        dentroPeriodo = dataVencimento.getTime() === amanha.getTime();
+                                        break;
+                                    case 'esta_semana':
+                                        dentroPeriodo = dataVencimento >= inicioSemana && dataVencimento <= fimSemana;
+                                        break;
+                                    case 'proxima_semana':
+                                        dentroPeriodo = dataVencimento >= proximaSemanaInicio && dataVencimento <= proximaSemanaFim;
+                                        break;
+                                    case 'este_mes':
+                                        dentroPeriodo = dataVencimento >= inicioMes && dataVencimento <= fimMes;
+                                        break;
+                                    case 'vencidas':
+                                        dentroPeriodo = dataVencimento < hoje;
+                                        break;
+                                }
+                                if (!dentroPeriodo) {
+                                    mostrar = false;
+                                }
+                            } else {
+                                mostrar = false;
+                            }
+                        }
+                    }
+
+                    // Mostra ou esconde a linha
+                    if (mostrar) {
+                        linha.classList.remove('hidden');
+                        visiveis++;
+                    } else {
+                        linha.classList.add('hidden');
+                    }
+                });
+
+                // Atualiza contador
+                if (statusFiltro || prioridadeFiltro || tipoFiltro || dataVencimentoFiltro) {
+                    if (contadorFiltros) {
+                        contadorFiltros.classList.remove('hidden');
+                        const numResultados = document.getElementById('numResultados');
+                        const numTotal = document.getElementById('numTotal');
+                        if (numResultados) numResultados.textContent = visiveis;
+                        if (numTotal) numTotal.textContent = total;
+                    }
+                    if (btnLimparFiltros) btnLimparFiltros.classList.remove('hidden');
+                } else {
+                    if (contadorFiltros) contadorFiltros.classList.add('hidden');
+                    if (btnLimparFiltros) btnLimparFiltros.classList.add('hidden');
+                }
+            }
+
+            // Event listeners para filtros
+            [filtroStatus, filtroPrioridade, filtroTipo, filtroDataVencimento].forEach(filtro => {
+                if (filtro) {
+                    filtro.addEventListener('change', aplicarFiltros);
+                }
+            });
+
+            // Limpar filtros
+            if (btnLimparFiltros) {
+                btnLimparFiltros.addEventListener('click', () => {
+                    if (filtroStatus) filtroStatus.value = '';
+                    if (filtroPrioridade) filtroPrioridade.value = '';
+                    if (filtroTipo) filtroTipo.value = '';
+                    if (filtroDataVencimento) filtroDataVencimento.value = '';
+                    aplicarFiltros();
+                });
+            }
+        });
 
         // Destaca a tarefa na tabela se foi selecionada via link (sem abrir modal)
         <% if (tarefaSelecionada) { %>

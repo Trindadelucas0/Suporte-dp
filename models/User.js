@@ -17,11 +17,51 @@ class User {
   }
 
   static async findByEmail(email) {
-    const result = await db.query(
-      'SELECT id, nome, email, senha_hash, is_admin FROM users WHERE email = $1',
-      [email]
-    );
-    return result.rows[0] || null;
+    try {
+      // Verifica quais campos existem
+      const columnsCheck = await db.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'users' 
+        AND column_name IN ('ativo', 'bloqueado')
+      `);
+      
+      const existingColumns = columnsCheck.rows.map(r => r.column_name);
+      const hasAtivo = existingColumns.includes('ativo');
+      const hasBloqueado = existingColumns.includes('bloqueado');
+
+      let selectFields = 'id, nome, email, senha_hash, is_admin';
+      if (hasAtivo) selectFields += ', ativo';
+      if (hasBloqueado) selectFields += ', bloqueado';
+
+      const result = await db.query(
+        `SELECT ${selectFields} FROM users WHERE email = $1`,
+        [email]
+      );
+      
+      if (!result.rows[0]) return null;
+
+      const user = result.rows[0];
+      // Garante valores padrão
+      return {
+        ...user,
+        ativo: hasAtivo ? (user.ativo !== undefined ? user.ativo : true) : true,
+        bloqueado: hasBloqueado ? (user.bloqueado !== undefined ? user.bloqueado : false) : false
+      };
+    } catch (error) {
+      console.error('Erro ao buscar usuário por email:', error);
+      // Fallback: busca básica sem os novos campos
+      const result = await db.query(
+        'SELECT id, nome, email, senha_hash, is_admin FROM users WHERE email = $1',
+        [email]
+      );
+      if (!result.rows[0]) return null;
+      return {
+        ...result.rows[0],
+        ativo: true,
+        bloqueado: false
+      };
+    }
   }
 
   static async findById(id) {
