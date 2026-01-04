@@ -10,15 +10,16 @@ class Order {
   /**
    * Cria um novo pedido
    * @param {Number} valor - Valor do pedido
+   * @param {String} userId - ID do usuário (opcional, para renovação)
    * @returns {Object} Pedido criado
    */
-  static async create(valor) {
+  static async create(valor, userId = null) {
     const orderNsu = uuidv4();
     const result = await db.query(
-      `INSERT INTO orders (order_nsu, status, valor, data_criacao)
-       VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-       RETURNING id, order_nsu, status, valor, data_criacao, created_at`,
-      [orderNsu, 'pending', valor]
+      `INSERT INTO orders (order_nsu, status, valor, data_criacao, user_id)
+       VALUES ($1, $2, $3, CURRENT_TIMESTAMP, $4)
+       RETURNING id, order_nsu, status, valor, data_criacao, user_id, created_at`,
+      [orderNsu, 'pending', valor, userId]
     );
     return result.rows[0];
   }
@@ -30,7 +31,7 @@ class Order {
    */
   static async findByOrderNsu(orderNsu) {
     const result = await db.query(
-      `SELECT id, order_nsu, status, valor, data_criacao, checkout_url, invoice_slug, created_at, updated_at
+      `SELECT id, order_nsu, status, valor, data_criacao, checkout_url, invoice_slug, user_id, created_at, updated_at
        FROM orders
        WHERE order_nsu = $1`,
       [orderNsu]
@@ -45,7 +46,7 @@ class Order {
    */
   static async findById(id) {
     const result = await db.query(
-      `SELECT id, order_nsu, status, valor, data_criacao, checkout_url, invoice_slug, created_at, updated_at
+      `SELECT id, order_nsu, status, valor, data_criacao, checkout_url, invoice_slug, user_id, created_at, updated_at
        FROM orders
        WHERE id = $1`,
       [id]
@@ -95,7 +96,7 @@ class Order {
    */
   static async findAll(filtros = {}) {
     let query = `
-      SELECT id, order_nsu, status, valor, data_criacao, checkout_url, invoice_slug, created_at, updated_at
+      SELECT id, order_nsu, status, valor, data_criacao, checkout_url, invoice_slug, user_id, created_at, updated_at
       FROM orders
       WHERE 1=1
     `;

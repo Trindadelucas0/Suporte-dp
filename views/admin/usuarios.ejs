@@ -148,53 +148,66 @@
                                                                                 class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativo</span>
                                                                             <% } %>
                                                     </td>
+                                                    <!-- COLUNA: STATUS DE PAGAMENTO -->
                                                     <td class="px-6 py-4 whitespace-nowrap">
-                                                        <% const subscriptionStatus=usuario.subscription_status || 'N/A'
-                                                            ; %>
-                                                            <% if (subscriptionStatus==='ativa' ) { %>
-                                                                <span
-                                                                    class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativa</span>
-                                                                <% } else if (subscriptionStatus==='inadimplente' ) { %>
-                                                                    <span
-                                                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Inadimplente</span>
-                                                                    <% } else { %>
-                                                                        <span
-                                                                            class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                                                                            <%= subscriptionStatus %>
-                                                                        </span>
-                                                                        <% } %>
-                                                                            <% if (usuario.subscription_expires_at) { %>
-                                                                                <div class="text-xs text-gray-500 mt-1">
-                                                                                    Expira: <%= new
-                                                                                        Date(usuario.subscription_expires_at).toLocaleDateString('pt-BR')
-                                                                                        %>
-                                                                                </div>
-                                                                                <% } %>
+                                                        <% if (usuario.is_admin) { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                                                                <i class="fas fa-user-shield mr-1"></i>Admin
+                                                            </span>
+                                                        <% } else if (usuario.temPagamentoAtivo) { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                                <i class="fas fa-check-circle mr-1"></i>Pago
+                                                            </span>
+                                                            <% if (typeof usuario.diasRestantes==='number') { %>
+                                                                <div class="text-xs text-gray-600 mt-1 font-medium">
+                                                                    <%= usuario.diasRestantes %> dia<%= usuario.diasRestantes !== 1 ? 's' : '' %> restante<%= usuario.diasRestantes !== 1 ? 's' : '' %>
+                                                                </div>
+                                                            <% } %>
+                                                        <% } else if (usuario.ultimoPagamento && usuario.estaExpirado) { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                                                <i class="fas fa-times-circle mr-1"></i>Expirado
+                                                            </span>
+                                                            <% if (typeof usuario.diasRestantes==='number') { %>
+                                                                <div class="text-xs text-red-600 mt-1 font-medium">
+                                                                    <%= Math.abs(usuario.diasRestantes) %> dia<%= Math.abs(usuario.diasRestantes) !== 1 ? 's' : '' %> atrás
+                                                                </div>
+                                                            <% } %>
+                                                        <% } else if (usuario.ultimoPagamento && !usuario.temPagamentoAtivo && typeof usuario.diasRestantes==='number' && usuario.diasRestantes <= 7) { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                                <i class="fas fa-exclamation-triangle mr-1"></i>Vencendo
+                                                            </span>
+                                                            <div class="text-xs text-yellow-600 mt-1 font-medium">
+                                                                <%= usuario.diasRestantes %> dia<%= usuario.diasRestantes !== 1 ? 's' : '' %> restante<%= usuario.diasRestantes !== 1 ? 's' : '' %>
+                                                            </div>
+                                                        <% } else { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                                <i class="fas fa-times mr-1"></i>Não Pago
+                                                            </span>
+                                                            <div class="text-xs text-gray-400 mt-1">Sem pagamento</div>
+                                                        <% } %>
                                                     </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                                        <% if (typeof usuario.diasRestantes==='number' ) { %>
-                                                            <% if (usuario.estaExpirado) { %>
-                                                                <span
-                                                                    class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                                                    Expirado (<%= Math.abs(usuario.diasRestantes) %>
-                                                                        dias)
-                                                                </span>
-                                                                <% } else if (usuario.diasRestantes <=7) { %>
-                                                                    <span
-                                                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                                                        <%= usuario.diasRestantes %> dia<%=
-                                                                                usuario.diasRestantes !==1 ? 's' : '' %>
-                                                                    </span>
-                                                                    <% } else { %>
-                                                                        <span
-                                                                            class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                                                            <%= usuario.diasRestantes %> dias
-                                                                        </span>
-                                                                        <% } %>
-                                                                            <% } else { %>
-                                                                                <span
-                                                                                    class="text-gray-400 text-xs">N/A</span>
-                                                                                <% } %>
+                                                    <!-- COLUNA: ASSINATURA -->
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <% const subscriptionStatus=usuario.subscription_status || 'N/A'; %>
+                                                        <% if (subscriptionStatus==='ativa') { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativa</span>
+                                                        <% } else if (subscriptionStatus==='inadimplente') { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Inadimplente</span>
+                                                        <% } else { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                                <%= subscriptionStatus %>
+                                                            </span>
+                                                        <% } %>
+                                                        <% if (usuario.subscription_expires_at) { %>
+                                                            <div class="text-xs text-gray-500 mt-1">
+                                                                Expira: <%= new Date(usuario.subscription_expires_at).toLocaleDateString('pt-BR') %>
+                                                            </div>
+                                                        <% } %>
+                                                        <% if (typeof usuario.totalPagamentos === 'number' && usuario.totalPagamentos > 0) { %>
+                                                            <div class="text-xs text-gray-400 mt-1">
+                                                                <%= usuario.totalPagamentos %> pagamento<%= usuario.totalPagamentos !== 1 ? 's' : '' %> no total
+                                                            </div>
+                                                        <% } %>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                         <% if (usuario.ultimoPagamento) { %>
