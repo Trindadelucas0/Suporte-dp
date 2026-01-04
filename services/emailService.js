@@ -30,21 +30,27 @@ class EmailService {
     }
 
     // Verifica se as variáveis de ambiente estão configuradas
-    // Usa valores padrão fornecidos pelo usuário se não estiverem configurados
-    const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const smtpHost = process.env.SMTP_HOST;
     const smtpPort = process.env.SMTP_PORT || 587;
-    const smtpUser = process.env.SMTP_USER || 'ads.mktt@gmail.com';
-    const smtpPass = process.env.SMTP_PASS || 'f p c g e p s t w e g u j w s e';
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
     const smtpFrom = process.env.SMTP_FROM || smtpUser;
+
+    if (!smtpHost || !smtpUser || !smtpPass) {
+      console.warn('⚠️  SMTP não configurado. Emails não serão enviados.');
+      console.warn('💡 Configure SMTP_HOST, SMTP_USER, SMTP_PASS no .env');
+      this.isConfigured = false;
+      return null;
+    }
 
     // Cria transporter
     this.transporter = nodemailer.createTransport({
       host: smtpHost,
       port: parseInt(smtpPort),
-      secure: false, // false para 587, true para 465
+      secure: parseInt(smtpPort) === 465, // true para 465, false para outras portas
       auth: {
         user: smtpUser,
-        pass: smtpPass.replace(/\s+/g, '') // Remove espaços da senha de app
+        pass: smtpPass
       }
     });
 
@@ -196,52 +202,6 @@ class EmailService {
     try {
       const info = await transporter.sendMail(mailOptions);
       console.log('✅ Email de ativação enviado:', info.messageId);
-      return {
-        success: true,
-        messageId: info.messageId
-      };
-    } catch (error) {
-      console.error('❌ Erro ao enviar email:', error);
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  }
-
-  /**
-   * Envia email genérico (para lembretes, avisos, etc)
-   * @param {Object} data - Dados do email
-   * @param {string} data.to - Email do destinatário
-   * @param {string} data.subject - Assunto
-   * @param {string} data.html - HTML do email
-   * @param {string} data.text - Texto alternativo (opcional)
-   * @returns {Promise<Object>} Resultado do envio
-   */
-  async sendEmail(data) {
-    const transporter = this.getTransporter();
-
-    if (!transporter) {
-      console.error('❌ Email não enviado: SMTP não configurado');
-      return {
-        success: false,
-        error: 'Serviço de email não configurado'
-      };
-    }
-
-    const smtpFrom = process.env.SMTP_FROM || process.env.SMTP_USER || 'ads.mktt@gmail.com';
-
-    const mailOptions = {
-      from: `"${process.env.APP_NAME || 'Suporte DP'}" <${smtpFrom}>`,
-      to: data.to,
-      subject: data.subject,
-      html: data.html,
-      text: data.text || data.html.replace(/<[^>]*>/g, '')
-    };
-
-    try {
-      const info = await transporter.sendMail(mailOptions);
-      console.log('✅ Email enviado:', info.messageId);
       return {
         success: true,
         messageId: info.messageId

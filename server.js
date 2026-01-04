@@ -267,18 +267,9 @@ const tarefasRoutes = require("./routes/tarefas");
 const notificacoesRoutes = require("./routes/notificacoes");
 const perfilRoutes = require("./routes/perfil");
 const adminRoutes = require("./routes/admin");
-const cobrancaRoutes = require("./routes/cobranca");
-const webhookRoutes = require("./routes/webhook");
 
 // Rotas públicas (sem CSRF protection)
 app.use("/", authRoutes);
-// Webhook é público (sem CSRF)
-app.use("/webhook", webhookRoutes);
-// Rota pública para assinatura direta (sem CSRF) - deve estar antes do CSRF protection
-const CobrancaController = require("./controllers/cobrancaController");
-app.post("/cobranca/assinar-direto", CobrancaController.assinarDireto);
-// Rota pública para página de sucesso de pagamento (sem CSRF - acessível após pagamento no InfinitePay)
-app.get("/cobranca/pagamento-sucesso", CobrancaController.pagamentoSucesso);
 
 // Rotas protegidas (com CSRF protection)
 // Aplicamos CSRF apenas nas rotas protegidas
@@ -300,7 +291,6 @@ app.use("/tarefas", tarefasRoutes);
 app.use("/notificacoes", notificacoesRoutes);
 app.use("/perfil", perfilRoutes);
 app.use("/admin", adminRoutes);
-app.use("/cobranca", cobrancaRoutes);
 
 // Rota raiz - página de boas-vindas (prioriza cadastro)
 app.get("/", (req, res) => {
@@ -311,20 +301,6 @@ app.get("/", (req, res) => {
       title: "Bem-vindo - Suporte DP",
     });
   }
-});
-
-// Rota para adquirir sistema (redireciona para assinatura)
-app.get("/adquirir", (req, res) => {
-  // Se já está logado, vai direto para assinatura
-  if (req.session?.user?.id) {
-    return res.redirect("/cobranca/assinar");
-  }
-  // Se não está logado, mostra página de coleta de dados
-  res.render("cobranca/assinar-direto", {
-    title: "Adquirir Sistema - Suporte DP",
-    valorMensalidade: parseFloat(process.env.VALOR_MENSALIDADE || 19.90),
-    appName: process.env.APP_NAME || "Suporte DP"
-  });
 });
 
 // Middleware de tratamento de erros
@@ -366,11 +342,6 @@ if (process.env.NODE_ENV !== 'test') {
       // Inicializa banco de dados automaticamente (cria tabelas se não existirem)
       const initDatabase = require("./scripts/auto-init-database-psql");
       await initDatabase();
-
-      // Inicializa scheduler de cobrança
-      const scheduler = require("./jobs/scheduler");
-      scheduler.init();
-      console.log("✅ Scheduler de cobrança inicializado");
     } catch (error) {
       console.error("❌ Erro ao conectar com PostgreSQL:", error.message);
       

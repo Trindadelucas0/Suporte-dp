@@ -23,11 +23,5 @@ router.post('/usuarios/:id/resetar-senha', AdminController.resetarSenha);
 router.get('/notificacoes', AdminController.notificacoes);
 router.post('/notificacoes/criar', AdminController.criarNotificacao);
 
-// Monitoramento de cobranças
-const MonitoramentoController = require('../controllers/monitoramentoController');
-router.get('/monitoramento', MonitoramentoController.index);
-router.get('/api/monitoramento/estatisticas', MonitoramentoController.estatisticas);
-router.get('/api/monitoramento/clientes', MonitoramentoController.clientes);
-
 module.exports = router;
 
