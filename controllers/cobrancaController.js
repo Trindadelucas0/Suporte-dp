@@ -146,73 +146,135 @@ class CobrancaController {
       let userHasPassword = false;
       let tokenCadastro = null;
       
-      // Se tiver order_nsu, tenta buscar a cobrança
-      if (order_nsu) {
-        cobranca = await Cobranca.findByExternalId(order_nsu);
-        if (cobranca) {
-          const User = require('../models/User');
-          user = await User.findById(cobranca.user_id);
-          
-          // Verifica se usuário tem senha
-          if (user) {
-            const userWithPassword = await db.query(
-              'SELECT senha_hash FROM users WHERE id = $1',
-              [user.id]
-            );
-            userHasPassword = userWithPassword.rows[0]?.senha_hash && 
-                             userWithPassword.rows[0].senha_hash.length > 0;
+      try {
+        // Se tiver order_nsu, tenta buscar a cobrança
+        if (order_nsu) {
+          cobranca = await Cobranca.findByExternalId(order_nsu);
+          if (cobranca) {
+            const User = require('../models/User');
+            user = await User.findById(cobranca.user_id);
             
-            // Se não tem senha, gera token de cadastro
-            if (!userHasPassword) {
-              // Busca ou cria token de cadastro
-              const linkCadastro = await cadastroService.gerarLinkCadastro(
-                user.email, 
-                user.nome || 'Cliente'
-              );
-              // Extrai o token da URL (formato: https://app.com/cadastro/TOKEN)
-              const tokenMatch = linkCadastro.match(/\/cadastro\/([^\/\?]+)/);
-              tokenCadastro = tokenMatch ? tokenMatch[1] : null;
+            // Verifica se usuário tem senha
+            if (user) {
+              try {
+                const userWithPassword = await db.query(
+                  'SELECT senha_hash FROM users WHERE id = $1',
+                  [user.id]
+                );
+                userHasPassword = userWithPassword.rows[0]?.senha_hash && 
+                                 userWithPassword.rows[0].senha_hash.length > 0;
+                
+                // Se não tem senha, gera token de cadastro
+                if (!userHasPassword && user.email) {
+                  try {
+                    const linkCadastro = await cadastroService.gerarLinkCadastro(
+                      user.email, 
+                      user.nome || 'Cliente'
+                    );
+                    // Extrai o token da URL (formato: https://app.com/cadastro/TOKEN)
+                    const tokenMatch = linkCadastro.match(/\/cadastro\/([^\/\?]+)/);
+                    tokenCadastro = tokenMatch ? tokenMatch[1] : null;
+                  } catch (tokenError) {
+                    console.error('Erro ao gerar token de cadastro:', tokenError);
+                    // Continua sem token - usuário pode usar o link do email
+                  }
+                }
+              } catch (passwordError) {
+                console.error('Erro ao verificar senha do usuário:', passwordError);
+                // Continua sem verificar senha
+              }
             }
           }
         }
+      } catch (cobrancaError) {
+        console.error('Erro ao buscar cobrança:', cobrancaError);
+        // Continua sem cobrança - pode ser que o pagamento ainda não foi processado
       }
       
       // Se o usuário estiver logado, usa os dados da sessão
-      if (req.session?.user) {
-        const User = require('../models/User');
-        const userFull = await User.findById(req.session.user.id);
-        if (userFull) {
-          user = userFull;
-          // Verifica se tem senha
-          const userWithPassword = await db.query(
-            'SELECT senha_hash FROM users WHERE id = $1',
-            [user.id]
-          );
-          userHasPassword = userWithPassword.rows[0]?.senha_hash && 
-                           userWithPassword.rows[0].senha_hash.length > 0;
-          
-          // Se não tem senha, gera token de cadastro
-          if (!userHasPassword) {
-            const linkCadastro = await cadastroService.gerarLinkCadastro(
-              user.email, 
-              user.nome || 'Cliente'
-            );
-            // Extrai o token da URL (formato: https://app.com/cadastro/TOKEN)
-            const tokenMatch = linkCadastro.match(/\/cadastro\/([^\/\?]+)/);
-            tokenCadastro = tokenMatch ? tokenMatch[1] : null;
+      if (req.session?.user && !user) {
+        try {
+          const User = require('../models/User');
+          const userFull = await User.findById(req.session.user.id);
+          if (userFull) {
+            user = userFull;
+            // Verifica se tem senha
+            try {
+              const userWithPassword = await db.query(
+                'SELECT senha_hash FROM users WHERE id = $1',
+                [user.id]
+              );
+              userHasPassword = userWithPassword.rows[0]?.senha_hash && 
+                               userWithPassword.rows[0].senha_hash.length > 0;
+              
+              // Se não tem senha, gera token de cadastro
+              if (!userHasPassword && user.email) {
+                try {
+                  const linkCadastro = await cadastroService.gerarLinkCadastro(
+                    user.email, 
+                    user.nome || 'Cliente'
+                  );
+                  // Extrai o token da URL (formato: https://app.com/cadastro/TOKEN)
+                  const tokenMatch = linkCadastro.match(/\/cadastro\/([^\/\?]+)/);
+                  tokenCadastro = tokenMatch ? tokenMatch[1] : null;
+                } catch (tokenError) {
+                  console.error('Erro ao gerar token de cadastro:', tokenError);
+                  // Continua sem token
+                }
+              }
+            } catch (passwordError) {
+              console.error('Erro ao verificar senha do usuário:', passwordError);
+              // Continua sem verificar senha
+            }
           }
+        } catch (userError) {
+          console.error('Erro ao buscar usuário da sessão:', userError);
+          // Continua sem usuário
         }
       }
       
+      // Garante valores padrão para evitar erros na view
       res.render('cobranca/pagamento-sucesso', {
         title: 'Pagamento Confirmado - Suporte DP',
         user: user || { nome: 'Cliente', email: '' },
-        cobranca: cobranca,
-        userHasPassword: userHasPassword,
-        tokenCadastro: tokenCadastro
+        cobranca: cobranca || null,
+        userHasPassword: userHasPassword || false,
+        tokenCadastro: tokenCadastro || null
       });
     } catch (error) {
-      console.error('Erro ao carregar página de sucesso:', error);
+      console.error('❌ Erro ao carregar página de sucesso de pagamento:', error);
+      console.error('Stack:', error.stack);
+      
+      // Renderiza página de erro amigável (fallback se não tiver view de erro)
+      try {
+        res.status(500).render('error', {
+          title: 'Erro - Suporte DP',
+          message: 'Erro ao carregar página de sucesso de pagamento',
+          error: process.env.NODE_ENV === 'development' ? error : null
+        });
+      } catch (renderError) {
+        // Se não tiver view de erro, renderiza página simples
+        res.status(500).send(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Erro - Suporte DP</title>
+            <meta charset="UTF-8">
+            <style>
+              body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+              .error { background: #fee; border: 1px solid #fcc; padding: 20px; border-radius: 5px; max-width: 600px; margin: 0 auto; }
+            </style>
+          </head>
+          <body>
+            <div class="error">
+              <h1>Erro ao carregar página</h1>
+              <p>Ocorreu um erro ao processar sua solicitação.</p>
+              <p><a href="/">Voltar ao início</a></p>
+            </div>
+          </body>
+          </html>
+        `);
+      }
       res.render('cobranca/pagamento-sucesso', {
         title: 'Pagamento Confirmado - Suporte DP',
         user: req.session?.user || { nome: 'Cliente' },

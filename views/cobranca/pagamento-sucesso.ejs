@@ -46,15 +46,15 @@
           </div>
           <% } %>
 
-          <form method="POST" action="/cadastro/<%= tokenCadastro %>" class="space-y-4">
-            <input type="hidden" name="token" value="<%= tokenCadastro %>">
+          <form method="POST" action="/cadastro/<%= typeof tokenCadastro !== 'undefined' && tokenCadastro ? tokenCadastro : '' %>" class="space-y-4">
+            <input type="hidden" name="token" value="<%= typeof tokenCadastro !== 'undefined' && tokenCadastro ? tokenCadastro : '' %>">
             
             <div>
               <label for="nome" class="block text-sm font-semibold text-gray-700 mb-2">
                 <i class="fas fa-user text-primary-red mr-2"></i>Nome Completo
               </label>
               <input type="text" id="nome" name="nome" required
-                  value="<%= user.nome || '' %>"
+                  value="<%= typeof user !== 'undefined' && user && user.nome ? user.nome : '' %>"
                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-primary-red transition-all shadow-sm hover:border-gray-400"
                   placeholder="Digite seu nome completo">
             </div>
@@ -64,7 +64,7 @@
                 <i class="fas fa-envelope text-primary-red mr-2"></i>Email
               </label>
               <input type="email" id="email" name="email" required
-                  value="<%= user.email || '' %>"
+                  value="<%= typeof user !== 'undefined' && user && user.email ? user.email : '' %>"
                   readonly
                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed">
               <p class="text-xs text-gray-500 mt-1">Este email está vinculado à sua assinatura</p>

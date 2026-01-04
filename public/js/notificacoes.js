@@ -20,6 +20,35 @@ function isAuthRoute(pathname) {
     return AUTH_ROUTES.some(route => pathname.startsWith(route));
 }
 
+// Flag para rastrear se estamos em processo de redirecionamento
+let isRedirecting = false;
+
+// Detecta redirecionamentos
+const originalPushState = history.pushState;
+const originalReplaceState = history.replaceState;
+
+history.pushState = function(...args) {
+    isRedirecting = true;
+    setTimeout(() => { isRedirecting = false; }, 2000);
+    return originalPushState.apply(history, args);
+};
+
+history.replaceState = function(...args) {
+    isRedirecting = true;
+    setTimeout(() => { isRedirecting = false; }, 2000);
+    return originalReplaceState.apply(history, args);
+};
+
+// Detecta navegação via window.location
+let lastLocation = window.location.href;
+setInterval(() => {
+    if (window.location.href !== lastLocation) {
+        isRedirecting = true;
+        lastLocation = window.location.href;
+        setTimeout(() => { isRedirecting = false; }, 2000);
+    }
+}, 100);
+
 document.addEventListener('DOMContentLoaded', () => {
     // Verifica imediatamente se está em página de autenticação
     if (isAuthRoute(window.location.pathname)) {
@@ -38,11 +67,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return; // Sai se não encontrar os elementos
     }
 
-    // Aguarda um pouco para garantir que o redirecionamento já aconteceu
+    // Aguarda mais tempo para garantir que o redirecionamento já aconteceu completamente
     setTimeout(() => {
         // Verifica novamente se ainda está na página correta
-        if (isAuthRoute(window.location.pathname)) {
-            console.log('🚫 [Notificações] Ainda em página de autenticação após delay, não carregando');
+        if (isAuthRoute(window.location.pathname) || isRedirecting) {
+            console.log('🚫 [Notificações] Ainda em página de autenticação ou redirecionando, não carregando');
+            return;
+        }
+
+        // Verifica se os elementos ainda existem (pode ter mudado de página)
+        const btnNotificacoesCheck = document.getElementById('btnNotificacoes');
+        const btnNotificacoesMobileCheck = document.getElementById('btnNotificacoesMobile');
+        if (!btnNotificacoesCheck && !btnNotificacoesMobileCheck) {
+            console.log('🚫 [Notificações] Elementos não encontrados após delay, não carregando');
             return;
         }
 
@@ -53,12 +90,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // Atualiza a cada 30 segundos
         setInterval(() => {
             // Verifica novamente antes de carregar
-            if (!isAuthRoute(window.location.pathname)) {
-                carregarNotificacoes();
-                atualizarContador();
+            if (!isAuthRoute(window.location.pathname) && !isRedirecting) {
+                const btnCheck = document.getElementById('btnNotificacoes');
+                const btnMobileCheck = document.getElementById('btnNotificacoesMobile');
+                if (btnCheck || btnMobileCheck) {
+                    carregarNotificacoes();
+                    atualizarContador();
+                }
             }
         }, 30000);
-    }, 1000); // Aumenta delay para 1 segundo para garantir que redirecionamento completou
+    }, 2000); // Aumenta delay para 2 segundos para garantir que redirecionamento completou
 
     // Toggle dropdown desktop
     if (btnNotificacoes) {
@@ -123,10 +164,10 @@ function toggleDropdown() {
 }
 
 async function carregarNotificacoes() {
-    // Verifica se estamos em uma página de autenticação
-    if (isAuthRoute(window.location.pathname)) {
-        console.log('🚫 [Notificações] Tentativa de carregar em página de autenticação, bloqueando');
-        return; // Não carrega notificações em páginas de autenticação
+    // Verifica se estamos em uma página de autenticação ou redirecionando
+    if (isAuthRoute(window.location.pathname) || isRedirecting) {
+        console.log('🚫 [Notificações] Tentativa de carregar em página de autenticação ou durante redirecionamento, bloqueando');
+        return; // Não carrega notificações em páginas de autenticação ou durante redirecionamento
     }
 
     // Verifica se os elementos existem antes de fazer requisição
@@ -137,9 +178,9 @@ async function carregarNotificacoes() {
         return;
     }
     
-    // Verifica novamente se ainda está em página de autenticação (proteção extra)
-    if (isAuthRoute(window.location.pathname)) {
-        console.log('🚫 [Notificações] Ainda em página de autenticação, cancelando requisição');
+    // Verifica novamente se ainda está em página de autenticação ou redirecionando (proteção extra)
+    if (isAuthRoute(window.location.pathname) || isRedirecting) {
+        console.log('🚫 [Notificações] Ainda em página de autenticação ou redirecionando, cancelando requisição');
         return;
     }
 
@@ -153,8 +194,8 @@ async function carregarNotificacoes() {
         }
         
         // Verifica novamente ANTES de fazer a requisição (proteção extra)
-        if (isAuthRoute(window.location.pathname)) {
-            console.log('🚫 [Notificações] Cancelando requisição - ainda em página de autenticação');
+        if (isAuthRoute(window.location.pathname) || isRedirecting) {
+            console.log('🚫 [Notificações] Cancelando requisição - ainda em página de autenticação ou redirecionando');
             return;
         }
         
@@ -164,8 +205,8 @@ async function carregarNotificacoes() {
         });
 
         // Verifica novamente DEPOIS de receber a resposta (pode ter redirecionado)
-        if (isAuthRoute(window.location.pathname)) {
-            console.log('🚫 [Notificações] Cancelando processamento - redirecionado para página de autenticação');
+        if (isAuthRoute(window.location.pathname) || isRedirecting) {
+            console.log('🚫 [Notificações] Cancelando processamento - redirecionado para página de autenticação ou em processo de redirecionamento');
             return;
         }
 
@@ -177,8 +218,8 @@ async function carregarNotificacoes() {
         }
 
         if (!response.ok) {
-            // Se não for OK e estiver em página de autenticação, não faz nada
-            if (isAuthRoute(window.location.pathname)) {
+            // Se não for OK e estiver em página de autenticação ou redirecionando, não faz nada
+            if (isAuthRoute(window.location.pathname) || isRedirecting) {
                 return;
             }
             throw new Error('Erro ao carregar notificações');
@@ -187,8 +228,8 @@ async function carregarNotificacoes() {
         const data = await response.json();
         
         // Verifica novamente após parse do JSON
-        if (isAuthRoute(window.location.pathname)) {
-            console.log('🚫 [Notificações] Cancelando processamento - em página de autenticação após parse');
+        if (isAuthRoute(window.location.pathname) || isRedirecting) {
+            console.log('🚫 [Notificações] Cancelando processamento - em página de autenticação ou redirecionando após parse');
             return;
         }
         
@@ -475,9 +516,9 @@ async function marcarTodasComoLidas() {
 }
 
 async function atualizarContador() {
-    // Verifica se está em página de autenticação antes de fazer requisição
-    if (isAuthRoute(window.location.pathname)) {
-        return; // Não atualiza contador em páginas de autenticação
+    // Verifica se está em página de autenticação ou redirecionando antes de fazer requisição
+    if (isAuthRoute(window.location.pathname) || isRedirecting) {
+        return; // Não atualiza contador em páginas de autenticação ou durante redirecionamento
     }
     
     try {
@@ -490,7 +531,7 @@ async function atualizarContador() {
         }
         
         // Verifica novamente ANTES de fazer a requisição
-        if (isAuthRoute(window.location.pathname)) {
+        if (isAuthRoute(window.location.pathname) || isRedirecting) {
             return;
         }
         
@@ -500,7 +541,7 @@ async function atualizarContador() {
         });
 
         // Verifica novamente DEPOIS de receber a resposta
-        if (isAuthRoute(window.location.pathname)) {
+        if (isAuthRoute(window.location.pathname) || isRedirecting) {
             return;
         }
 
@@ -508,7 +549,7 @@ async function atualizarContador() {
             const data = await response.json();
             
             // Verifica novamente após parse do JSON
-            if (isAuthRoute(window.location.pathname)) {
+            if (isAuthRoute(window.location.pathname) || isRedirecting) {
                 return;
             }
             const count = data.count || 0;
