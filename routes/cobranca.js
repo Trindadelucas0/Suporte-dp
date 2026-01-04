@@ -11,7 +11,10 @@ const { requireAuth } = require('../middleware/auth');
 // NOTA: A rota /assinar-direto foi movida para server.js como rota pública (antes do CSRF)
 // Isso permite que usuários não autenticados possam assinar sem precisar de token CSRF
 
-// Todas as rotas requerem autenticação
+// Rota pública para página de sucesso de pagamento (acessível após pagamento no InfinitePay)
+router.get('/pagamento-sucesso', CobrancaController.pagamentoSucesso);
+
+// Todas as outras rotas requerem autenticação
 router.use(requireAuth);
 
 // Página de bloqueio

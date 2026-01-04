@@ -277,6 +277,8 @@ app.use("/webhook", webhookRoutes);
 // Rota pública para assinatura direta (sem CSRF) - deve estar antes do CSRF protection
 const CobrancaController = require("./controllers/cobrancaController");
 app.post("/cobranca/assinar-direto", CobrancaController.assinarDireto);
+// Rota pública para página de sucesso de pagamento (sem CSRF - acessível após pagamento no InfinitePay)
+app.get("/cobranca/pagamento-sucesso", CobrancaController.pagamentoSucesso);
 
 // Rotas protegidas (com CSRF protection)
 // Aplicamos CSRF apenas nas rotas protegidas

@@ -131,6 +131,46 @@ class CobrancaController {
   }
 
   /**
+   * Página de sucesso de pagamento (pública - acessível após pagamento no InfinitePay)
+   */
+  static async pagamentoSucesso(req, res) {
+    try {
+      // Tenta buscar informações da cobrança pelos parâmetros da URL (se vier do InfinitePay)
+      const { order_nsu, slug, transaction_nsu } = req.query;
+      
+      let cobranca = null;
+      let user = null;
+      
+      // Se tiver order_nsu, tenta buscar a cobrança
+      if (order_nsu) {
+        cobranca = await Cobranca.findByExternalId(order_nsu);
+        if (cobranca) {
+          const User = require('../models/User');
+          user = await User.findById(cobranca.user_id);
+        }
+      }
+      
+      // Se o usuário estiver logado, usa os dados da sessão
+      if (req.session?.user) {
+        user = req.session.user;
+      }
+      
+      res.render('cobranca/pagamento-sucesso', {
+        title: 'Pagamento Confirmado - Suporte DP',
+        user: user || { nome: 'Cliente' },
+        cobranca: cobranca
+      });
+    } catch (error) {
+      console.error('Erro ao carregar página de sucesso:', error);
+      res.render('cobranca/pagamento-sucesso', {
+        title: 'Pagamento Confirmado - Suporte DP',
+        user: req.session?.user || { nome: 'Cliente' },
+        cobranca: null
+      });
+    }
+  }
+
+  /**
    * Lista cobranças do usuário (API)
    */
   static async listar(req, res) {

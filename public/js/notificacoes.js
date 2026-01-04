@@ -136,6 +136,12 @@ async function carregarNotificacoes() {
         console.log('🚫 [Notificações] Elementos não encontrados, não fazendo requisição');
         return;
     }
+    
+    // Verifica novamente se ainda está em página de autenticação (proteção extra)
+    if (isAuthRoute(window.location.pathname)) {
+        console.log('🚫 [Notificações] Ainda em página de autenticação, cancelando requisição');
+        return;
+    }
 
     try {
         const headers = { 'Content-Type': 'application/json' };
@@ -146,10 +152,22 @@ async function carregarNotificacoes() {
             Object.assign(headers, getCSRFHeaders());
         }
         
+        // Verifica novamente ANTES de fazer a requisição (proteção extra)
+        if (isAuthRoute(window.location.pathname)) {
+            console.log('🚫 [Notificações] Cancelando requisição - ainda em página de autenticação');
+            return;
+        }
+        
         const response = await fetch('/notificacoes/api/nao-lidas', {
             headers: headers,
             credentials: 'same-origin'
         });
+
+        // Verifica novamente DEPOIS de receber a resposta (pode ter redirecionado)
+        if (isAuthRoute(window.location.pathname)) {
+            console.log('🚫 [Notificações] Cancelando processamento - redirecionado para página de autenticação');
+            return;
+        }
 
         // Verifica se a resposta é realmente JSON
         const contentType = response.headers.get('content-type');
@@ -159,10 +177,20 @@ async function carregarNotificacoes() {
         }
 
         if (!response.ok) {
+            // Se não for OK e estiver em página de autenticação, não faz nada
+            if (isAuthRoute(window.location.pathname)) {
+                return;
+            }
             throw new Error('Erro ao carregar notificações');
         }
 
         const data = await response.json();
+        
+        // Verifica novamente após parse do JSON
+        if (isAuthRoute(window.location.pathname)) {
+            console.log('🚫 [Notificações] Cancelando processamento - em página de autenticação após parse');
+            return;
+        }
         
         if (data.success) {
             notificacoesCache = data.data || [];
@@ -447,6 +475,11 @@ async function marcarTodasComoLidas() {
 }
 
 async function atualizarContador() {
+    // Verifica se está em página de autenticação antes de fazer requisição
+    if (isAuthRoute(window.location.pathname)) {
+        return; // Não atualiza contador em páginas de autenticação
+    }
+    
     try {
         const headers = { 'Content-Type': 'application/json' };
         
@@ -456,13 +489,28 @@ async function atualizarContador() {
             Object.assign(headers, getCSRFHeaders());
         }
         
+        // Verifica novamente ANTES de fazer a requisição
+        if (isAuthRoute(window.location.pathname)) {
+            return;
+        }
+        
         const response = await fetch('/notificacoes/api/count', {
             headers: headers,
             credentials: 'same-origin'
         });
 
+        // Verifica novamente DEPOIS de receber a resposta
+        if (isAuthRoute(window.location.pathname)) {
+            return;
+        }
+
         if (response.ok) {
             const data = await response.json();
+            
+            // Verifica novamente após parse do JSON
+            if (isAuthRoute(window.location.pathname)) {
+                return;
+            }
             const count = data.count || 0;
             
             const countDesktop = document.getElementById('notificacaoCount');
