@@ -78,23 +78,26 @@ class InfinitePayService {
 
       console.log('InfinitePay - Resposta completa:', JSON.stringify(response.data, null, 2));
 
+      // A API InfinitePay retorna "url" ao invés de "checkout_url"
+      const checkoutUrl = response.data?.url || response.data?.checkout_url;
+
       // Verifica se a resposta tem os dados necessários
-      if (!response.data || !response.data.checkout_url) {
-        console.error('InfinitePay - Resposta inválida: checkout_url não encontrado', response.data);
-        throw new Error('Resposta da API InfinitePay não contém checkout_url');
+      if (!response.data || !checkoutUrl) {
+        console.error('InfinitePay - Resposta inválida: url/checkout_url não encontrado', response.data);
+        throw new Error('Resposta da API InfinitePay não contém url/checkout_url');
       }
 
       console.log('InfinitePay - Link criado com sucesso:', {
         invoice_slug: response.data?.invoice_slug,
-        checkout_url: response.data?.checkout_url
+        checkout_url: checkoutUrl
       });
 
       return {
         success: true,
         data: {
-          checkout_url: response.data.checkout_url,
-          invoice_slug: response.data.invoice_slug || null,
-          order_nsu: response.data.order_nsu || orderNsu
+          checkout_url: checkoutUrl,
+          invoice_slug: response.data?.invoice_slug || null,
+          order_nsu: response.data?.order_nsu || orderNsu
         }
       };
     } catch (error) {
