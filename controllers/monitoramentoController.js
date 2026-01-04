@@ -183,8 +183,9 @@ class MonitoramentoController {
         u.email,
         c.id as cobranca_id,
         c.valor,
-        TO_CHAR(c.data_vencimento, 'DD/MM/YYYY') as data_vencimento,
+        TO_CHAR(c.data_vencimento, 'DD/MM/YYYY') as data_vencimento_formatada,
         c.data_vencimento as data_vencimento_raw,
+        c.data_vencimento, -- Manter original para cálculos
         c.status,
         c.mes_referencia,
         CURRENT_DATE - c.data_vencimento as dias_atraso
@@ -215,8 +216,9 @@ class MonitoramentoController {
         u.email,
         c.id as cobranca_id,
         c.valor,
-        TO_CHAR(c.data_vencimento, 'DD/MM/YYYY') as data_vencimento,
+        TO_CHAR(c.data_vencimento, 'DD/MM/YYYY') as data_vencimento_formatada,
         c.data_vencimento as data_vencimento_raw,
+        c.data_vencimento, -- Manter original para cálculos
         c.status,
         c.mes_referencia,
         CURRENT_DATE - c.data_vencimento as dias_atraso
@@ -249,8 +251,9 @@ class MonitoramentoController {
         u.email,
         c.id as cobranca_id,
         c.valor,
-        TO_CHAR(c.data_vencimento, 'DD/MM/YYYY') as data_vencimento,
+        TO_CHAR(c.data_vencimento, 'DD/MM/YYYY') as data_vencimento_formatada,
         c.data_vencimento as data_vencimento_raw,
+        c.data_vencimento, -- Manter original para cálculos
         c.status,
         c.mes_referencia,
         CURRENT_DATE - c.data_vencimento as dias_atraso,

@@ -182,26 +182,7 @@
                                                 R$ <%= parseFloat(cliente.valor).toFixed(2) %>
                                             </td>
                                             <td class="px-4 py-3 text-sm text-gray-900">
-                                                <% 
-                                                    let dataVenc = cliente.data_vencimento || cliente.data_vencimento_raw;
-                                                    if (dataVenc) {
-                                                        try {
-                                                            const d = new Date(dataVenc);
-                                                            if (!isNaN(d.getTime())) {
-                                                                const dia = String(d.getDate()).padStart(2, '0');
-                                                                const mes = String(d.getMonth() + 1).padStart(2, '0');
-                                                                const ano = d.getFullYear();
-                                                                out.write(dia + '/' + mes + '/' + ano);
-                                                            } else {
-                                                                out.write(dataVenc.toString());
-                                                            }
-                                                        } catch(e) {
-                                                            out.write(dataVenc.toString());
-                                                        }
-                                                    } else {
-                                                        out.write('-');
-                                                    }
-                                                %>
+                                                <%= cliente.data_vencimento_formatada || cliente.data_vencimento || '-' %>
                                             </td>
                                             <td class="px-4 py-3">
                                                 <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded">
@@ -259,26 +240,7 @@
                                                 R$ <%= parseFloat(cliente.valor).toFixed(2) %>
                                             </td>
                                             <td class="px-4 py-3 text-sm text-gray-900">
-                                                <% 
-                                                    let dataVenc = cliente.data_vencimento || cliente.data_vencimento_raw;
-                                                    if (dataVenc) {
-                                                        try {
-                                                            const d = new Date(dataVenc);
-                                                            if (!isNaN(d.getTime())) {
-                                                                const dia = String(d.getDate()).padStart(2, '0');
-                                                                const mes = String(d.getMonth() + 1).padStart(2, '0');
-                                                                const ano = d.getFullYear();
-                                                                out.write(dia + '/' + mes + '/' + ano);
-                                                            } else {
-                                                                out.write(dataVenc.toString());
-                                                            }
-                                                        } catch(e) {
-                                                            out.write(dataVenc.toString());
-                                                        }
-                                                    } else {
-                                                        out.write('-');
-                                                    }
-                                                %>
+                                                <%= cliente.data_vencimento_formatada || cliente.data_vencimento || '-' %>
                                             </td>
                                             <td class="px-4 py-3">
                                                 <span class="px-2 py-1 text-xs font-medium <%= cliente.status === 'vencida' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' %> rounded">
@@ -331,26 +293,7 @@
                                                 R$ <%= parseFloat(cliente.valor).toFixed(2) %>
                                             </td>
                                             <td class="px-4 py-3 text-sm text-gray-900">
-                                                <% 
-                                                    let dataVenc = cliente.data_vencimento || cliente.data_vencimento_raw;
-                                                    if (dataVenc) {
-                                                        try {
-                                                            const d = new Date(dataVenc);
-                                                            if (!isNaN(d.getTime())) {
-                                                                const dia = String(d.getDate()).padStart(2, '0');
-                                                                const mes = String(d.getMonth() + 1).padStart(2, '0');
-                                                                const ano = d.getFullYear();
-                                                                out.write(dia + '/' + mes + '/' + ano);
-                                                            } else {
-                                                                out.write(dataVenc.toString());
-                                                            }
-                                                        } catch(e) {
-                                                            out.write(dataVenc.toString());
-                                                        }
-                                                    } else {
-                                                        out.write('-');
-                                                    }
-                                                %>
+                                                <%= cliente.data_vencimento_formatada || cliente.data_vencimento || '-' %>
                                             </td>
                                             <td class="px-4 py-3">
                                                 <span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded">
