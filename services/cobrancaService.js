@@ -39,7 +39,7 @@ class CobrancaService {
     }
 
     // Valor da mensalidade
-    const valor = parseFloat(process.env.VALOR_MENSALIDADE || 49.90);
+    const valor = parseFloat(process.env.VALOR_MENSALIDADE || 19.90);
 
     // Cria cobrança no InfinitePay
     let externalId = null;

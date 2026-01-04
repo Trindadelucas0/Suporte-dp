@@ -207,7 +207,7 @@ INFINITEPAY_USE_MOCK=false
 # ============================================
 # REGRAS DE NEGÓCIO
 # ============================================
-VALOR_MENSALIDADE=49.90
+VALOR_MENSALIDADE=19.90
 DIAS_PARA_BLOQUEIO=7
 DIAS_LEMBRETE_PRE_5=true
 DIAS_LEMBRETE_PRE_2=true

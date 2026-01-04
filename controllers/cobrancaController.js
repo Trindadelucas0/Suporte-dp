@@ -190,7 +190,7 @@ class CobrancaController {
         cobrancaAtiva: cobrancaAtiva,
         cobrancaPaga: cobrancaPaga,
         planLink: planLink,
-        valorMensalidade: parseFloat(process.env.VALOR_MENSALIDADE || 49.90),
+        valorMensalidade: parseFloat(process.env.VALOR_MENSALIDADE || 19.90),
         appName: process.env.APP_NAME || 'Suporte DP'
       });
     } catch (error) {

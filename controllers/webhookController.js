@@ -44,8 +44,9 @@ class WebhookController {
 
       // Processa evento
       if (webhookData.status === 'paga' || webhookData.event === 'payment.paid') {
-        // Processa pagamento
-        await cobrancaService.processarPagamento(webhookData.external_id);
+        // Processa pagamento usando order_nsu (que é nosso external_id)
+        const orderNsu = webhookData.order_nsu || webhookData.external_id;
+        await cobrancaService.processarPagamento(orderNsu);
 
         // Busca usuário para verificar se já tem conta
         // Precisa buscar com senha_hash para verificar

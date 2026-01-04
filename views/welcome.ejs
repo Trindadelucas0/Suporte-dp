@@ -1,272 +1,474 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bem-vindo - Suporte DP</title>
+    <title>Suporte DP - Sistema de Cálculos Trabalhistas para Iniciantes</title>
+    <meta name="description" content="Sistema completo e fácil para cálculos trabalhistas. Perfeito para iniciantes! Aprenda e calcule INSS, IRRF, FGTS e muito mais.">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: {
-                            red: '#DC2626',
-                            yellow: '#FBBF24'
+                        primary: { 
+                            red: '#DC2626', 
+                            yellow: '#FBBF24',
+                            'red-light': '#EF4444',
+                            'yellow-light': '#FCD34D'
                         }
                     }
                 }
             }
         }
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
 </head>
-
-<body class="bg-gradient-to-br from-primary-red via-primary-yellow to-primary-red min-h-screen">
-    <div class="min-h-screen flex items-center justify-center py-12 px-4">
-        <div class="max-w-4xl w-full">
-            <!-- Cabeçalho -->
-            <div class="text-center mb-12">
-                <i class="fas fa-calculator text-white text-6xl mb-4"></i>
-                <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Suporte DP</h1>
-                <p class="text-xl text-white opacity-90">Sistema Educacional de Cálculos Trabalhistas</p>
-            </div>
-
-            <!-- Cards de Opções -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Card Cadastro (Destaque) -->
-                <div
-                    class="bg-white rounded-lg shadow-2xl p-8 transform hover:scale-105 transition duration-300 border-4 border-primary-yellow">
-                    <div class="text-center mb-6">
-                        <div
-                            class="bg-primary-yellow rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-user-plus text-white text-3xl"></i>
-                        </div>
-                        <h2 class="text-2xl font-bold text-gray-900 mb-2">Criar Conta</h2>
-                        <p class="text-gray-600">Comece agora e tenha acesso completo</p>
+<body class="bg-gray-50">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="gradient-bg rounded-lg p-2 mr-3">
+                        <i class="fas fa-calculator text-white text-xl"></i>
                     </div>
-
-                    <ul class="space-y-3 mb-6 text-sm text-gray-700">
-                        <li class="flex items-center">
-                            <i class="fas fa-check-circle text-primary-yellow mr-2"></i>
-                            Cálculos trabalhistas completos
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check-circle text-primary-yellow mr-2"></i>
-                            Histórico de todos os cálculos
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check-circle text-primary-yellow mr-2"></i>
-                            Checklists de processos
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-check-circle text-primary-yellow mr-2"></i>
-                            Calendário de obrigações
-                        </li>
-                    </ul>
-
-                    <a href="/register"
-                        class="block w-full bg-gradient-to-r from-primary-yellow to-primary-red text-white py-4 rounded-md font-bold text-lg text-center hover:opacity-90 transition shadow-lg">
-                        <i class="fas fa-user-plus mr-2"></i>Criar Conta Grátis
+                    <span class="text-xl font-bold text-gray-900">Suporte DP</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#funcionalidades" class="text-gray-700 hover:text-primary-red transition">Funcionalidades</a>
+                    <a href="#sobre" class="text-gray-700 hover:text-primary-red transition">Sobre</a>
+                    <a href="#contato" class="text-gray-700 hover:text-primary-red transition">Contato</a>
+                    <a href="/login" class="bg-primary-red text-white px-6 py-2 rounded-lg hover:bg-red-700 transition font-medium">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Entrar
                     </a>
                 </div>
+                <div class="md:hidden">
+                    <button onclick="toggleMenu()" class="text-gray-700">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-white border-t">
+            <div class="px-4 py-4 space-y-3">
+                <a href="#funcionalidades" class="block text-gray-700 hover:text-primary-red">Funcionalidades</a>
+                <a href="#sobre" class="block text-gray-700 hover:text-primary-red">Sobre</a>
+                <a href="#contato" class="block text-gray-700 hover:text-primary-red">Contato</a>
+                <a href="/login" class="block bg-primary-red text-white px-4 py-2 rounded-lg text-center">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Entrar
+                </a>
+            </div>
+        </div>
+    </nav>
 
-                <!-- Card Login -->
-                <div class="bg-white rounded-lg shadow-xl p-8">
-                    <div class="text-center mb-6">
-                        <div
-                            class="bg-primary-red rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-sign-in-alt text-white text-3xl"></i>
-                        </div>
-                        <h2 class="text-2xl font-bold text-gray-900 mb-2">Já Tenho Conta</h2>
-                        <p class="text-gray-600">Faça login para continuar</p>
+    <!-- Hero Section -->
+    <section class="gradient-bg text-white py-20 px-4">
+        <div class="max-w-7xl mx-auto text-center animate-fade-in">
+            <div class="inline-block bg-white bg-opacity-20 rounded-full px-4 py-2 mb-6">
+                <span class="text-sm font-medium">✨ Perfeito para Iniciantes</span>
+            </div>
+            <h1 class="text-4xl md:text-6xl font-bold mb-6">
+                Cálculos Trabalhistas
+                <span class="block mt-2">Feitos de Forma Simples</span>
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 text-white text-opacity-90 max-w-3xl mx-auto">
+                Sistema completo e <strong>super fácil</strong> para você aprender e calcular tudo sobre trabalhistas. 
+                <span class="block mt-2">Feito especialmente para quem está começando!</span>
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="/register" class="bg-white text-primary-red px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <i class="fas fa-rocket mr-2"></i>Começar Agora - Grátis
+                </a>
+                <a href="/login" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-primary-red transition">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Já tenho conta
+                </a>
+            </div>
+            <p class="mt-6 text-sm text-white text-opacity-75">
+                <i class="fas fa-shield-alt mr-2"></i>100% Seguro • Sem complicação • Suporte completo
+            </p>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="funcionalidades" class="py-20 px-4 bg-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    Tudo que você precisa em um só lugar
+                </h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                    Sistema completo para cálculos trabalhistas, sem complicação técnica. 
+                    Perfeito para iniciantes que querem aprender e calcular com segurança.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 card-hover">
+                    <div class="bg-blue-500 rounded-xl p-4 w-16 h-16 flex items-center justify-center mb-6">
+                        <i class="fas fa-calculator text-white text-2xl"></i>
                     </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Cálculos Completos</h3>
+                    <p class="text-gray-600 mb-4">
+                        Calcule INSS, IRRF, FGTS, Férias, 13º Salário e muito mais. 
+                        Tudo explicado de forma simples e clara.
+                    </p>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li><i class="fas fa-check text-blue-500 mr-2"></i>INSS</li>
+                        <li><i class="fas fa-check text-blue-500 mr-2"></i>IRRF</li>
+                        <li><i class="fas fa-check text-blue-500 mr-2"></i>FGTS</li>
+                        <li><i class="fas fa-check text-blue-500 mr-2"></i>Férias e 13º</li>
+                    </ul>
+                </div>
 
-                    <a href="/login"
-                        class="block w-full bg-gradient-to-r from-primary-red to-primary-yellow text-white py-4 rounded-md font-bold text-lg text-center hover:opacity-90 transition shadow-lg">
-                        <i class="fas fa-sign-in-alt mr-2"></i>Fazer Login
-                    </a>
+                <!-- Feature 2 -->
+                <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 card-hover">
+                    <div class="bg-green-500 rounded-xl p-4 w-16 h-16 flex items-center justify-center mb-6">
+                        <i class="fas fa-graduation-cap text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Aprenda Fácil</h3>
+                    <p class="text-gray-600 mb-4">
+                        Vídeos, cursos e explicações passo a passo. 
+                        Não precisa ser expert para usar!
+                    </p>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Vídeos no YouTube</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Passo a passo detalhado</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Exemplos práticos</li>
+                    </ul>
+                </div>
 
-                    <div class="mt-6 pt-6 border-t border-gray-200">
-                        <p class="text-center text-sm text-gray-600">
-                            Esqueceu sua senha?<br>
-                            <span class="text-primary-red">Entre em contato com o administrador</span>
+                <!-- Feature 3 -->
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-8 card-hover">
+                    <div class="bg-purple-500 rounded-xl p-4 w-16 h-16 flex items-center justify-center mb-6">
+                        <i class="fas fa-calendar-check text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Organize Tudo</h3>
+                    <p class="text-gray-600 mb-4">
+                        Calendário de obrigações, checklist de tarefas e muito mais. 
+                        Nunca perca um prazo!
+                    </p>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li><i class="fas fa-check text-purple-500 mr-2"></i>Calendário completo</li>
+                        <li><i class="fas fa-check text-purple-500 mr-2"></i>Checklist de tarefas</li>
+                        <li><i class="fas fa-check text-purple-500 mr-2"></i>Lembretes automáticos</li>
+                    </ul>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-8 card-hover">
+                    <div class="bg-orange-500 rounded-xl p-4 w-16 h-16 flex items-center justify-center mb-6">
+                        <i class="fas fa-shield-alt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">100% Seguro</h3>
+                    <p class="text-gray-600 mb-4">
+                        Seus dados estão protegidos. Sistema confiável e seguro para suas informações.
+                    </p>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li><i class="fas fa-check text-orange-500 mr-2"></i>Dados protegidos</li>
+                        <li><i class="fas fa-check text-orange-500 mr-2"></i>Backup automático</li>
+                        <li><i class="fas fa-check text-orange-500 mr-2"></i>Privacidade garantida</li>
+                    </ul>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-8 card-hover">
+                    <div class="bg-red-500 rounded-xl p-4 w-16 h-16 flex items-center justify-center mb-6">
+                        <i class="fas fa-headset text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Suporte Completo</h3>
+                    <p class="text-gray-600 mb-4">
+                        Precisa de ajuda? Estamos aqui! Suporte via WhatsApp, Email e muito mais.
+                    </p>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li><i class="fas fa-check text-red-500 mr-2"></i>WhatsApp direto</li>
+                        <li><i class="fas fa-check text-red-500 mr-2"></i>Email de suporte</li>
+                        <li><i class="fas fa-check text-red-500 mr-2"></i>Respostas rápidas</li>
+                    </ul>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl p-8 card-hover">
+                    <div class="bg-yellow-500 rounded-xl p-4 w-16 h-16 flex items-center justify-center mb-6">
+                        <i class="fas fa-sync-alt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Sempre Melhorando</h3>
+                    <p class="text-gray-600 mb-4">
+                        Estamos sempre adicionando novas funcionalidades. 
+                        O sistema cresce junto com você!
+                    </p>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li><i class="fas fa-check text-yellow-600 mr-2"></i>Atualizações frequentes</li>
+                        <li><i class="fas fa-check text-yellow-600 mr-2"></i>Novas funcionalidades</li>
+                        <li><i class="fas fa-check text-yellow-600 mr-2"></i>Feedback implementado</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="sobre" class="py-20 px-4 bg-gradient-to-br from-gray-50 to-gray-100">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                        Feito para quem está começando
+                    </h2>
+                    <p class="text-lg text-gray-600 mb-4">
+                        Sabemos que cálculos trabalhistas podem parecer complicados. 
+                        Por isso, criamos um sistema <strong>super intuitivo</strong> que qualquer pessoa consegue usar, 
+                        mesmo sem experiência prévia.
+                    </p>
+                    <p class="text-lg text-gray-600 mb-4">
+                        Nossa missão é <strong>simplificar</strong> e <strong>ensinar</strong>. 
+                        Aqui você não precisa ser expert em Excel ou cálculos complexos. 
+                        Basta seguir nossos passos e você já está calculando!
+                    </p>
+                    <div class="bg-white rounded-xl p-6 shadow-lg mt-6">
+                        <p class="text-gray-700 font-medium mb-2">
+                            <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                            <strong>Não é técnico, é prático!</strong>
+                        </p>
+                        <p class="text-gray-600 text-sm">
+                            Nosso sistema foi pensado para iniciantes. Linguagem simples, 
+                            interface clara e resultados que você entende.
                         </p>
                     </div>
                 </div>
-            </div>
-
-            <!-- Seção FAQ -->
-            <div class="mt-12 bg-white rounded-lg shadow-xl p-8">
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-2">
-                        <i class="fas fa-question-circle text-primary-yellow mr-2"></i>
-                        Perguntas Frequentes (FAQ)
-                    </h2>
-                    <p class="text-gray-600">Tire suas dúvidas sobre o sistema</p>
-                </div>
-
-                <div class="space-y-4" id="faq-container">
-                    <!-- FAQ 1 -->
-                    <div class="border border-gray-200 rounded-lg overflow-hidden">
-                        <button class="faq-question w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition flex items-center justify-between focus:outline-none" onclick="toggleFAQ(1)">
-                            <span class="font-semibold text-gray-900">
-                                <i class="fas fa-check-circle text-primary-yellow mr-2"></i>
-                                O sistema está atualizado com as tabelas de 2024/2025/2026?
-                            </span>
-                            <i class="fas fa-chevron-down faq-icon text-primary-red transition-transform"></i>
-                        </button>
-                        <div class="faq-answer hidden px-6 py-4 bg-white border-t border-gray-200">
-                            <p class="text-gray-700 leading-relaxed">
-                                Sim. O Suporte DP utiliza um banco de dados dinâmico que armazena históricos de tabelas de INSS e IRRF. Os cálculos seguem as faixas progressivas e alíquotas oficiais mais recentes, garantindo a precisão de acordo com a legislação vigente.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- FAQ 2 -->
-                    <div class="border border-gray-200 rounded-lg overflow-hidden">
-                        <button class="faq-question w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition flex items-center justify-between focus:outline-none" onclick="toggleFAQ(2)">
-                            <span class="font-semibold text-gray-900">
-                                <i class="fas fa-exclamation-triangle text-primary-red mr-2"></i>
-                                O que é o cálculo de "Risco de Multa"?
-                            </span>
-                            <i class="fas fa-chevron-down faq-icon text-primary-red transition-transform"></i>
-                        </button>
-                        <div class="faq-answer hidden px-6 py-4 bg-white border-t border-gray-200">
-                            <p class="text-gray-700 leading-relaxed">
-                                Esta ferramenta exclusiva analisa dados como data de admissão e prazos de pagamento para identificar possíveis irregularidades que podem gerar multas administrativas ou trabalhistas (como a multa do Art. 477 da CLT por atraso na rescisão).
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- FAQ 3 -->
-                    <div class="border border-gray-200 rounded-lg overflow-hidden">
-                        <button class="faq-question w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition flex items-center justify-between focus:outline-none" onclick="toggleFAQ(3)">
-                            <span class="font-semibold text-gray-900">
-                                <i class="fas fa-calculator text-primary-yellow mr-2"></i>
-                                Como funciona o simulador de "Custo de Funcionário"?
-                            </span>
-                            <i class="fas fa-chevron-down faq-icon text-primary-red transition-transform"></i>
-                        </button>
-                        <div class="faq-answer hidden px-6 py-4 bg-white border-t border-gray-200">
-                            <p class="text-gray-700 leading-relaxed">
-                                Este módulo permite que o empregador visualize o custo real de uma contratação. O cálculo inclui não apenas o salário base, mas também provisões de férias, 1/3 constitucional, 13º salário (avos) e encargos de FGTS.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- FAQ 4 -->
-                    <div class="border border-gray-200 rounded-lg overflow-hidden">
-                        <button class="faq-question w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition flex items-center justify-between focus:outline-none" onclick="toggleFAQ(4)">
-                            <span class="font-semibold text-gray-900">
-                                <i class="fas fa-hard-hat text-primary-red mr-2"></i>
-                                O sistema calcula Adicional de Periculosidade?
-                            </span>
-                            <i class="fas fa-chevron-down faq-icon text-primary-red transition-transform"></i>
-                        </button>
-                        <div class="faq-answer hidden px-6 py-4 bg-white border-t border-gray-200">
-                            <p class="text-gray-700 leading-relaxed">
-                                Sim. O sistema aplica automaticamente o percentual legal de 30% sobre o salário base, facilitando a conferência deste adicional para categorias que trabalham em condições de risco.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- FAQ 5 -->
-                    <div class="border border-gray-200 rounded-lg overflow-hidden">
-                        <button class="faq-question w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition flex items-center justify-between focus:outline-none" onclick="toggleFAQ(5)">
-                            <span class="font-semibold text-gray-900">
-                                <i class="fas fa-tasks text-primary-yellow mr-2"></i>
-                                Posso organizar as minhas tarefas no sistema?
-                            </span>
-                            <i class="fas fa-chevron-down faq-icon text-primary-red transition-transform"></i>
-                        </button>
-                        <div class="faq-answer hidden px-6 py-4 bg-white border-t border-gray-200">
-                            <p class="text-gray-700 leading-relaxed">
-                                Sim, através do módulo de Checklist. Nele, pode acompanhar o progresso de rotinas críticas, como processos de admissão, demissão e fechamento mensal, garantindo que nenhuma etapa legal seja esquecida.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- FAQ 6 -->
-                    <div class="border border-gray-200 rounded-lg overflow-hidden">
-                        <button class="faq-question w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition flex items-center justify-between focus:outline-none" onclick="toggleFAQ(6)">
-                            <span class="font-semibold text-gray-900">
-                                <i class="fas fa-calendar-alt text-primary-red mr-2"></i>
-                                O Calendário do sistema mostra prazos importantes?
-                            </span>
-                            <i class="fas fa-chevron-down faq-icon text-primary-red transition-transform"></i>
-                        </button>
-                        <div class="faq-answer hidden px-6 py-4 bg-white border-t border-gray-200">
-                            <p class="text-gray-700 leading-relaxed">
-                                Sim. O nosso Calendário está configurado para exibir feriados e datas de vencimento de obrigações, ajudando no planeamento das entregas do Departamento Pessoal.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- FAQ 7 -->
-                    <div class="border border-gray-200 rounded-lg overflow-hidden">
-                        <button class="faq-question w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition flex items-center justify-between focus:outline-none" onclick="toggleFAQ(7)">
-                            <span class="font-semibold text-gray-900">
-                                <i class="fas fa-shield-alt text-primary-yellow mr-2"></i>
-                                Os meus dados estão seguros?
-                            </span>
-                            <i class="fas fa-chevron-down faq-icon text-primary-red transition-transform"></i>
-                        </button>
-                        <div class="faq-answer hidden px-6 py-4 bg-white border-t border-gray-200">
-                            <p class="text-gray-700 leading-relaxed">
-                                A segurança é a nossa prioridade. O sistema utiliza Helmet.js para proteção de cabeçalhos, criptografia Bcrypt para passwords e proteção contra ataques CSRF. Além disso, as sessões são geridas de forma isolada no banco de dados.
-                            </p>
+                <div class="relative">
+                    <div class="bg-gradient-to-br from-primary-red to-primary-yellow rounded-3xl p-8 shadow-2xl">
+                        <div class="bg-white rounded-2xl p-6 space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-green-100 rounded-full p-2">
+                                    <i class="fas fa-check-circle text-green-600"></i>
+                                </div>
+                                <span class="text-gray-700 font-medium">Interface super fácil</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-blue-100 rounded-full p-2">
+                                    <i class="fas fa-check-circle text-blue-600"></i>
+                                </div>
+                                <span class="text-gray-700 font-medium">Explicações claras</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-purple-100 rounded-full p-2">
+                                    <i class="fas fa-check-circle text-purple-600"></i>
+                                </div>
+                                <span class="text-gray-700 font-medium">Resultados precisos</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-yellow-100 rounded-full p-2">
+                                    <i class="fas fa-check-circle text-yellow-600"></i>
+                                </div>
+                                <span class="text-gray-700 font-medium">Aprenda enquanto usa</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Informações Adicionais -->
-            <div class="mt-8 text-center">
-                <p class="text-white opacity-80 text-sm">
-                    <i class="fas fa-shield-alt mr-2"></i>
-                    Seus dados estão seguros e protegidos
-                </p>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 px-4 gradient-bg text-white">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">
+                Pronto para começar?
+            </h2>
+            <p class="text-xl mb-8 text-white text-opacity-90">
+                Junte-se a centenas de pessoas que já estão usando o Suporte DP para 
+                simplificar seus cálculos trabalhistas.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/register" class="bg-white text-primary-red px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition shadow-lg">
+                    <i class="fas fa-user-plus mr-2"></i>Criar Conta Grátis
+                </a>
+                <a href="/login" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-primary-red transition">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Já tenho conta
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contato" class="py-20 px-4 bg-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    Entre em Contato
+                </h2>
+                <p class="text-xl text-gray-600">
+                    Tem dúvidas? Quer saber mais? Estamos aqui para ajudar!
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- WhatsApp -->
+                <a href="https://wa.me/5511999999999?text=Olá! Gostaria de saber mais sobre o Suporte DP" 
+                   target="_blank"
+                   class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-2xl p-8 text-center card-hover">
+                    <div class="bg-white bg-opacity-20 rounded-full p-4 w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                        <i class="fab fa-whatsapp text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">WhatsApp</h3>
+                    <p class="text-green-100 mb-4">Conversa rápida e direta</p>
+                    <span class="text-sm font-medium">
+                        Falar Agora <i class="fas fa-arrow-right ml-2"></i>
+                    </span>
+                </a>
+
+                <!-- Email -->
+                <a href="mailto:suporte@suportedp.com?subject=Contato - Suporte DP" 
+                   class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl p-8 text-center card-hover">
+                    <div class="bg-white bg-opacity-20 rounded-full p-4 w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-envelope text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Email</h3>
+                    <p class="text-blue-100 mb-4">suporte@suportedp.com</p>
+                    <span class="text-sm font-medium">
+                        Enviar Email <i class="fas fa-arrow-right ml-2"></i>
+                    </span>
+                </a>
+
+                <!-- YouTube -->
+                <a href="https://www.youtube.com/@suportedp" 
+                   target="_blank"
+                   class="bg-gradient-to-br from-red-500 to-red-600 text-white rounded-2xl p-8 text-center card-hover">
+                    <div class="bg-white bg-opacity-20 rounded-full p-4 w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                        <i class="fab fa-youtube text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">YouTube</h3>
+                    <p class="text-red-100 mb-4">Cursos e vídeos explicativos</p>
+                    <span class="text-sm font-medium">
+                        Ver Cursos <i class="fas fa-arrow-right ml-2"></i>
+                    </span>
+                </a>
+            </div>
+
+            <!-- Social Links -->
+            <div class="mt-12 text-center">
+                <p class="text-gray-600 mb-4">Siga-nos nas redes sociais:</p>
+                <div class="flex justify-center space-x-6">
+                    <a href="https://www.instagram.com/suportedp" target="_blank" 
+                       class="bg-gradient-to-br from-pink-500 to-purple-500 text-white rounded-full p-4 hover:scale-110 transition">
+                        <i class="fab fa-instagram text-2xl"></i>
+                    </a>
+                    <a href="https://www.youtube.com/@suportedp" target="_blank"
+                       class="bg-gradient-to-br from-red-500 to-red-600 text-white rounded-full p-4 hover:scale-110 transition">
+                        <i class="fab fa-youtube text-2xl"></i>
+                    </a>
+                    <a href="https://www.facebook.com/suportedp" target="_blank"
+                       class="bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-full p-4 hover:scale-110 transition">
+                        <i class="fab fa-facebook text-2xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <div class="gradient-bg rounded-lg p-2 mr-3">
+                            <i class="fas fa-calculator text-white"></i>
+                        </div>
+                        <span class="text-xl font-bold">Suporte DP</span>
+                    </div>
+                    <p class="text-gray-400 text-sm">
+                        Sistema completo de cálculos trabalhistas. 
+                        Simples, fácil e para todos.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Links Rápidos</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="/login" class="hover:text-white transition">Login</a></li>
+                        <li><a href="/register" class="hover:text-white transition">Criar Conta</a></li>
+                        <li><a href="#funcionalidades" class="hover:text-white transition">Funcionalidades</a></li>
+                        <li><a href="#sobre" class="hover:text-white transition">Sobre</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Recursos</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="https://www.youtube.com/@suportedp" target="_blank" class="hover:text-white transition">Vídeos no YouTube</a></li>
+                        <li><a href="#contato" class="hover:text-white transition">Suporte</a></li>
+                        <li><a href="#" class="hover:text-white transition">Perguntas Frequentes</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Contato</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><i class="fab fa-whatsapp mr-2"></i>WhatsApp</li>
+                        <li><i class="fas fa-envelope mr-2"></i>suporte@suportedp.com</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
+                <p>&copy; 2025 Suporte DP. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
 
     <script>
-        function toggleFAQ(num) {
-            const answer = document.querySelector(`#faq-container > div:nth-child(${num}) .faq-answer`);
-            const icon = document.querySelector(`#faq-container > div:nth-child(${num}) .faq-icon`);
-            const question = document.querySelector(`#faq-container > div:nth-child(${num}) .faq-question`);
-            
-            if (answer.classList.contains('hidden')) {
-                // Fecha todas as outras FAQs
-                document.querySelectorAll('.faq-answer').forEach((el, index) => {
-                    if (index + 1 !== num) {
-                        el.classList.add('hidden');
-                        const otherIcon = document.querySelector(`#faq-container > div:nth-child(${index + 1}) .faq-icon`);
-                        const otherQuestion = document.querySelector(`#faq-container > div:nth-child(${index + 1}) .faq-question`);
-                        if (otherIcon) {
-                            otherIcon.classList.remove('rotate-180');
-                            otherQuestion.classList.remove('bg-primary-yellow');
-                            otherQuestion.classList.add('bg-gray-50');
-                        }
-                    }
-                });
-                
-                // Abre a FAQ selecionada
-                answer.classList.remove('hidden');
-                icon.classList.add('rotate-180');
-                question.classList.remove('bg-gray-50');
-                question.classList.add('bg-primary-yellow');
-            } else {
-                // Fecha a FAQ selecionada
-                answer.classList.add('hidden');
-                icon.classList.remove('rotate-180');
-                question.classList.remove('bg-primary-yellow');
-                question.classList.add('bg-gray-50');
-            }
+        function toggleMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
         }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
     </script>
 </body>
-
 </html>
