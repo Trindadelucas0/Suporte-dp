@@ -308,7 +308,7 @@ class AuthController {
             whatsapp || null,
             'ativo',
             'ativa',
-            payment.next_billing_date
+            nextBillingDate
           ]
         );
         
