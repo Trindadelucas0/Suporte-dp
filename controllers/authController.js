@@ -4,6 +4,7 @@
  */
 
 const User = require('../models/User');
+const Payment = require('../models/Payment');
 const db = require('../config/database');
 const { validationResult } = require('express-validator');
 
@@ -115,47 +116,121 @@ class AuthController {
 
   static async register(req, res) {
     if (req.method === 'GET') {
+      // Verifica se tem order_nsu na query string (vem do redirect_url do InfinitePay)
+      const { order_nsu } = req.query;
+      
+      let error = null;
+      let payment = null;
+
+      if (order_nsu) {
+        // Verifica se existe pagamento aprovado
+        payment = await Payment.findPaidByOrderNsu(order_nsu);
+        if (!payment) {
+          error = 'Pagamento não encontrado ou não aprovado. Por favor, realize o pagamento primeiro.';
+        } else {
+          // Verifica se já existe usuário para esse order_nsu
+          const existingUser = await User.findByOrderNsu(order_nsu);
+          if (existingUser) {
+            error = 'Já existe um usuário cadastrado para este pagamento. Faça login com suas credenciais.';
+          }
+        }
+      } else {
+        error = 'Acesso direto ao cadastro não permitido. Por favor, adquira o sistema primeiro.';
+      }
+
       return res.render('auth/register', {
         title: 'Cadastro - Suporte DP',
-        error: null
+        error: error,
+        order_nsu: order_nsu || null,
+        payment: payment
       });
     }
 
-    const { nome, email, senha, confirmarSenha } = req.body;
+    const { nome, email, senha, confirmarSenha, whatsapp, order_nsu } = req.body;
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
       return res.render('auth/register', {
         title: 'Cadastro - Suporte DP',
-        error: 'Por favor, preencha todos os campos corretamente.'
+        error: 'Por favor, preencha todos os campos corretamente.',
+        order_nsu: order_nsu || null
       });
     }
 
     if (senha !== confirmarSenha) {
       return res.render('auth/register', {
         title: 'Cadastro - Suporte DP',
-        error: 'As senhas não coincidem.'
+        error: 'As senhas não coincidem.',
+        order_nsu: order_nsu || null
       });
     }
 
     if (senha.length < 6) {
       return res.render('auth/register', {
         title: 'Cadastro - Suporte DP',
-        error: 'A senha deve ter pelo menos 6 caracteres.'
+        error: 'A senha deve ter pelo menos 6 caracteres.',
+        order_nsu: order_nsu || null
+      });
+    }
+
+    // VALIDAÇÃO OBRIGATÓRIA: Verificar pagamento aprovado
+    if (!order_nsu) {
+      return res.render('auth/register', {
+        title: 'Cadastro - Suporte DP',
+        error: 'Pedido não informado. Por favor, adquira o sistema primeiro.',
+        order_nsu: null
       });
     }
 
     try {
-      const userExistente = await User.findByEmail(email);
-      
-      if (userExistente) {
+      // Verifica se existe pagamento aprovado
+      const payment = await Payment.findPaidByOrderNsu(order_nsu);
+      if (!payment) {
         return res.render('auth/register', {
           title: 'Cadastro - Suporte DP',
-          error: 'Este email já está cadastrado.'
+          error: 'Pagamento não encontrado ou não aprovado. Por favor, realize o pagamento primeiro.',
+          order_nsu: order_nsu
         });
       }
 
-      const user = await User.create(nome, email, senha, false);
+      // Verifica se já existe usuário para esse order_nsu
+      const existingUserForOrder = await User.findByOrderNsu(order_nsu);
+      if (existingUserForOrder) {
+        return res.render('auth/register', {
+          title: 'Cadastro - Suporte DP',
+          error: 'Já existe um usuário cadastrado para este pagamento. Faça login com suas credenciais.',
+          order_nsu: order_nsu
+        });
+      }
+
+      // Verifica se email já está cadastrado (outro usuário)
+      const userExistente = await User.findByEmail(email);
+      if (userExistente) {
+        return res.render('auth/register', {
+          title: 'Cadastro - Suporte DP',
+          error: 'Este email já está cadastrado.',
+          order_nsu: order_nsu
+        });
+      }
+
+      // Cria usuário vinculado ao order_nsu e pagamento
+      const user = await User.create(nome, email, senha, false, {
+        order_nsu: order_nsu,
+        whatsapp: whatsapp || null,
+        status: 'ativo',
+        subscription_status: 'ativa',
+        subscription_expires_at: payment.next_billing_date
+      });
+
+      // Atualiza user_id no pagamento
+      await Payment.updateUserIdByOrderNsu(order_nsu, user.id);
+
+      console.log('Usuário criado com sucesso:', {
+        id: user.id,
+        email: user.email,
+        order_nsu: user.order_nsu,
+        subscription_expires_at: user.subscription_expires_at
+      });
       
       // Login automático após cadastro
       req.session.user = {
@@ -175,7 +250,8 @@ class AuthController {
           console.error('Detalhes:', err.message);
           return res.render('auth/register', {
             title: 'Cadastro - Suporte DP',
-            error: 'Conta criada, mas erro ao fazer login automático. Tente fazer login manualmente.'
+            error: 'Conta criada, mas erro ao fazer login automático. Tente fazer login manualmente.',
+            order_nsu: order_nsu
           });
         }
 
@@ -186,7 +262,8 @@ class AuthController {
       console.error('Stack:', error.stack);
       res.render('auth/register', {
         title: 'Cadastro - Suporte DP',
-        error: 'Erro ao criar conta. Tente novamente. ' + (process.env.NODE_ENV === 'development' ? error.message : '')
+        error: 'Erro ao criar conta. Tente novamente. ' + (process.env.NODE_ENV === 'development' ? error.message : ''),
+        order_nsu: order_nsu || null
       });
     }
   }

@@ -7,11 +7,59 @@ const db = require('../config/database');
 const bcrypt = require('bcrypt');
 
 class User {
-  static async create(nome, email, senha, isAdmin = false) {
+  static async create(nome, email, senha, isAdmin = false, dadosExtras = {}) {
     const senhaHash = await bcrypt.hash(senha, 10);
+    
+    // Campos opcionais
+    const {
+      order_nsu = null,
+      whatsapp = null,
+      status = 'ativo',
+      subscription_status = 'ativa',
+      subscription_expires_at = null
+    } = dadosExtras;
+
+    // Monta query dinamicamente
+    let fields = 'nome, email, senha_hash, is_admin';
+    let values = [nome, email, senhaHash, isAdmin];
+    let placeholders = ['$1', '$2', '$3', '$4'];
+    let paramCount = 5;
+
+    if (order_nsu) {
+      fields += ', order_nsu';
+      values.push(order_nsu);
+      placeholders.push(`$${paramCount++}`);
+    }
+
+    if (whatsapp !== undefined) {
+      fields += ', whatsapp';
+      values.push(whatsapp);
+      placeholders.push(`$${paramCount++}`);
+    }
+
+    if (status !== undefined) {
+      fields += ', status';
+      values.push(status);
+      placeholders.push(`$${paramCount++}`);
+    }
+
+    if (subscription_status !== undefined) {
+      fields += ', subscription_status';
+      values.push(subscription_status);
+      placeholders.push(`$${paramCount++}`);
+    }
+
+    if (subscription_expires_at !== undefined && subscription_expires_at !== null) {
+      fields += ', subscription_expires_at';
+      values.push(subscription_expires_at);
+      placeholders.push(`$${paramCount++}`);
+    }
+
+    const returnFields = 'id, nome, email, is_admin, order_nsu, status, subscription_status, subscription_expires_at';
+    
     const result = await db.query(
-      'INSERT INTO users (nome, email, senha_hash, is_admin) VALUES ($1, $2, $3, $4) RETURNING id, nome, email, is_admin',
-      [nome, email, senhaHash, isAdmin]
+      `INSERT INTO users (${fields}) VALUES (${placeholders.join(', ')}) RETURNING ${returnFields}`,
+      values
     );
     return result.rows[0];
   }
@@ -371,6 +419,69 @@ class User {
   }
 
   /**
+   * Busca usuário por order_nsu
+   * @param {String} orderNsu - UUID do pedido
+   * @returns {Object|null} Usuário encontrado
+   */
+  static async findByOrderNsu(orderNsu) {
+    try {
+      const result = await db.query(
+        `SELECT id, nome, email, order_nsu, status, subscription_status, subscription_expires_at
+         FROM users
+         WHERE order_nsu = $1`,
+        [orderNsu]
+      );
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Erro ao buscar usuário por order_nsu:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Atualiza assinatura do usuário
+   * @param {String} userId - ID do usuário
+   * @param {Object} dados - Dados da assinatura
+   * @returns {Object|null} Usuário atualizado
+   */
+  static async updateSubscription(userId, dados) {
+    try {
+      const fields = [];
+      const values = [];
+      let paramCount = 1;
+
+      if (dados.status !== undefined) {
+        fields.push(`status = $${paramCount++}`);
+        values.push(dados.status);
+      }
+
+      if (dados.subscription_status !== undefined) {
+        fields.push(`subscription_status = $${paramCount++}`);
+        values.push(dados.subscription_status);
+      }
+
+      if (dados.subscription_expires_at !== undefined) {
+        fields.push(`subscription_expires_at = $${paramCount++}`);
+        values.push(dados.subscription_expires_at);
+      }
+
+      if (fields.length === 0) return null;
+
+      fields.push('updated_at = CURRENT_TIMESTAMP');
+      values.push(userId);
+
+      const returnFields = 'id, nome, email, order_nsu, status, subscription_status, subscription_expires_at';
+      const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${paramCount} RETURNING ${returnFields}`;
+
+      const result = await db.query(query, values);
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Erro ao atualizar assinatura:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Busca perfil completo do usuário (incluindo campos adicionais)
    */
   static async findProfileById(id) {
@@ -385,7 +496,7 @@ class User {
       const existingColumns = columnsCheck.rows.map(r => r.column_name);
       
       let selectFields = 'id, nome, email, is_admin, created_at, updated_at';
-      const profileFields = ['telefone', 'whatsapp', 'empresa', 'cargo', 'observacoes', 'instagram', 'ativo', 'bloqueado', 'last_login'];
+      const profileFields = ['telefone', 'whatsapp', 'empresa', 'cargo', 'observacoes', 'instagram', 'ativo', 'bloqueado', 'last_login', 'order_nsu', 'status', 'subscription_status', 'subscription_expires_at'];
       
       profileFields.forEach(field => {
         if (existingColumns.includes(field)) {
@@ -412,7 +523,11 @@ class User {
         instagram: user.instagram || null,
         ativo: user.ativo !== undefined ? user.ativo : true,
         bloqueado: user.bloqueado !== undefined ? user.bloqueado : false,
-        last_login: user.last_login || null
+        last_login: user.last_login || null,
+        order_nsu: user.order_nsu || null,
+        status: user.status || 'ativo',
+        subscription_status: user.subscription_status || 'ativa',
+        subscription_expires_at: user.subscription_expires_at || null
       };
     } catch (error) {
       console.error('Erro ao buscar perfil do usuário:', error);

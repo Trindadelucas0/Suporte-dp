@@ -8,7 +8,9 @@
     "dev": "nodemon server.js",
     "init-db": "node scripts/init-database.js",
     "create-admin": "node scripts/create-admin.js",
-    "create-env": "node scripts/create-env.js"
+    "create-env": "node scripts/create-env.js",
+    "check-subscriptions": "node scripts/check-subscriptions.js",
+    "migrate-subscription": "node scripts/run-subscription-migrations.js"
   },
   "keywords": [
     "trabalhista",
@@ -19,6 +21,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.13.2",
     "bcrypt": "^5.1.1",
     "connect-pg-simple": "^9.0.1",
     "cookie-parser": "^1.4.7",
@@ -31,9 +34,10 @@
     "express-validator": "^7.0.1",
     "helmet": "^8.1.0",
     "moment": "^2.29.4",
+    "nodemailer": "^6.9.7",
+    "pdf-lib": "^1.17.1",
     "pg": "^8.11.3",
-        "nodemailer": "^6.9.7",
-        "pdf-lib": "^1.17.1"
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

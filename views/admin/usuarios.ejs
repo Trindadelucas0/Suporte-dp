@@ -75,23 +75,19 @@
                                 <table class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50">
                                         <tr>
-                                            <th
-                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Usuário</th>
-                                            <th
-                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Email</th>
-                                            <th
-                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Email / WhatsApp</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Status</th>
-                                            <th
-                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Cadastro</th>
-                                            <th
-                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Último Login</th>
-                                            <th
-                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Assinatura</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Último Pagamento</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Próxima Renovação</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Ações</th>
                                         </tr>
                                     </thead>
@@ -120,33 +116,57 @@
                                                         <div class="text-sm text-gray-900">
                                                             <%= usuario.email %>
                                                         </div>
+                                                        <% if (usuario.whatsapp) { %>
+                                                            <div class="text-xs text-gray-500">
+                                                                <i class="fas fa-phone mr-1"></i><%= usuario.whatsapp %>
+                                                            </div>
+                                                        <% } %>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap">
-                                                        <% const isBloqueado=usuario.bloqueado===true ||
-                                                            usuario.bloqueado==='true' ; const isAtivo=usuario.ativo
-                                                            !==false && usuario.ativo !=='false' && usuario.ativo
-                                                            !==null && usuario.ativo !==undefined; %>
-                                                            <% if (isBloqueado) { %>
-                                                                <span
-                                                                    class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Bloqueado</span>
-                                                                <% } else if (!isAtivo) { %>
-                                                                    <span
-                                                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Inativo</span>
-                                                                    <% } else { %>
-                                                                        <span
-                                                                            class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativo</span>
-                                                                        <% } %>
+                                                        <% const isBloqueado = usuario.status === 'bloqueado' || usuario.bloqueado === true; %>
+                                                        <% const isAtivo = usuario.status === 'ativo'; %>
+                                                        <% if (isBloqueado) { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Bloqueado</span>
+                                                        <% } else if (!isAtivo) { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Inativo</span>
+                                                        <% } else { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativo</span>
+                                                        <% } %>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <% const subscriptionStatus = usuario.subscription_status || 'N/A'; %>
+                                                        <% if (subscriptionStatus === 'ativa') { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativa</span>
+                                                        <% } else if (subscriptionStatus === 'inadimplente') { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Inadimplente</span>
+                                                        <% } else { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800"><%= subscriptionStatus %></span>
+                                                        <% } %>
+                                                        <% if (usuario.subscription_expires_at) { %>
+                                                            <div class="text-xs text-gray-500 mt-1">
+                                                                Expira: <%= new Date(usuario.subscription_expires_at).toLocaleDateString('pt-BR') %>
+                                                            </div>
+                                                        <% } %>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        <%= usuario.created_at ? new
-                                                            Date(usuario.created_at).toLocaleDateString('pt-BR') : 'N/A'
-                                                            %>
+                                                        <% if (usuario.pagamento) { %>
+                                                            <div>R$ <%= parseFloat(usuario.pagamento.paid_amount || 0).toFixed(2) %></div>
+                                                            <div class="text-xs text-gray-400">
+                                                                <%= usuario.pagamento.capture_method || 'N/A' %>
+                                                            </div>
+                                                            <div class="text-xs text-gray-400">
+                                                                <%= new Date(usuario.pagamento.paid_at).toLocaleDateString('pt-BR') %>
+                                                            </div>
+                                                        <% } else { %>
+                                                            <span class="text-gray-400">N/A</span>
+                                                        <% } %>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        <%= usuario.last_login ? new
-                                                            Date(usuario.last_login).toLocaleDateString('pt-BR') + ' ' +
-                                                            new Date(usuario.last_login).toLocaleTimeString('pt-BR')
-                                                            : 'Nunca' %>
+                                                        <% if (usuario.pagamento && usuario.pagamento.next_billing_date) { %>
+                                                            <%= new Date(usuario.pagamento.next_billing_date).toLocaleDateString('pt-BR') %>
+                                                        <% } else { %>
+                                                            <span class="text-gray-400">N/A</span>
+                                                        <% } %>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                         <div class="flex space-x-2">
@@ -193,9 +213,9 @@
                                                     </td>
                                                 </tr>
                                                 <% }); %>
-                                                    <% } else { %>
+                                                        <% } else { %>
                                                         <tr>
-                                                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">
                                                                 Nenhum usuário encontrado
                                                             </td>
                                                         </tr>

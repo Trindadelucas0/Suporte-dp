@@ -251,6 +251,7 @@ if (process.env.NODE_ENV === 'test') {
 
 // Rotas
 const authRoutes = require("./routes/auth");
+const adquirirRoutes = require("./routes/adquirir");
 const dashboardRoutes = require("./routes/dashboard");
 const calendarioRoutes = require("./routes/calendario");
 const inssRoutes = require("./routes/inss");
@@ -270,6 +271,8 @@ const adminRoutes = require("./routes/admin");
 
 // Rotas públicas (sem CSRF protection)
 app.use("/", authRoutes);
+app.use("/adquirir", adquirirRoutes);
+app.use("/webhook", require("./routes/webhook")); // Webhooks não precisam de CSRF
 
 // Rotas protegidas (com CSRF protection)
 // Aplicamos CSRF apenas nas rotas protegidas
@@ -292,16 +295,17 @@ app.use("/notificacoes", notificacoesRoutes);
 app.use("/perfil", perfilRoutes);
 app.use("/admin", adminRoutes);
 
-// Rota raiz - página de boas-vindas (prioriza cadastro)
+// Rota raiz - página inicial institucional
 app.get("/", (req, res) => {
   if (req.session.user) {
     res.redirect("/dashboard");
   } else {
-    res.render("welcome", {
-      title: "Bem-vindo - Suporte DP",
+    res.render("index", {
+      title: "Suporte DP - Sistema de Cálculos Trabalhistas",
     });
   }
 });
+
 
 // Middleware de tratamento de erros
 app.use((err, req, res, next) => {

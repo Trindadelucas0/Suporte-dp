@@ -4,6 +4,7 @@
  */
 
 const User = require('../models/User');
+const Payment = require('../models/Payment');
 const db = require('../config/database');
 
 class AdminController {
@@ -40,7 +41,7 @@ class AdminController {
   }
 
   /**
-   * Lista todos os usuários
+   * Lista todos os usuários com informações de assinatura
    */
   static async usuarios(req, res) {
     try {
@@ -52,10 +53,24 @@ class AdminController {
 
       const usuarios = await User.findAll(filtros);
       console.log(`Encontrados ${usuarios.length} usuários`);
+
+      // Busca pagamentos para cada usuário
+      const usuariosComPagamentos = await Promise.all(
+        usuarios.map(async (usuario) => {
+          let pagamento = null;
+          if (usuario.order_nsu) {
+            pagamento = await Payment.findPaidByOrderNsu(usuario.order_nsu);
+          }
+          return {
+            ...usuario,
+            pagamento: pagamento
+          };
+        })
+      );
       
       res.render('admin/usuarios', {
         title: 'Gestão de Usuários - Suporte DP',
-        usuarios: usuarios || [],
+        usuarios: usuariosComPagamentos || [],
         filtroAtivo: req.query.ativo,
         filtroBloqueado: req.query.bloqueado,
         csrfToken: req.csrfToken ? req.csrfToken() : null
@@ -156,7 +171,8 @@ class AdminController {
           calendario: {
             anotacoes: parseInt(anotacoesCalendario.rows[0].total),
             obrigacoes: parseInt(obrigacoesCalendario.rows[0].total)
-          }
+          },
+          pagamentos: pagamentos || []
         }
       });
     } catch (error) {

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adquirir Sistema - Suporte DP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            red: '#DC2626',
+                            yellow: '#FBBF24'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center">
+                        <i class="fas fa-calculator text-primary-red text-2xl mr-2"></i>
+                        <span class="text-xl font-bold text-gray-900">Suporte DP</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/login"
+                        class="px-4 py-2 text-gray-700 hover:text-primary-red font-medium transition">
+                        Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="bg-white rounded-lg shadow-xl p-8 md:p-12">
+            <div class="text-center mb-8">
+                <div class="bg-primary-yellow rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-shopping-cart text-white text-3xl"></i>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    Adquirir Sistema
+                </h1>
+                <p class="text-lg text-gray-600">
+                    Esta página está preparada para futura integração com sistema de pagamento
+                </p>
+            </div>
+
+            <% if (error) { %>
+                <div class="bg-red-50 border-l-4 border-red-500 p-6 mb-8">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-circle text-red-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-lg font-semibold text-red-900 mb-2">
+                                Erro
+                            </h3>
+                            <p class="text-red-700">
+                                <%= error %>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-6 mb-8">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-blue-500 text-2xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-lg font-semibold text-blue-900 mb-2">
+                            Valor: R$ 50,00 / mês
+                        </h3>
+                        <p class="text-blue-700">
+                            Após o pagamento confirmado, você poderá se cadastrar e terá acesso completo ao sistema.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6 mb-8">
+                <h2 class="text-2xl font-bold text-gray-900">O que está incluído</h2>
+                <ul class="space-y-4">
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-primary-yellow text-xl mr-3 mt-1"></i>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Acesso completo a todas as calculadoras trabalhistas</h3>
+                            <p class="text-gray-600">INSS, IRRF, FGTS, Férias, 13º salário, Periculosidade e mais</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-primary-yellow text-xl mr-3 mt-1"></i>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Simulador de Custo de Funcionário</h3>
+                            <p class="text-gray-600">Calcule o custo real de uma contratação</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-primary-yellow text-xl mr-3 mt-1"></i>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Risco de Multa</h3>
+                            <p class="text-gray-600">Identifique possíveis irregularidades trabalhistas</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-primary-yellow text-xl mr-3 mt-1"></i>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Calendário de Obrigações</h3>
+                            <p class="text-gray-600">Acompanhe feriados e vencimentos</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-primary-yellow text-xl mr-3 mt-1"></i>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Checklists e Tarefas</h3>
+                            <p class="text-gray-600">Organize processos de admissão, demissão e fechamento</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-primary-yellow text-xl mr-3 mt-1"></i>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Histórico completo de cálculos</h3>
+                            <p class="text-gray-600">Consulte todos os seus cálculos anteriores</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <form method="POST" action="/adquirir" class="mt-8">
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="/"
+                        class="px-6 py-3 bg-gray-200 text-gray-800 rounded-md font-semibold hover:bg-gray-300 transition text-center">
+                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao início
+                    </a>
+                    <button type="submit"
+                        class="px-8 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-md font-semibold hover:opacity-90 transition shadow-lg">
+                        <i class="fas fa-shopping-cart mr-2"></i>Ir para Pagamento
+                    </button>
+                    <a href="/login"
+                        class="px-6 py-3 bg-gray-100 text-gray-700 rounded-md font-semibold hover:bg-gray-200 transition text-center">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Fazer Login
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-400">&copy; 2024 Suporte DP. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+</body>
+
+</html>
+

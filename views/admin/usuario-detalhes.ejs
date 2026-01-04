@@ -40,8 +40,90 @@
                         </a>
                     </div>
 
-                    <!-- Informações do Usuário -->
-                    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                        <!-- Informações da Assinatura -->
+                        <% if (usuario.subscription_status || usuario.subscription_expires_at || (dados.pagamentos && dados.pagamentos.length > 0)) { %>
+                            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                                <h2 class="text-xl font-bold text-gray-900 mb-4">
+                                    <i class="fas fa-credit-card text-primary-red mr-2"></i>Informações de Assinatura
+                                </h2>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <p class="text-sm text-gray-600">Status da Assinatura</p>
+                                        <p class="text-lg font-semibold">
+                                            <% if (usuario.subscription_status === 'ativa') { %>
+                                                <span class="text-green-600">Ativa</span>
+                                            <% } else if (usuario.subscription_status === 'inadimplente') { %>
+                                                <span class="text-red-600">Inadimplente</span>
+                                            <% } else { %>
+                                                <span class="text-gray-600"><%= usuario.subscription_status || 'N/A' %></span>
+                                            <% } %>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Expira em</p>
+                                        <p class="text-lg font-semibold">
+                                            <%= usuario.subscription_expires_at ? new Date(usuario.subscription_expires_at).toLocaleDateString('pt-BR') : 'N/A' %>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Order NSU</p>
+                                        <p class="text-sm font-mono text-gray-700 break-all">
+                                            <%= usuario.order_nsu || 'N/A' %>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        <% } %>
+
+                        <!-- Histórico de Pagamentos -->
+                        <% if (dados.pagamentos && dados.pagamentos.length > 0) { %>
+                            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                                <h2 class="text-xl font-bold text-gray-900 mb-4">
+                                    <i class="fas fa-history text-primary-yellow mr-2"></i>Histórico de Pagamentos
+                                </h2>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Método</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Próxima Renovação</th>
+                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <% dados.pagamentos.forEach(pagamento => { %>
+                                                <tr>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                                        <%= new Date(pagamento.paid_at).toLocaleDateString('pt-BR') %>
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                                        R$ <%= parseFloat(pagamento.paid_amount || 0).toFixed(2) %>
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                                                        <%= pagamento.capture_method || 'N/A' %>
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                                                        <%= pagamento.next_billing_date ? new Date(pagamento.next_billing_date).toLocaleDateString('pt-BR') : 'N/A' %>
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap">
+                                                        <% if (pagamento.status === 'paid') { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Pago</span>
+                                                        <% } else { %>
+                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800"><%= pagamento.status %></span>
+                                                        <% } %>
+                                                    </td>
+                                                </tr>
+                                            <% }); %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        <% } %>
+
+                        <!-- Informações do Usuário -->
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
                         <h2 class="text-xl font-bold text-gray-900 mb-4">Informações do Usuário</h2>
 
                         <!-- Dados Básicos -->
