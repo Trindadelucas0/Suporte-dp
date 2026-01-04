@@ -124,9 +124,23 @@ class AuthController {
 
       if (order_nsu) {
         // Verifica se existe pagamento aprovado
+        // Tenta encontrar pagamento com status 'paid'
         payment = await Payment.findPaidByOrderNsu(order_nsu);
+        
+        // Se não encontrou com status 'paid', tenta buscar qualquer pagamento recente
+        // (pode estar com outro status ou webhook ainda não processou)
         if (!payment) {
-          error = 'Pagamento não encontrado ou não aprovado. Por favor, realize o pagamento primeiro.';
+          payment = await Payment.findByOrderNsu(order_nsu);
+          // Se encontrou pagamento mas não está 'paid', pode ser que webhook ainda não processou
+          if (payment && payment.status !== 'paid') {
+            // Aguarda um pouco e tenta novamente (para dar tempo do webhook processar)
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            payment = await Payment.findPaidByOrderNsu(order_nsu);
+          }
+        }
+        
+        if (!payment || payment.status !== 'paid') {
+          error = 'Pagamento ainda não foi processado. Aguarde alguns instantes e recarregue a página, ou realize o pagamento primeiro.';
         } else {
           // Verifica se já existe usuário para esse order_nsu
           const existingUser = await User.findByOrderNsu(order_nsu);
