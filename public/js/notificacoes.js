@@ -19,15 +19,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropdown = document.getElementById('notificacoesDropdown');
     const btnMarcarTodasLidas = document.getElementById('btnMarcarTodasLidas');
 
-    // Carrega notificações ao iniciar
-    carregarNotificacoes();
-    atualizarContador();
-
-    // Atualiza a cada 30 segundos
-    setInterval(() => {
+    // Só carrega notificações se os elementos existirem (usuário está logado)
+    if (btnNotificacoes || btnNotificacoesMobile) {
+        // Carrega notificações ao iniciar
         carregarNotificacoes();
         atualizarContador();
-    }, 30000);
+
+        // Atualiza a cada 30 segundos
+        setInterval(() => {
+            carregarNotificacoes();
+            atualizarContador();
+        }, 30000);
+    }
 
     // Toggle dropdown desktop
     if (btnNotificacoes) {
