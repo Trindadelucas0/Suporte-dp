@@ -284,7 +284,7 @@ class AuthController {
         const senhaHash = await bcrypt.hash(senha, 10);
         
         const userResult = await client.query(
-          `INSERT INTO users (nome, email, senha, is_admin, order_nsu, whatsapp, status, subscription_status, subscription_expires_at, created_at, updated_at)
+          `INSERT INTO users (nome, email, senha_hash, is_admin, order_nsu, whatsapp, status, subscription_status, subscription_expires_at, created_at, updated_at)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
            RETURNING id, nome, email, is_admin, order_nsu, whatsapp, status, subscription_status, subscription_expires_at, created_at`,
           [
