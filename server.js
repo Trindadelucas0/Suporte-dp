@@ -274,6 +274,9 @@ const webhookRoutes = require("./routes/webhook");
 app.use("/", authRoutes);
 // Webhook é público (sem CSRF)
 app.use("/webhook", webhookRoutes);
+// Rota pública para assinatura direta (sem CSRF) - deve estar antes do CSRF protection
+const CobrancaController = require("./controllers/cobrancaController");
+app.post("/cobranca/assinar-direto", CobrancaController.assinarDireto);
 
 // Rotas protegidas (com CSRF protection)
 // Aplicamos CSRF apenas nas rotas protegidas

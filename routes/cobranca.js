@@ -8,10 +8,10 @@ const router = express.Router();
 const CobrancaController = require('../controllers/cobrancaController');
 const { requireAuth } = require('../middleware/auth');
 
-// Rota pública para assinatura direta (sem login)
-router.post('/assinar-direto', CobrancaController.assinarDireto);
+// NOTA: A rota /assinar-direto foi movida para server.js como rota pública (antes do CSRF)
+// Isso permite que usuários não autenticados possam assinar sem precisar de token CSRF
 
-// Todas as outras rotas requerem autenticação
+// Todas as rotas requerem autenticação
 router.use(requireAuth);
 
 // Página de bloqueio
