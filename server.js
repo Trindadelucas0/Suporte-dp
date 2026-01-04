@@ -52,6 +52,7 @@ app.use(helmet({
       fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "https:"],
       formAction: ["'self'"], // Permite formulários no mesmo domínio
+      connectSrc: ["'self'", "https://api.infinitepay.io"], // Permite chamadas para API InfinitePay
     },
   },
 }));
