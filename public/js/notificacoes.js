@@ -13,47 +13,52 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// Lista de rotas de autenticação onde as notificações NÃO devem ser carregadas
+const AUTH_ROUTES = ['/login', '/register', '/cadastro/', '/', '/adquirir', '/cobranca/assinar-direto'];
+
+function isAuthRoute(pathname) {
+    return AUTH_ROUTES.some(route => pathname.startsWith(route));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Verifica imediatamente se está em página de autenticação
+    if (isAuthRoute(window.location.pathname)) {
+        console.log('🚫 [Notificações] Página de autenticação detectada, não carregando notificações');
+        return; // Sai imediatamente sem fazer nada
+    }
+
     const btnNotificacoes = document.getElementById('btnNotificacoes');
     const btnNotificacoesMobile = document.getElementById('btnNotificacoesMobile');
     const dropdown = document.getElementById('notificacoesDropdown');
     const btnMarcarTodasLidas = document.getElementById('btnMarcarTodasLidas');
 
-    // Verifica se estamos em uma página de autenticação (login, register, etc)
-    const isAuthPage = window.location.pathname.includes('/login') || 
-                       window.location.pathname.includes('/register') || 
-                       window.location.pathname.includes('/cadastro/') ||
-                       window.location.pathname === '/';
+    // Só carrega notificações se os elementos existirem (usuário está logado)
+    if (!btnNotificacoes && !btnNotificacoesMobile) {
+        console.log('🚫 [Notificações] Elementos de notificação não encontrados, não carregando');
+        return; // Sai se não encontrar os elementos
+    }
 
-    // Só carrega notificações se:
-    // 1. Os elementos existirem (usuário está logado)
-    // 2. NÃO estiver em página de autenticação
-    if ((btnNotificacoes || btnNotificacoesMobile) && !isAuthPage) {
-        // Aguarda um pouco para garantir que o redirecionamento já aconteceu
-        setTimeout(() => {
-            // Verifica novamente se ainda está na página correta
-            if (!window.location.pathname.includes('/login') && 
-                !window.location.pathname.includes('/register') &&
-                !window.location.pathname.includes('/cadastro/') &&
-                window.location.pathname !== '/') {
-                // Carrega notificações ao iniciar
+    // Aguarda um pouco para garantir que o redirecionamento já aconteceu
+    setTimeout(() => {
+        // Verifica novamente se ainda está na página correta
+        if (isAuthRoute(window.location.pathname)) {
+            console.log('🚫 [Notificações] Ainda em página de autenticação após delay, não carregando');
+            return;
+        }
+
+        // Carrega notificações ao iniciar
+        carregarNotificacoes();
+        atualizarContador();
+
+        // Atualiza a cada 30 segundos
+        setInterval(() => {
+            // Verifica novamente antes de carregar
+            if (!isAuthRoute(window.location.pathname)) {
                 carregarNotificacoes();
                 atualizarContador();
-
-                // Atualiza a cada 30 segundos
-                setInterval(() => {
-                    // Verifica novamente antes de carregar
-                    if (!window.location.pathname.includes('/login') && 
-                        !window.location.pathname.includes('/register') &&
-                        !window.location.pathname.includes('/cadastro/') &&
-                        window.location.pathname !== '/') {
-                        carregarNotificacoes();
-                        atualizarContador();
-                    }
-                }, 30000);
             }
-        }, 500);
-    }
+        }, 30000);
+    }, 1000); // Aumenta delay para 1 segundo para garantir que redirecionamento completou
 
     // Toggle dropdown desktop
     if (btnNotificacoes) {
@@ -119,11 +124,17 @@ function toggleDropdown() {
 
 async function carregarNotificacoes() {
     // Verifica se estamos em uma página de autenticação
-    if (window.location.pathname.includes('/login') || 
-        window.location.pathname.includes('/register') || 
-        window.location.pathname.includes('/cadastro/') ||
-        window.location.pathname === '/') {
+    if (isAuthRoute(window.location.pathname)) {
+        console.log('🚫 [Notificações] Tentativa de carregar em página de autenticação, bloqueando');
         return; // Não carrega notificações em páginas de autenticação
+    }
+
+    // Verifica se os elementos existem antes de fazer requisição
+    const btnNotificacoes = document.getElementById('btnNotificacoes');
+    const btnNotificacoesMobile = document.getElementById('btnNotificacoesMobile');
+    if (!btnNotificacoes && !btnNotificacoesMobile) {
+        console.log('🚫 [Notificações] Elementos não encontrados, não fazendo requisição');
+        return;
     }
 
     try {
