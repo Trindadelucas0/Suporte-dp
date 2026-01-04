@@ -103,9 +103,10 @@ class WebhookController {
             const nomeFinal = userAtualizado.rows[0]?.nome || user.nome || 'Cliente';
             const emailFinal = userAtualizado.rows[0]?.email || user.email;
             
+            console.log('🔑 [Webhook] Gerando e enviando link de cadastro para:', emailFinal);
             const linkCadastro = await cadastroService.gerarLinkCadastro(emailFinal, nomeFinal);
             await cadastroService.enviarEmailCadastro(emailFinal, nomeFinal, linkCadastro);
-            console.log(`📧 Link de cadastro enviado para ${emailFinal}`);
+            console.log(`✅ [Webhook] Link de cadastro gerado, salvo no banco e email enviado para ${emailFinal}`);
           }
         } else {
           console.warn(`⚠️  Usuário ${cobranca.user_id} não encontrado`);

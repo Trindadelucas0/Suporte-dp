@@ -149,7 +149,49 @@ class CobrancaController {
       try {
         // Se tiver order_nsu, tenta buscar a cobrança
         if (order_nsu) {
+          console.log('🔍 [Pagamento Sucesso] Buscando cobrança com order_nsu:', order_nsu);
+          
+          // Tenta buscar exatamente como está
           cobranca = await Cobranca.findByExternalId(order_nsu);
+          
+          // Se não encontrou, tenta buscar por mes_referencia e user_id extraídos do order_nsu
+          // Formato esperado: user_USERID_MESREFERENCIA (ex: user_f9ee5bfc-3d33-45e3-803b-a4ed8d3c249b_2026-02)
+          if (!cobranca && order_nsu.includes('_')) {
+            const parts = order_nsu.split('_');
+            if (parts.length >= 3 && parts[0] === 'user') {
+              // Formato: user_USERID_MESREFERENCIA
+              // userId pode conter underscores, então pega tudo entre 'user' e o último elemento
+              const userId = parts.slice(1, -1).join('_'); // Pega tudo entre 'user' e o último elemento
+              const mesReferencia = parts[parts.length - 1];
+              
+              console.log('🔍 [Pagamento Sucesso] Tentando buscar por user_id e mes_referencia:', {
+                userId: userId,
+                mesReferencia: mesReferencia
+              });
+              
+              try {
+                // Busca por mes_referencia e user_id
+                const cobrancaPorMes = await db.query(`
+                  SELECT * FROM cobrancas 
+                  WHERE mes_referencia = $1 
+                  AND user_id = $2
+                  ORDER BY created_at DESC
+                  LIMIT 1
+                `, [mesReferencia, userId]);
+                
+                if (cobrancaPorMes.rows.length > 0) {
+                  cobranca = cobrancaPorMes.rows[0];
+                  console.log('✅ [Pagamento Sucesso] Cobrança encontrada por mes_referencia e user_id');
+                } else {
+                  console.warn('⚠️  [Pagamento Sucesso] Nenhuma cobrança encontrada com mes_referencia e user_id');
+                }
+              } catch (queryError) {
+                console.error('❌ [Pagamento Sucesso] Erro ao buscar por mes_referencia:', queryError);
+                console.error('Stack:', queryError.stack);
+              }
+            }
+          }
+          
           if (cobranca) {
             const User = require('../models/User');
             user = await User.findById(cobranca.user_id);
@@ -254,64 +296,6 @@ class CobrancaController {
         }
       }
       
-      // Se ainda não encontrou usuário e não tem order_nsu, tenta buscar última cobrança pendente
-      // Isso pode acontecer se o InfinitePay não passar o order_nsu na URL
-      if (!user && !order_nsu) {
-        try {
-          console.log('🔍 [Pagamento Sucesso] Tentando buscar última cobrança pendente recente...');
-          const ultimaCobranca = await db.query(`
-            SELECT c.*, u.id as user_id, u.nome, u.email
-            FROM cobrancas c
-            INNER JOIN users u ON u.id = c.user_id
-            WHERE c.status = 'paga'
-            AND c.data_pagamento >= CURRENT_TIMESTAMP - INTERVAL '5 minutes'
-            ORDER BY c.data_pagamento DESC
-            LIMIT 1
-          `);
-          
-          if (ultimaCobranca.rows.length > 0) {
-            const cobrancaRecente = ultimaCobranca.rows[0];
-            cobranca = cobrancaRecente;
-            user = {
-              id: cobrancaRecente.user_id,
-              nome: cobrancaRecente.nome,
-              email: cobrancaRecente.email
-            };
-            
-            console.log('✅ [Pagamento Sucesso] Cobrança recente encontrada:', {
-              cobranca_id: cobranca.id,
-              user_id: user.id,
-              email: user.email
-            });
-            
-            // Verifica se tem senha e gera token se necessário
-            if (user.email) {
-              try {
-                const userWithPassword = await db.query(
-                  'SELECT senha_hash FROM users WHERE id = $1',
-                  [user.id]
-                );
-                userHasPassword = userWithPassword.rows[0]?.senha_hash && 
-                                 userWithPassword.rows[0].senha_hash.length > 0;
-                
-                if (!userHasPassword) {
-                  const linkCadastro = await cadastroService.gerarLinkCadastro(
-                    user.email, 
-                    user.nome || 'Cliente'
-                  );
-                  const tokenMatch = linkCadastro.match(/\/cadastro\/([^\/\?]+)/);
-                  tokenCadastro = tokenMatch ? tokenMatch[1] : null;
-                  console.log('✅ [Pagamento Sucesso] Token gerado para cobrança recente');
-                }
-              } catch (error) {
-                console.error('❌ [Pagamento Sucesso] Erro ao processar usuário da cobrança recente:', error);
-              }
-            }
-          }
-        } catch (error) {
-          console.error('❌ [Pagamento Sucesso] Erro ao buscar cobrança recente:', error);
-        }
-      }
       
       // Log para debug
       console.log('📋 [Pagamento Sucesso] Dados para renderização:', {
@@ -325,14 +309,40 @@ class CobrancaController {
         tokenCadastro: tokenCadastro ? tokenCadastro.substring(0, 20) + '...' : null
       });
 
+      // VALIDAÇÃO CRÍTICA: Só mostra sucesso se encontrar a cobrança
+      if (!cobranca) {
+        console.warn('⚠️  [Pagamento Sucesso] Cobrança não encontrada. Não é possível confirmar pagamento.');
+        return res.status(400).render('error', {
+          title: 'Pagamento em Processamento - Suporte DP',
+          message: 'Seu pagamento está sendo processado. Aguarde alguns instantes e verifique seu email.',
+          error: process.env.NODE_ENV === 'development' ? `Order NSU não encontrado: ${order_nsu}` : null
+        });
+      }
+
+      // Verifica se a cobrança está realmente paga
+      if (cobranca.status !== 'paga') {
+        console.warn('⚠️  [Pagamento Sucesso] Cobrança encontrada mas status não é "paga":', cobranca.status);
+        return res.status(400).render('error', {
+          title: 'Pagamento Pendente - Suporte DP',
+          message: 'Seu pagamento ainda está sendo processado. Você receberá um email quando for confirmado.',
+          error: process.env.NODE_ENV === 'development' ? `Status da cobrança: ${cobranca.status}` : null
+        });
+      }
+
       // Garante valores padrão para evitar erros na view
-      res.render('cobranca/pagamento-sucesso', {
-        title: 'Pagamento Confirmado - Suporte DP',
-        user: user || { nome: 'Cliente', email: '' },
-        cobranca: cobranca || null,
-        userHasPassword: userHasPassword || false,
-        tokenCadastro: tokenCadastro || null
-      });
+      try {
+        res.render('cobranca/pagamento-sucesso', {
+          title: 'Pagamento Confirmado - Suporte DP',
+          user: user || { nome: 'Cliente', email: '' },
+          cobranca: cobranca,
+          userHasPassword: userHasPassword || false,
+          tokenCadastro: tokenCadastro || null
+        });
+      } catch (renderError) {
+        console.error('❌ [Pagamento Sucesso] Erro ao renderizar view:', renderError);
+        console.error('Stack:', renderError.stack);
+        throw renderError;
+      }
     } catch (error) {
       console.error('❌ Erro ao carregar página de sucesso de pagamento:', error);
       console.error('Stack:', error.stack);

@@ -23,6 +23,13 @@ class CadastroService {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
+    console.log('🔑 [CadastroService] Gerando link de cadastro:', {
+      email: email,
+      nome: nome,
+      token: token.substring(0, 20) + '...',
+      expiresAt: expiresAt.toISOString()
+    });
+
     // Salva no banco (usando activation_links se existir)
     try {
       // Verifica se a tabela existe e se tem campo plataforma
@@ -37,28 +44,55 @@ class CadastroService {
       
       if (hasPlataforma) {
         // Tabela tem campo plataforma (obrigatório)
-        await db.query(
+        const result = await db.query(
           `INSERT INTO activation_links (email, token, nome_cliente, plataforma, expires_at, status)
            VALUES ($1, $2, $3, 'infinitepay', $4, 'pending')
-           ON CONFLICT (token) DO NOTHING`,
+           ON CONFLICT (token) DO NOTHING
+           RETURNING id, token, expires_at`,
           [email, token, nome, expiresAt]
         );
+        
+        if (result.rows.length > 0) {
+          console.log('✅ [CadastroService] Link de cadastro salvo no banco:', {
+            id: result.rows[0].id,
+            email: email,
+            expiresAt: result.rows[0].expires_at
+          });
+        } else {
+          console.warn('⚠️  [CadastroService] Token já existe no banco (conflito)');
+        }
       } else {
         // Tabela não tem campo plataforma
-        await db.query(
+        const result = await db.query(
           `INSERT INTO activation_links (email, token, nome_cliente, expires_at, status)
            VALUES ($1, $2, $3, $4, 'pending')
-           ON CONFLICT (token) DO NOTHING`,
+           ON CONFLICT (token) DO NOTHING
+           RETURNING id, token, expires_at`,
           [email, token, nome, expiresAt]
         );
+        
+        if (result.rows.length > 0) {
+          console.log('✅ [CadastroService] Link de cadastro salvo no banco:', {
+            id: result.rows[0].id,
+            email: email,
+            expiresAt: result.rows[0].expires_at
+          });
+        } else {
+          console.warn('⚠️  [CadastroService] Token já existe no banco (conflito)');
+        }
       }
     } catch (e) {
-      console.error('⚠️  Erro ao salvar link de cadastro:', e.message);
+      console.error('❌ [CadastroService] Erro ao salvar link de cadastro no banco:', e.message);
+      console.error('Stack:', e.stack);
       // Continua mesmo se der erro (para não quebrar o fluxo)
     }
 
     const appUrl = process.env.APP_URL || 'http://localhost:3000';
-    return `${appUrl}/cadastro/${token}`;
+    const linkCompleto = `${appUrl}/cadastro/${token}`;
+    
+    console.log('✅ [CadastroService] Link de cadastro gerado:', linkCompleto);
+    
+    return linkCompleto;
   }
 
   /**
@@ -123,6 +157,12 @@ class CadastroService {
     const appName = process.env.APP_NAME || 'Suporte DP';
     const appUrl = process.env.APP_URL || 'http://localhost:3000';
 
+    console.log('📧 [CadastroService] Enviando email de cadastro:', {
+      to: email,
+      nome: nome,
+      linkCadastro: linkCadastro.substring(0, 50) + '...'
+    });
+
     const emailData = {
       to: email,
       subject: `🎉 Assinatura Confirmada - Complete seu Cadastro - ${appName}`,
@@ -134,7 +174,15 @@ class CadastroService {
       })
     };
 
-    return await emailService.sendEmail(emailData);
+    try {
+      const resultado = await emailService.sendEmail(emailData);
+      console.log('✅ [CadastroService] Email de cadastro enviado com sucesso para:', email);
+      return resultado;
+    } catch (error) {
+      console.error('❌ [CadastroService] Erro ao enviar email de cadastro:', error);
+      console.error('Stack:', error.stack);
+      throw error;
+    }
   }
 
   /**

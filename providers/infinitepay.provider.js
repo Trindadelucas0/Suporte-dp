@@ -280,7 +280,9 @@ class InfinitePayProvider {
         }
       }
 
-      const externalId = apiResponse.order_nsu || apiResponse.invoice_slug || data.referenceId;
+      // Prioriza o referenceId que enviamos (para garantir que podemos encontrar depois)
+      // Se o InfinitePay retornar um order_nsu diferente, ainda podemos buscar pelo referenceId
+      const externalId = data.referenceId || apiResponse.order_nsu || apiResponse.invoice_slug;
       
       console.log('✅ Link de pagamento InfinitePay criado:', {
         external_id: externalId,
