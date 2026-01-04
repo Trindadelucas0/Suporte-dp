@@ -141,22 +141,55 @@
                 </ul>
             </div>
 
-            <form method="POST" action="/adquirir" class="mt-8">
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="/"
-                        class="px-6 py-3 bg-gray-200 text-gray-800 rounded-md font-semibold hover:bg-gray-300 transition text-center">
-                        <i class="fas fa-arrow-left mr-2"></i>Voltar ao início
-                    </a>
-                    <button type="submit"
-                        class="px-8 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-md font-semibold hover:opacity-90 transition shadow-lg">
-                        <i class="fas fa-shopping-cart mr-2"></i>Ir para Pagamento
-                    </button>
-                    <a href="/login"
-                        class="px-6 py-3 bg-gray-100 text-gray-700 rounded-md font-semibold hover:bg-gray-200 transition text-center">
-                        <i class="fas fa-sign-in-alt mr-2"></i>Fazer Login
-                    </a>
+            <% if (typeof checkoutUrl !== 'undefined' && checkoutUrl) { %>
+                <!-- Link de pagamento gerado - mostrar botão para ir ao pagamento -->
+                <div class="mt-8 p-6 bg-green-50 border-2 border-green-200 rounded-lg">
+                    <div class="text-center mb-6">
+                        <i class="fas fa-check-circle text-green-600 text-4xl mb-4"></i>
+                        <h3 class="text-xl font-bold text-green-800 mb-2">Link de Pagamento Gerado!</h3>
+                        <p class="text-gray-700">Clique no botão abaixo para ser redirecionado ao pagamento:</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="/"
+                            class="px-6 py-3 bg-gray-200 text-gray-800 rounded-md font-semibold hover:bg-gray-300 transition text-center">
+                            <i class="fas fa-arrow-left mr-2"></i>Voltar ao início
+                        </a>
+                        <a href="<%= checkoutUrl %>" target="_blank"
+                            class="px-8 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-md font-semibold hover:opacity-90 transition shadow-lg text-center">
+                            <i class="fas fa-external-link-alt mr-2"></i>Ir para Pagamento (Abrir em nova aba)
+                        </a>
+                        <a href="<%= checkoutUrl %>"
+                            class="px-8 py-3 bg-green-600 text-white rounded-md font-semibold hover:bg-green-700 transition shadow-lg text-center">
+                            <i class="fas fa-shopping-cart mr-2"></i>Ir para Pagamento
+                        </a>
+                        <a href="/login"
+                            class="px-6 py-3 bg-gray-100 text-gray-700 rounded-md font-semibold hover:bg-gray-200 transition text-center">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Fazer Login
+                        </a>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <p class="text-sm text-gray-600">Pedido: <code class="bg-gray-100 px-2 py-1 rounded"><%= orderNsu %></code></p>
+                    </div>
                 </div>
-            </form>
+            <% } else { %>
+                <!-- Formulário para gerar link de pagamento -->
+                <form method="POST" action="/adquirir" class="mt-8">
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="/"
+                            class="px-6 py-3 bg-gray-200 text-gray-800 rounded-md font-semibold hover:bg-gray-300 transition text-center">
+                            <i class="fas fa-arrow-left mr-2"></i>Voltar ao início
+                        </a>
+                        <button type="submit"
+                            class="px-8 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-md font-semibold hover:opacity-90 transition shadow-lg">
+                            <i class="fas fa-shopping-cart mr-2"></i>Gerar Link de Pagamento
+                        </button>
+                        <a href="/login"
+                            class="px-6 py-3 bg-gray-100 text-gray-700 rounded-md font-semibold hover:bg-gray-200 transition text-center">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Fazer Login
+                        </a>
+                    </div>
+                </form>
+            <% } %>
         </div>
     </main>
 

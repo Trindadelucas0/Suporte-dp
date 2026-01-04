@@ -85,18 +85,16 @@ class AdquirirController {
         console.warn('Erro ao atualizar checkout info (não crítico):', updateError.message);
       });
 
-      // 5. Redirecionar usuário para checkout InfinitePay IMEDIATAMENTE
+      // 5. Renderizar página com botão para ir ao pagamento (para testes)
       const checkoutUrl = infinitepayResponse.data.checkout_url;
-      console.log('🚀 REDIRECIONANDO para:', checkoutUrl);
+      console.log('✅ Link de pagamento gerado:', checkoutUrl);
       
-      // Verificar se resposta já foi enviada
-      if (res.headersSent) {
-        console.error('❌ ERRO: Resposta já foi enviada, não é possível redirecionar');
-        return;
-      }
-
-      // Redirecionar imediatamente (302 é o padrão, mas sendo explícito)
-      return res.redirect(checkoutUrl);
+      return res.render('adquirir', {
+        title: 'Adquirir Sistema - Suporte DP',
+        error: null,
+        checkoutUrl: checkoutUrl,
+        orderNsu: order.order_nsu
+      });
     } catch (error) {
       console.error('Erro no processo de aquisição:', error);
       return res.render('adquirir', {
