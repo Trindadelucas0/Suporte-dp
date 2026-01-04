@@ -36,6 +36,7 @@ O sistema usa um fluxo de **cadastro primeiro, pagamento depois, validação por
 1. Usuário já está logado (redirecionado após cadastro)
 2. Sistema verifica se já tem pagamento ativo
    - Se tem pagamento ativo → redireciona para `/dashboard`
+   - Se não tem → mostra página de checkout
 3. Usuário clica em "Gerar Link de Pagamento"
 4. Sistema cria pedido interno (`Order`) com:
    - `order_nsu` (UUID único)
