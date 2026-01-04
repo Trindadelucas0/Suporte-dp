@@ -5,10 +5,10 @@
 const express = require('express');
 const router = express.Router();
 const IRRFController = require('../controllers/irrfController');
-const { requireAuth } = require('../middleware/auth');
+const { requireActiveSubscription } = require('../middleware/auth');
 
-router.get('/', requireAuth, IRRFController.index);
-router.post('/calcular', requireAuth, IRRFController.calcular);
+router.get('/', requireActiveSubscription, IRRFController.index);
+router.post('/calcular', requireActiveSubscription, IRRFController.calcular);
 
 module.exports = router;
 

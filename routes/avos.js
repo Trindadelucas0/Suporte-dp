@@ -5,10 +5,10 @@
 const express = require('express');
 const router = express.Router();
 const AvosController = require('../controllers/avosController');
-const { requireAuth } = require('../middleware/auth');
+const { requireActiveSubscription } = require('../middleware/auth');
 
-router.get('/', requireAuth, AvosController.index);
-router.post('/calcular', requireAuth, AvosController.calcular);
+router.get('/', requireActiveSubscription, AvosController.index);
+router.post('/calcular', requireActiveSubscription, AvosController.calcular);
 
 module.exports = router;
 

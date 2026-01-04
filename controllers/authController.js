@@ -120,8 +120,10 @@ class AuthController {
 
   static async register(req, res) {
     if (req.method === 'GET') {
-      // Verifica se tem order_nsu na query string (vem do redirect_url do InfinitePay)
-      const { order_nsu } = req.query;
+      // Tenta obter order_nsu da query string ou da sessão (backup)
+      const orderNsuFromQuery = req.query.order_nsu;
+      const orderNsuFromSession = req.session?.pendingOrderNsu;
+      const order_nsu = orderNsuFromQuery || orderNsuFromSession;
       
       let error = null;
       let payment = null;
@@ -130,6 +132,12 @@ class AuthController {
         // Verifica se existe pagamento aprovado
         // Tenta encontrar pagamento com status 'paid' (com retry para aguardar webhook)
         payment = await Payment.findPaidByOrderNsu(order_nsu);
+        
+        // Se encontrou pagamento, limpa order_nsu da sessão
+        if (payment && payment.status === 'paid' && req.session?.pendingOrderNsu) {
+          delete req.session.pendingOrderNsu;
+          req.session.save();
+        }
         
         // Se não encontrou com status 'paid', tenta buscar qualquer pagamento recente
         // (pode estar com outro status ou webhook ainda não processou)
@@ -183,8 +191,13 @@ class AuthController {
       });
     }
 
-    const { nome, email, senha, confirmarSenha, whatsapp, order_nsu } = req.body;
+    const { nome, email, senha, confirmarSenha, whatsapp } = req.body;
     const errors = validationResult(req);
+
+    // Tenta obter order_nsu do body ou da sessão (backup)
+    const orderNsuFromBody = req.body.order_nsu;
+    const orderNsuFromSession = req.session?.pendingOrderNsu;
+    const order_nsu = orderNsuFromBody || orderNsuFromSession;
 
     if (!errors.isEmpty()) {
       return res.render('auth/register', {
@@ -264,17 +277,45 @@ class AuthController {
         });
       }
 
-      // Cria usuário vinculado ao order_nsu e pagamento
-      const user = await User.create(nome, email, senha, false, {
-        order_nsu: order_nsu,
-        whatsapp: whatsapp || null,
-        status: 'ativo',
-        subscription_status: 'ativa',
-        subscription_expires_at: payment.next_billing_date
+      // Cria usuário e vincula ao pagamento em uma transação SQL (garante atomicidade)
+      const user = await db.transaction(async (client) => {
+        // 1. Criar usuário usando query direta (dentro da transação)
+        const bcrypt = require('bcrypt');
+        const senhaHash = await bcrypt.hash(senha, 10);
+        
+        const userResult = await client.query(
+          `INSERT INTO users (nome, email, senha, is_admin, order_nsu, whatsapp, status, subscription_status, subscription_expires_at, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+           RETURNING id, nome, email, is_admin, order_nsu, whatsapp, status, subscription_status, subscription_expires_at, created_at`,
+          [
+            nome,
+            email,
+            senhaHash,
+            false,
+            order_nsu,
+            whatsapp || null,
+            'ativo',
+            'ativa',
+            payment.next_billing_date
+          ]
+        );
+        
+        const newUser = userResult.rows[0];
+        
+        // 2. Atualizar user_id no pagamento (dentro da mesma transação)
+        await client.query(
+          'UPDATE payments SET user_id = $1, updated_at = CURRENT_TIMESTAMP WHERE order_nsu = $2 AND user_id IS NULL',
+          [newUser.id, order_nsu]
+        );
+        
+        return newUser;
       });
 
-      // Atualiza user_id no pagamento
-      await Payment.updateUserIdByOrderNsu(order_nsu, user.id);
+      // Limpa order_nsu da sessão após cadastro bem-sucedido
+      if (req.session?.pendingOrderNsu) {
+        delete req.session.pendingOrderNsu;
+        req.session.save();
+      }
 
       console.log('Usuário criado com sucesso:', {
         id: user.id,

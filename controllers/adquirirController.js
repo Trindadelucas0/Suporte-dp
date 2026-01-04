@@ -39,6 +39,12 @@ class AdquirirController {
         valor: order.valor
       });
 
+      // 1.1. Salvar order_nsu na sessão como backup (caso URL se perca)
+      if (req.session) {
+        req.session.pendingOrderNsu = order.order_nsu;
+        req.session.save();
+      }
+
       // 2. Chamar API InfinitePay para criar link de checkout
       const infinitepayResponse = await InfinitePayService.criarLinkCheckout({
         orderNsu: order.order_nsu,

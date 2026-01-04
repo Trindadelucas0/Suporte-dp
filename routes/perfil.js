@@ -5,7 +5,7 @@
 const express = require('express');
 const router = express.Router();
 const PerfilController = require('../controllers/perfilController');
-const { requireAuth } = require('../middleware/auth');
+const { requireActiveSubscription } = require('../middleware/auth');
 const { body } = require('express-validator');
 
 // Validações
@@ -26,10 +26,10 @@ const updatePasswordValidation = [
 ];
 
 // Todas as rotas requerem autenticação
-router.get('/', requireAuth, PerfilController.index);
-router.post('/update-basic', requireAuth, updateBasicValidation, PerfilController.updateBasic);
-router.post('/update-profile', requireAuth, PerfilController.updateProfile);
-router.post('/update-password', requireAuth, updatePasswordValidation, PerfilController.updatePassword);
+router.get('/', requireActiveSubscription, PerfilController.index);
+router.post('/update-basic', requireActiveSubscription, updateBasicValidation, PerfilController.updateBasic);
+router.post('/update-profile', requireActiveSubscription, PerfilController.updateProfile);
+router.post('/update-password', requireActiveSubscription, updatePasswordValidation, PerfilController.updatePassword);
 
 module.exports = router;
 

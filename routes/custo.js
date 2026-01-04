@@ -5,10 +5,10 @@
 const express = require('express');
 const router = express.Router();
 const CustoController = require('../controllers/custoController');
-const { requireAuth } = require('../middleware/auth');
+const { requireActiveSubscription } = require('../middleware/auth');
 
-router.get('/', requireAuth, CustoController.index);
-router.post('/calcular', requireAuth, CustoController.calcular);
+router.get('/', requireActiveSubscription, CustoController.index);
+router.post('/calcular', requireActiveSubscription, CustoController.calcular);
 
 module.exports = router;
 

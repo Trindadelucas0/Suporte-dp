@@ -5,10 +5,10 @@
 const express = require('express');
 const router = express.Router();
 const PericulosidadeController = require('../controllers/periculosidadeController');
-const { requireAuth } = require('../middleware/auth');
+const { requireActiveSubscription } = require('../middleware/auth');
 
-router.get('/', requireAuth, PericulosidadeController.index);
-router.post('/calcular', requireAuth, PericulosidadeController.calcular);
+router.get('/', requireActiveSubscription, PericulosidadeController.index);
+router.post('/calcular', requireActiveSubscription, PericulosidadeController.calcular);
 
 module.exports = router;
 

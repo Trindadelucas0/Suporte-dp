@@ -5,7 +5,7 @@
 const express = require('express');
 const router = express.Router();
 const TarefasController = require('../controllers/tarefasController');
-const { requireAuth } = require('../middleware/auth');
+const { requireActiveSubscription } = require('../middleware/auth');
 const { body } = require('express-validator');
 
 // Validações para criação completa
@@ -75,14 +75,14 @@ const validarTarefaUpdate = [
     .optional()
 ];
 
-router.get('/', requireAuth, TarefasController.index);
-router.get('/api/calendario', requireAuth, TarefasController.getForCalendar);
-router.get('/api/stats', requireAuth, TarefasController.getStats);
-router.get('/api/:id', requireAuth, TarefasController.show);
-router.post('/', requireAuth, validarTarefa, TarefasController.create);
-router.put('/:id', requireAuth, validarTarefaUpdate, TarefasController.update);
-router.delete('/:id', requireAuth, TarefasController.delete);
-router.post('/update-order', requireAuth, TarefasController.updateOrder);
+router.get('/', requireActiveSubscription, TarefasController.index);
+router.get('/api/calendario', requireActiveSubscription, TarefasController.getForCalendar);
+router.get('/api/stats', requireActiveSubscription, TarefasController.getStats);
+router.get('/api/:id', requireActiveSubscription, TarefasController.show);
+router.post('/', requireActiveSubscription, validarTarefa, TarefasController.create);
+router.put('/:id', requireActiveSubscription, validarTarefaUpdate, TarefasController.update);
+router.delete('/:id', requireActiveSubscription, TarefasController.delete);
+router.post('/update-order', requireActiveSubscription, TarefasController.updateOrder);
 
 module.exports = router;
 

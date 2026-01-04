@@ -5,10 +5,10 @@
 const express = require('express');
 const router = express.Router();
 const ContratoExperienciaController = require('../controllers/contratoExperienciaController');
-const { requireAuth } = require('../middleware/auth');
+const { requireActiveSubscription } = require('../middleware/auth');
 
-router.get('/', requireAuth, ContratoExperienciaController.index);
-router.post('/calcular', requireAuth, ContratoExperienciaController.calcular);
+router.get('/', requireActiveSubscription, ContratoExperienciaController.index);
+router.post('/calcular', requireActiveSubscription, ContratoExperienciaController.calcular);
 
 module.exports = router;
 

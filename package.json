@@ -10,7 +10,8 @@
     "create-admin": "node scripts/create-admin.js",
     "create-env": "node scripts/create-env.js",
     "check-subscriptions": "node scripts/check-subscriptions.js",
-    "migrate-subscription": "node scripts/run-subscription-migrations.js"
+    "migrate-subscription": "node scripts/run-subscription-migrations.js",
+    "cleanup-pending-orders": "node scripts/cleanup-pending-orders.js"
   },
   "keywords": [
     "trabalhista",

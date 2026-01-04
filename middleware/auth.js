@@ -59,7 +59,8 @@ async function verificarStatusUsuario(req, res, next) {
 
 /**
  * Middleware para verificar se usuário tem assinatura ativa
- * Redireciona para /renovar se assinatura expirada ou inadimplente
+ * - ADMIN: Sempre permite acesso (sem verificação de assinatura)
+ * - CLIENTES: Precisam ter assinatura ativa, senão redireciona para /renovar
  * Permite acesso a /renovar mesmo com assinatura expirada
  */
 async function requireActiveSubscription(req, res, next) {
@@ -76,6 +77,12 @@ async function requireActiveSubscription(req, res, next) {
     return res.redirect('/login');
   }
 
+  // Verifica inatividade (10 minutos)
+  const canContinue = checkInactivity(req, res);
+  if (canContinue === false) {
+    return; // Sessão expirada, já redirecionou
+  }
+
   try {
     const user = await User.findById(req.session.user.id);
     
@@ -84,7 +91,16 @@ async function requireActiveSubscription(req, res, next) {
       return res.redirect('/login');
     }
 
-    // Verifica se assinatura está expirada ou inadimplente
+    // ADMIN: Sempre permite acesso (sem verificação de assinatura)
+    if (user.is_admin === true) {
+      console.log('✅ [AUTH] Admin acessando - permite sem verificação de assinatura:', {
+        user_id: user.id,
+        nome: user.nome
+      });
+      return next();
+    }
+
+    // CLIENTE: Verifica se assinatura está ativa
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     
@@ -99,8 +115,9 @@ async function requireActiveSubscription(req, res, next) {
 
     if (assinaturaExpirada || assinaturaInadimplente) {
       // Assinatura expirada - redireciona para renovação
-      console.log('⚠️ [AUTH] Assinatura expirada/inadimplente - redirecionando para renovação:', {
+      console.log('⚠️ [AUTH] Cliente com assinatura expirada/inadimplente - redirecionando para renovação:', {
         user_id: user.id,
+        nome: user.nome,
         expires_at: user.subscription_expires_at,
         status: user.subscription_status
       });
@@ -111,8 +128,9 @@ async function requireActiveSubscription(req, res, next) {
     return next();
   } catch (error) {
     console.error('❌ [AUTH] Erro ao verificar assinatura:', error);
-    // Em caso de erro, permite continuar (não bloqueia o acesso)
-    return next();
+    // Em caso de erro, bloqueia acesso (segurança)
+    req.session.destroy();
+    return res.redirect('/login?error=erro_verificacao');
   }
 }
 

@@ -5,13 +5,13 @@
 const express = require('express');
 const router = express.Router();
 const NotificacoesController = require('../controllers/notificacoesController');
-const { requireAuth } = require('../middleware/auth');
+const { requireActiveSubscription } = require('../middleware/auth');
 
-router.get('/api/nao-lidas', requireAuth, NotificacoesController.getNaoLidas);
-router.get('/api/todas', requireAuth, NotificacoesController.getAll);
-router.get('/api/count', requireAuth, NotificacoesController.getCount);
-router.post('/api/:id/marcar-lida', requireAuth, NotificacoesController.marcarComoLida);
-router.post('/api/marcar-todas-lidas', requireAuth, NotificacoesController.marcarTodasComoLidas);
+router.get('/api/nao-lidas', requireActiveSubscription, NotificacoesController.getNaoLidas);
+router.get('/api/todas', requireActiveSubscription, NotificacoesController.getAll);
+router.get('/api/count', requireActiveSubscription, NotificacoesController.getCount);
+router.post('/api/:id/marcar-lida', requireActiveSubscription, NotificacoesController.marcarComoLida);
+router.post('/api/marcar-todas-lidas', requireActiveSubscription, NotificacoesController.marcarTodasComoLidas);
 
 module.exports = router;
 

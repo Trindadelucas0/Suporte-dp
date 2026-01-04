@@ -5,11 +5,11 @@
 const express = require('express');
 const router = express.Router();
 const RiscoMultaController = require('../controllers/riscoMultaController');
-const { requireAuth } = require('../middleware/auth');
+const { requireActiveSubscription } = require('../middleware/auth');
 
-router.get('/', requireAuth, RiscoMultaController.index);
-router.post('/calcular', requireAuth, RiscoMultaController.calcular);
-router.delete('/:id', requireAuth, RiscoMultaController.deletar);
+router.get('/', requireActiveSubscription, RiscoMultaController.index);
+router.post('/calcular', requireActiveSubscription, RiscoMultaController.calcular);
+router.delete('/:id', requireActiveSubscription, RiscoMultaController.deletar);
 
 module.exports = router;
 
