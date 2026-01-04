@@ -191,13 +191,20 @@ class CobrancaController {
         // Continua sem cobrança - pode ser que o pagamento ainda não foi processado
       }
       
-      // Se o usuário estiver logado, usa os dados da sessão
-      if (req.session?.user && !user) {
+      // Se ainda não encontrou usuário, tenta buscar pela sessão
+      if (!user && req.session?.user) {
         try {
+          console.log('🔍 [Pagamento Sucesso] Buscando usuário pela sessão:', req.session.user.id);
           const User = require('../models/User');
           const userFull = await User.findById(req.session.user.id);
           if (userFull) {
             user = userFull;
+            console.log('✅ [Pagamento Sucesso] Usuário encontrado pela sessão:', {
+              id: user.id,
+              email: user.email,
+              nome: user.nome
+            });
+            
             // Verifica se tem senha
             try {
               const userWithPassword = await db.query(
@@ -207,32 +214,117 @@ class CobrancaController {
               userHasPassword = userWithPassword.rows[0]?.senha_hash && 
                                userWithPassword.rows[0].senha_hash.length > 0;
               
+              console.log('🔍 [Pagamento Sucesso] Usuário da sessão tem senha?', userHasPassword);
+              
               // Se não tem senha, gera token de cadastro
               if (!userHasPassword && user.email) {
                 try {
+                  console.log('🔑 [Pagamento Sucesso] Gerando token de cadastro para usuário da sessão:', user.email);
                   const linkCadastro = await cadastroService.gerarLinkCadastro(
                     user.email, 
                     user.nome || 'Cliente'
                   );
+                  console.log('✅ [Pagamento Sucesso] Link de cadastro gerado:', linkCadastro.substring(0, 50) + '...');
+                  
                   // Extrai o token da URL (formato: https://app.com/cadastro/TOKEN)
                   const tokenMatch = linkCadastro.match(/\/cadastro\/([^\/\?]+)/);
                   tokenCadastro = tokenMatch ? tokenMatch[1] : null;
+                  
+                  if (tokenCadastro) {
+                    console.log('✅ [Pagamento Sucesso] Token extraído com sucesso');
+                  } else {
+                    console.error('❌ [Pagamento Sucesso] Não foi possível extrair token do link:', linkCadastro);
+                  }
                 } catch (tokenError) {
-                  console.error('Erro ao gerar token de cadastro:', tokenError);
+                  console.error('❌ [Pagamento Sucesso] Erro ao gerar token de cadastro:', tokenError);
+                  console.error('Stack:', tokenError.stack);
                   // Continua sem token
                 }
+              } else if (!user.email) {
+                console.warn('⚠️  [Pagamento Sucesso] Usuário da sessão não tem email, não é possível gerar token');
               }
             } catch (passwordError) {
-              console.error('Erro ao verificar senha do usuário:', passwordError);
+              console.error('❌ [Pagamento Sucesso] Erro ao verificar senha do usuário da sessão:', passwordError);
               // Continua sem verificar senha
             }
           }
         } catch (userError) {
-          console.error('Erro ao buscar usuário da sessão:', userError);
+          console.error('❌ [Pagamento Sucesso] Erro ao buscar usuário da sessão:', userError);
           // Continua sem usuário
         }
       }
       
+      // Se ainda não encontrou usuário e não tem order_nsu, tenta buscar última cobrança pendente
+      // Isso pode acontecer se o InfinitePay não passar o order_nsu na URL
+      if (!user && !order_nsu) {
+        try {
+          console.log('🔍 [Pagamento Sucesso] Tentando buscar última cobrança pendente recente...');
+          const ultimaCobranca = await db.query(`
+            SELECT c.*, u.id as user_id, u.nome, u.email
+            FROM cobrancas c
+            INNER JOIN users u ON u.id = c.user_id
+            WHERE c.status = 'paga'
+            AND c.data_pagamento >= CURRENT_TIMESTAMP - INTERVAL '5 minutes'
+            ORDER BY c.data_pagamento DESC
+            LIMIT 1
+          `);
+          
+          if (ultimaCobranca.rows.length > 0) {
+            const cobrancaRecente = ultimaCobranca.rows[0];
+            cobranca = cobrancaRecente;
+            user = {
+              id: cobrancaRecente.user_id,
+              nome: cobrancaRecente.nome,
+              email: cobrancaRecente.email
+            };
+            
+            console.log('✅ [Pagamento Sucesso] Cobrança recente encontrada:', {
+              cobranca_id: cobranca.id,
+              user_id: user.id,
+              email: user.email
+            });
+            
+            // Verifica se tem senha e gera token se necessário
+            if (user.email) {
+              try {
+                const userWithPassword = await db.query(
+                  'SELECT senha_hash FROM users WHERE id = $1',
+                  [user.id]
+                );
+                userHasPassword = userWithPassword.rows[0]?.senha_hash && 
+                                 userWithPassword.rows[0].senha_hash.length > 0;
+                
+                if (!userHasPassword) {
+                  const linkCadastro = await cadastroService.gerarLinkCadastro(
+                    user.email, 
+                    user.nome || 'Cliente'
+                  );
+                  const tokenMatch = linkCadastro.match(/\/cadastro\/([^\/\?]+)/);
+                  tokenCadastro = tokenMatch ? tokenMatch[1] : null;
+                  console.log('✅ [Pagamento Sucesso] Token gerado para cobrança recente');
+                }
+              } catch (error) {
+                console.error('❌ [Pagamento Sucesso] Erro ao processar usuário da cobrança recente:', error);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('❌ [Pagamento Sucesso] Erro ao buscar cobrança recente:', error);
+        }
+      }
+      
+      // Log para debug
+      console.log('📋 [Pagamento Sucesso] Dados para renderização:', {
+        temOrderNsu: !!order_nsu,
+        orderNsu: order_nsu,
+        temCobranca: !!cobranca,
+        temUser: !!user,
+        userEmail: user?.email,
+        userHasPassword: userHasPassword,
+        temTokenCadastro: !!tokenCadastro,
+        tokenCadastro: tokenCadastro ? tokenCadastro.substring(0, 20) + '...' : null
+      });
+
       // Garante valores padrão para evitar erros na view
       res.render('cobranca/pagamento-sucesso', {
         title: 'Pagamento Confirmado - Suporte DP',

@@ -27,6 +27,16 @@
         </div>
         <% } %>
 
+        <% 
+        // Debug: verifica condições para exibir formulário
+        const deveExibirFormulario = !userHasPassword && tokenCadastro;
+        console.log('🔍 [Frontend] Condições para formulário:', {
+          userHasPassword: typeof userHasPassword !== 'undefined' ? userHasPassword : 'undefined',
+          tokenCadastro: typeof tokenCadastro !== 'undefined' && tokenCadastro ? 'existe' : 'não existe',
+          deveExibirFormulario: deveExibirFormulario
+        });
+        %>
+
         <% if (!userHasPassword && tokenCadastro) { %>
         <!-- FORMULÁRIO DE CRIAÇÃO DE SENHA -->
         <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg mb-6">
