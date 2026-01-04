@@ -28,7 +28,7 @@ class Scheduler {
         console.error('❌ Erro ao gerar cobranças mensais:', error);
       }
     }, {
-      scheduled: false,
+      scheduled: true, // ATIVADO - gera cobranças automaticamente
       timezone: 'America/Sao_Paulo'
     });
 
@@ -42,7 +42,7 @@ class Scheduler {
         console.error('❌ Erro ao enviar lembretes:', error);
       }
     }, {
-      scheduled: false,
+      scheduled: true, // ATIVADO - envia lembretes automaticamente
       timezone: 'America/Sao_Paulo'
     });
 
@@ -55,7 +55,7 @@ class Scheduler {
         console.error('❌ Erro ao verificar bloqueios:', error);
       }
     }, {
-      scheduled: false,
+      scheduled: true, // ATIVADO - bloqueia automaticamente
       timezone: 'America/Sao_Paulo'
     });
 
@@ -75,7 +75,7 @@ class Scheduler {
         console.error('❌ Erro ao marcar cobranças vencidas:', error);
       }
     }, {
-      scheduled: false,
+      scheduled: true, // ATIVADO - marca vencidas automaticamente
       timezone: 'America/Sao_Paulo'
     });
 
