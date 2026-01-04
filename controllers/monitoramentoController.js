@@ -32,11 +32,23 @@ class MonitoramentoController {
         clientesEmDia: clientesEmDia
       });
     } catch (error) {
-      console.error('Erro ao carregar monitoramento:', error);
-      res.render('error', {
-        title: 'Erro - Suporte DP',
-        error: 'Erro ao carregar dados de monitoramento'
-      });
+      console.error('❌ Erro ao carregar monitoramento:', error);
+      console.error('Stack:', error.stack);
+      
+      // Tenta renderizar página de erro, se falhar, retorna erro 500
+      try {
+        res.status(500).render('error', {
+          title: 'Erro - Suporte DP',
+          message: 'Erro ao carregar dados de monitoramento',
+          error: process.env.NODE_ENV === 'development' ? error.message : null
+        });
+      } catch (renderError) {
+        res.status(500).json({
+          success: false,
+          error: 'Erro ao carregar dados de monitoramento',
+          message: process.env.NODE_ENV === 'development' ? error.message : 'Erro interno do servidor'
+        });
+      }
     }
   }
 
@@ -129,6 +141,7 @@ class MonitoramentoController {
 
     // Clientes prestes a bloquear (vencido há menos de 7 dias)
     const diasParaBloqueio = parseInt(process.env.DIAS_PARA_BLOQUEIO || 7);
+    // PostgreSQL não permite parâmetros em INTERVAL, então usamos interpolação segura
     const clientesPrestesBloquear = await db.query(`
       SELECT COUNT(DISTINCT u.id) as total
       FROM users u
@@ -243,7 +256,8 @@ class MonitoramentoController {
    */
   static async getClientesPrestesBloquear() {
     const diasParaBloqueio = parseInt(process.env.DIAS_PARA_BLOQUEIO || 7);
-    
+    // PostgreSQL não permite parâmetros em INTERVAL, então usamos interpolação segura
+    // O valor já foi validado como número inteiro acima
     const result = await db.query(`
       SELECT 
         u.id,
