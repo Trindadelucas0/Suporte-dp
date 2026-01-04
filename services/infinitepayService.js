@@ -76,17 +76,25 @@ class InfinitePayService {
         }
       );
 
+      console.log('InfinitePay - Resposta completa:', JSON.stringify(response.data, null, 2));
+
+      // Verifica se a resposta tem os dados necessários
+      if (!response.data || !response.data.checkout_url) {
+        console.error('InfinitePay - Resposta inválida: checkout_url não encontrado', response.data);
+        throw new Error('Resposta da API InfinitePay não contém checkout_url');
+      }
+
       console.log('InfinitePay - Link criado com sucesso:', {
         invoice_slug: response.data?.invoice_slug,
-        checkout_url: response.data?.checkout_url ? 'sim' : 'não'
+        checkout_url: response.data?.checkout_url
       });
 
       return {
         success: true,
         data: {
           checkout_url: response.data.checkout_url,
-          invoice_slug: response.data.invoice_slug,
-          order_nsu: response.data.order_nsu
+          invoice_slug: response.data.invoice_slug || null,
+          order_nsu: response.data.order_nsu || orderNsu
         }
       };
     } catch (error) {

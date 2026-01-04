@@ -58,7 +58,19 @@ class AdquirirController {
         });
       }
 
-      // 3. Atualizar pedido com checkout_url e invoice_slug (se necessário)
+      // 3. Verificar se checkout_url existe antes de continuar
+      if (!infinitepayResponse.data || !infinitepayResponse.data.checkout_url) {
+        console.error('Erro: checkout_url não retornado pela API InfinitePay', {
+          response: infinitepayResponse,
+          data: infinitepayResponse.data
+        });
+        return res.render('adquirir', {
+          title: 'Adquirir Sistema - Suporte DP',
+          error: 'Erro ao gerar link de pagamento. Tente novamente.'
+        });
+      }
+
+      // 4. Atualizar pedido com checkout_url e invoice_slug (se necessário)
       // O InfinitePay já retorna os dados, mas podemos salvar para referência
       try {
         await Order.updateCheckoutInfo(
@@ -75,7 +87,7 @@ class AdquirirController {
         checkout_url: infinitepayResponse.data.checkout_url
       });
 
-      // 4. Redirecionar usuário para checkout InfinitePay
+      // 5. Redirecionar usuário para checkout InfinitePay
       return res.redirect(infinitepayResponse.data.checkout_url);
     } catch (error) {
       console.error('Erro no processo de aquisição:', error);
