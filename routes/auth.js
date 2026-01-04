@@ -5,6 +5,7 @@
 const express = require('express');
 const router = express.Router();
 const AuthController = require('../controllers/authController');
+const ValidarPagamentoController = require('../controllers/validarPagamentoController');
 const { body } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 
@@ -64,6 +65,9 @@ router.get('/register', AuthController.register);
 router.post('/register', registerLimiter, registerValidation, AuthController.register);
 
 router.get('/logout', AuthController.logout);
+
+router.get('/validar-pagamento', ValidarPagamentoController.index);
+router.post('/validar-pagamento', ValidarPagamentoController.validar);
 
 module.exports = router;
 
