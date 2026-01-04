@@ -314,11 +314,12 @@ app.get("/adquirir", (req, res) => {
   if (req.session?.user?.id) {
     return res.redirect("/cobranca/assinar");
   }
-  // Se não está logado, salva returnTo e redireciona para login
-  if (req.session) {
-    req.session.returnTo = "/cobranca/assinar";
-  }
-  res.redirect("/login?redirect=assinatura");
+  // Se não está logado, mostra página de coleta de dados
+  res.render("cobranca/assinar-direto", {
+    title: "Adquirir Sistema - Suporte DP",
+    valorMensalidade: parseFloat(process.env.VALOR_MENSALIDADE || 19.90),
+    appName: process.env.APP_NAME || "Suporte DP"
+  });
 });
 
 // Middleware de tratamento de erros

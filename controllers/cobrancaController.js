@@ -205,6 +205,46 @@ class CobrancaController {
   }
 
   /**
+   * Assinatura direta (sem login) - para landing page
+   * Cria usuário temporário e redireciona para InfinitePay
+   */
+  static async assinarDireto(req, res) {
+    try {
+      const { email, nome, telefone } = req.body;
+
+      if (!email) {
+        return res.status(400).json({
+          success: false,
+          error: 'Email é obrigatório'
+        });
+      }
+
+      const assinaturaService = require('../services/assinaturaService');
+      const resultado = await assinaturaService.criarAssinaturaDireta({
+        email: email.trim(),
+        nome: nome?.trim() || '',
+        telefone: telefone?.trim() || ''
+      });
+
+      if (resultado.success && resultado.link_pagamento) {
+        return res.json({
+          success: true,
+          link_pagamento: resultado.link_pagamento,
+          redirect: true
+        });
+      } else {
+        throw new Error('Não foi possível gerar link de pagamento');
+      }
+    } catch (error) {
+      console.error('Erro ao criar assinatura direta:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message || 'Erro ao processar assinatura'
+      });
+    }
+  }
+
+  /**
    * Redireciona para link do InfinitePay (cria cobrança via API REST)
    */
   static async redirecionarAssinatura(req, res) {

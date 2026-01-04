@@ -8,7 +8,10 @@ const router = express.Router();
 const CobrancaController = require('../controllers/cobrancaController');
 const { requireAuth } = require('../middleware/auth');
 
-// Todas as rotas requerem autenticação
+// Rota pública para assinatura direta (sem login)
+router.post('/assinar-direto', CobrancaController.assinarDireto);
+
+// Todas as outras rotas requerem autenticação
 router.use(requireAuth);
 
 // Página de bloqueio

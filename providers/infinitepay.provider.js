@@ -299,13 +299,17 @@ class InfinitePayProvider {
     //   "transaction_nsu": "UUID",
     //   "order_nsu": "UUID-do-pedido",
     //   "receipt_url": "https://comprovante.com/123",
-    //   "items": [...]
+    //   "items": [...],
+    //   "customer": { "name": "...", "email": "...", "phone_number": "..." } (se disponível)
     // }
 
     const orderNsu = payload.order_nsu;
     const transactionNsu = payload.transaction_nsu;
     const invoiceSlug = payload.invoice_slug;
     const paidAmount = payload.paid_amount || payload.amount;
+    
+    // Extrai dados do cliente se disponíveis no webhook
+    const customer = payload.customer || null;
 
     return {
       event: 'payment.paid',
@@ -315,6 +319,7 @@ class InfinitePayProvider {
       invoice_slug: invoiceSlug,
       order_nsu: orderNsu,
       paid_amount: paidAmount ? paidAmount / 100 : null, // Converte centavos para reais
+      customer: customer // Inclui dados do cliente se disponíveis
       capture_method: payload.capture_method, // "credit_card" ou "pix"
       receipt_url: payload.receipt_url,
       data: payload

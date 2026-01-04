@@ -57,6 +57,36 @@ class WebhookController {
         
         if (userWithPassword.rows.length > 0) {
           const user = userWithPassword.rows[0];
+          
+          // Atualiza dados do usuário com informações do InfinitePay (se disponíveis)
+          if (webhookData.customer) {
+            const updates = [];
+            const values = [];
+            let paramCount = 1;
+
+            if (webhookData.customer.name && (!user.nome || user.nome === 'Cliente')) {
+              updates.push(`nome = $${paramCount++}`);
+              values.push(webhookData.customer.name);
+            }
+            if (webhookData.customer.email && webhookData.customer.email !== user.email) {
+              updates.push(`email = $${paramCount++}`);
+              values.push(webhookData.customer.email.toLowerCase().trim());
+            }
+            if (webhookData.customer.phone_number) {
+              updates.push(`telefone = $${paramCount++}`);
+              values.push(webhookData.customer.phone_number);
+            }
+
+            if (updates.length > 0) {
+              values.push(user.id);
+              await db.query(
+                `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramCount}`,
+                values
+              );
+              console.log(`✅ Dados do usuário atualizados com informações do InfinitePay`);
+            }
+          }
+
           // Verifica se usuário já tem senha (já está cadastrado)
           const userHasPassword = user.senha_hash && user.senha_hash.length > 0;
           
@@ -66,9 +96,16 @@ class WebhookController {
             console.log(`✅ Pagamento processado e acesso liberado para usuário ${cobranca.user_id}`);
           } else {
             // Usuário ainda não se cadastrou: envia link de cadastro
-            const linkCadastro = await cadastroService.gerarLinkCadastro(user.email, user.nome);
-            await cadastroService.enviarEmailCadastro(user.email, user.nome, linkCadastro);
-            console.log(`📧 Link de cadastro enviado para ${user.email}`);
+            const userAtualizado = await db.query(
+              'SELECT nome, email FROM users WHERE id = $1',
+              [cobranca.user_id]
+            );
+            const nomeFinal = userAtualizado.rows[0]?.nome || user.nome || 'Cliente';
+            const emailFinal = userAtualizado.rows[0]?.email || user.email;
+            
+            const linkCadastro = await cadastroService.gerarLinkCadastro(emailFinal, nomeFinal);
+            await cadastroService.enviarEmailCadastro(emailFinal, nomeFinal, linkCadastro);
+            console.log(`📧 Link de cadastro enviado para ${emailFinal}`);
           }
         } else {
           console.warn(`⚠️  Usuário ${cobranca.user_id} não encontrado`);
