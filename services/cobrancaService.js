@@ -56,12 +56,58 @@ class CobrancaService {
         referenceId: `user_${userId}_${mesReferencia}`
       });
 
+      console.log('📦 Resultado do InfinitePay:', {
+        success: chargeResult.success,
+        external_id: chargeResult.external_id,
+        link_pagamento: chargeResult.link_pagamento ? 'Existe' : 'NÃO EXISTE',
+        link_pagamento_valor: chargeResult.link_pagamento || 'null',
+        status: chargeResult.status,
+        useMock: chargeResult.data?.mock || false
+      });
+
       externalId = chargeResult.external_id;
       linkPagamento = chargeResult.link_pagamento;
       status = chargeResult.status;
+
+      if (!linkPagamento) {
+        console.error('❌ Link de pagamento é null/undefined:', {
+          chargeResult: chargeResult,
+          temLinkPagamento: !!chargeResult.link_pagamento,
+          tipo: typeof chargeResult.link_pagamento
+        });
+        throw new Error('API InfinitePay não retornou link de pagamento. Verifique os logs para mais detalhes.');
+      }
     } catch (error) {
-      console.error(`❌ Erro ao criar cobrança no InfinitePay para usuário ${userId}:`, error.message);
-      // Continua criando a cobrança local mesmo se falhar no InfinitePay
+      console.error(`❌ Erro ao criar cobrança no InfinitePay para usuário ${userId}:`, {
+        message: error.message,
+        stack: error.stack,
+        userId: userId,
+        valor: valor,
+        mesReferencia: mesReferencia,
+        handle: process.env.INFINITEPAY_HANDLE,
+        useMock: process.env.INFINITEPAY_USE_MOCK,
+        appUrl: process.env.APP_URL
+      });
+      
+      // Mensagem de erro mais útil
+      let errorMessage = 'Não foi possível gerar link de pagamento.';
+      
+      if (error.message.includes('InfinitePay retornou erro')) {
+        errorMessage += ' A API do InfinitePay retornou um erro. Verifique se o handle está correto e se a API está funcionando.';
+      } else if (error.message.includes('Sem resposta')) {
+        errorMessage += ' Não foi possível conectar com a API do InfinitePay. Verifique sua conexão.';
+      } else if (error.message.includes('não retornou link')) {
+        errorMessage += ' A API do InfinitePay não retornou o link de pagamento. Verifique a configuração.';
+      } else {
+        errorMessage += ` ${error.message}`;
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    // Valida se tem link de pagamento antes de criar no banco
+    if (!linkPagamento) {
+      throw new Error('Link de pagamento não foi gerado. Verifique a configuração do InfinitePay.');
     }
 
     // Cria cobrança no banco

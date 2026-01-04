@@ -308,6 +308,19 @@ app.get("/", (req, res) => {
   }
 });
 
+// Rota para adquirir sistema (redireciona para assinatura)
+app.get("/adquirir", (req, res) => {
+  // Se já está logado, vai direto para assinatura
+  if (req.session?.user?.id) {
+    return res.redirect("/cobranca/assinar");
+  }
+  // Se não está logado, salva returnTo e redireciona para login
+  if (req.session) {
+    req.session.returnTo = "/cobranca/assinar";
+  }
+  res.redirect("/login?redirect=assinatura");
+});
+
 // Middleware de tratamento de erros
 app.use((err, req, res, next) => {
   // Erro CSRF

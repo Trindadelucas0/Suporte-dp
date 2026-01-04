@@ -19,17 +19,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropdown = document.getElementById('notificacoesDropdown');
     const btnMarcarTodasLidas = document.getElementById('btnMarcarTodasLidas');
 
-    // Só carrega notificações se os elementos existirem (usuário está logado)
-    if (btnNotificacoes || btnNotificacoesMobile) {
-        // Carrega notificações ao iniciar
-        carregarNotificacoes();
-        atualizarContador();
+    // Verifica se estamos em uma página de autenticação (login, register, etc)
+    const isAuthPage = window.location.pathname.includes('/login') || 
+                       window.location.pathname.includes('/register') || 
+                       window.location.pathname.includes('/cadastro/') ||
+                       window.location.pathname === '/';
 
-        // Atualiza a cada 30 segundos
-        setInterval(() => {
-            carregarNotificacoes();
-            atualizarContador();
-        }, 30000);
+    // Só carrega notificações se:
+    // 1. Os elementos existirem (usuário está logado)
+    // 2. NÃO estiver em página de autenticação
+    if ((btnNotificacoes || btnNotificacoesMobile) && !isAuthPage) {
+        // Aguarda um pouco para garantir que o redirecionamento já aconteceu
+        setTimeout(() => {
+            // Verifica novamente se ainda está na página correta
+            if (!window.location.pathname.includes('/login') && 
+                !window.location.pathname.includes('/register') &&
+                !window.location.pathname.includes('/cadastro/') &&
+                window.location.pathname !== '/') {
+                // Carrega notificações ao iniciar
+                carregarNotificacoes();
+                atualizarContador();
+
+                // Atualiza a cada 30 segundos
+                setInterval(() => {
+                    // Verifica novamente antes de carregar
+                    if (!window.location.pathname.includes('/login') && 
+                        !window.location.pathname.includes('/register') &&
+                        !window.location.pathname.includes('/cadastro/') &&
+                        window.location.pathname !== '/') {
+                        carregarNotificacoes();
+                        atualizarContador();
+                    }
+                }, 30000);
+            }
+        }, 500);
     }
 
     // Toggle dropdown desktop
@@ -95,6 +118,14 @@ function toggleDropdown() {
 }
 
 async function carregarNotificacoes() {
+    // Verifica se estamos em uma página de autenticação
+    if (window.location.pathname.includes('/login') || 
+        window.location.pathname.includes('/register') || 
+        window.location.pathname.includes('/cadastro/') ||
+        window.location.pathname === '/') {
+        return; // Não carrega notificações em páginas de autenticação
+    }
+
     try {
         const headers = { 'Content-Type': 'application/json' };
         
@@ -108,6 +139,13 @@ async function carregarNotificacoes() {
             headers: headers,
             credentials: 'same-origin'
         });
+
+        // Verifica se a resposta é realmente JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            console.warn('Resposta não é JSON, ignorando:', contentType);
+            return;
+        }
 
         if (!response.ok) {
             throw new Error('Erro ao carregar notificações');
@@ -123,6 +161,7 @@ async function carregarNotificacoes() {
         }
     } catch (error) {
         console.error('Erro ao carregar notificações:', error);
+        // Não mostra alerta para não incomodar o usuário
     }
 }
 

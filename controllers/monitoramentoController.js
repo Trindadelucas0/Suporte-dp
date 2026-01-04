@@ -183,7 +183,8 @@ class MonitoramentoController {
         u.email,
         c.id as cobranca_id,
         c.valor,
-        c.data_vencimento,
+        TO_CHAR(c.data_vencimento, 'DD/MM/YYYY') as data_vencimento,
+        c.data_vencimento as data_vencimento_raw,
         c.status,
         c.mes_referencia,
         CURRENT_DATE - c.data_vencimento as dias_atraso
@@ -196,7 +197,11 @@ class MonitoramentoController {
       LIMIT 50
     `);
 
-    return result.rows;
+    // Formata datas para garantir compatibilidade
+    return result.rows.map(row => ({
+      ...row,
+      data_vencimento: row.data_vencimento || (row.data_vencimento_raw ? new Date(row.data_vencimento_raw).toISOString().split('T')[0] : null)
+    }));
   }
 
   /**
@@ -210,7 +215,8 @@ class MonitoramentoController {
         u.email,
         c.id as cobranca_id,
         c.valor,
-        c.data_vencimento,
+        TO_CHAR(c.data_vencimento, 'DD/MM/YYYY') as data_vencimento,
+        c.data_vencimento as data_vencimento_raw,
         c.status,
         c.mes_referencia,
         CURRENT_DATE - c.data_vencimento as dias_atraso
@@ -223,7 +229,11 @@ class MonitoramentoController {
       LIMIT 50
     `);
 
-    return result.rows;
+    // Formata datas para garantir compatibilidade
+    return result.rows.map(row => ({
+      ...row,
+      data_vencimento: row.data_vencimento || (row.data_vencimento_raw ? new Date(row.data_vencimento_raw).toISOString().split('T')[0] : null)
+    }));
   }
 
   /**
@@ -239,7 +249,8 @@ class MonitoramentoController {
         u.email,
         c.id as cobranca_id,
         c.valor,
-        c.data_vencimento,
+        TO_CHAR(c.data_vencimento, 'DD/MM/YYYY') as data_vencimento,
+        c.data_vencimento as data_vencimento_raw,
         c.status,
         c.mes_referencia,
         CURRENT_DATE - c.data_vencimento as dias_atraso,
@@ -255,7 +266,11 @@ class MonitoramentoController {
       LIMIT 50
     `);
 
-    return result.rows;
+    // Formata datas para garantir compatibilidade
+    return result.rows.map(row => ({
+      ...row,
+      data_vencimento: row.data_vencimento || (row.data_vencimento_raw ? new Date(row.data_vencimento_raw).toISOString().split('T')[0] : null)
+    }));
   }
 
   /**
@@ -267,7 +282,8 @@ class MonitoramentoController {
         u.id,
         u.nome,
         u.email,
-        (SELECT MAX(data_pagamento) FROM cobrancas WHERE user_id = u.id AND status = 'paga') as ultimo_pagamento,
+        TO_CHAR((SELECT MAX(data_pagamento) FROM cobrancas WHERE user_id = u.id AND status = 'paga'), 'DD/MM/YYYY') as ultimo_pagamento,
+        (SELECT MAX(data_pagamento) FROM cobrancas WHERE user_id = u.id AND status = 'paga') as ultimo_pagamento_raw,
         (SELECT mes_referencia FROM cobrancas WHERE user_id = u.id AND status = 'paga' ORDER BY data_pagamento DESC LIMIT 1) as ultimo_mes_pago
       FROM users u
       INNER JOIN cobrancas c ON c.user_id = u.id
@@ -278,7 +294,11 @@ class MonitoramentoController {
       LIMIT 50
     `);
 
-    return result.rows;
+    // Formata datas para garantir compatibilidade
+    return result.rows.map(row => ({
+      ...row,
+      ultimo_pagamento: row.ultimo_pagamento || (row.ultimo_pagamento_raw ? new Date(row.ultimo_pagamento_raw).toISOString().split('T')[0] : null)
+    }));
   }
 
   /**

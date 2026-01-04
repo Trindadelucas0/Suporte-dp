@@ -90,6 +90,9 @@
                 <a href="#funcionalidades" class="block text-gray-700 hover:text-primary-red">Funcionalidades</a>
                 <a href="#sobre" class="block text-gray-700 hover:text-primary-red">Sobre</a>
                 <a href="#contato" class="block text-gray-700 hover:text-primary-red">Contato</a>
+                <a href="/adquirir" onclick="return redirecionarAssinatura(event)" class="block bg-gradient-to-r from-primary-red to-primary-yellow text-white px-4 py-2 rounded-lg text-center font-medium">
+                    <i class="fas fa-shopping-cart mr-2"></i>Adquirir Agora
+                </a>
                 <a href="/login" class="block bg-primary-red text-white px-4 py-2 rounded-lg text-center">
                     <i class="fas fa-sign-in-alt mr-2"></i>Entrar
                 </a>
@@ -112,10 +115,10 @@
                 <span class="block mt-2">Feito especialmente para quem está começando!</span>
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <a href="/register" class="bg-white text-primary-red px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition shadow-lg hover:shadow-xl transform hover:scale-105">
-                    <i class="fas fa-rocket mr-2"></i>Começar Agora - Grátis
+                <a href="/adquirir" onclick="return redirecionarAssinatura(event)" class="bg-white text-primary-red px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition shadow-lg hover:shadow-xl transform hover:scale-105 pulse-slow">
+                    <i class="fas fa-shopping-cart mr-2"></i>Adquirir Sistema Agora
                 </a>
-                <a href="/login" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-primary-red transition">
+                <a href="/login" class="bg-white bg-opacity-20 text-white border-2 border-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-opacity-30 transition shadow-lg">
                     <i class="fas fa-sign-in-alt mr-2"></i>Já tenho conta
                 </a>
             </div>
@@ -317,11 +320,11 @@
                 simplificar seus cálculos trabalhistas.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="/register" class="bg-white text-primary-red px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition shadow-lg">
-                    <i class="fas fa-user-plus mr-2"></i>Criar Conta Grátis
+                <a href="/adquirir" onclick="return redirecionarAssinatura(event)" class="bg-white text-primary-red px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <i class="fas fa-rocket mr-2"></i>Começar Agora - R$ 19,90/mês
                 </a>
-                <a href="/login" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-primary-red transition">
-                    <i class="fas fa-sign-in-alt mr-2"></i>Já tenho conta
+                <a href="/login" class="bg-white bg-opacity-20 text-white border-2 border-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-opacity-30 transition shadow-lg">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Fazer Login
                 </a>
             </div>
         </div>
@@ -423,7 +426,6 @@
                     <h4 class="font-bold mb-4">Links Rápidos</h4>
                     <ul class="space-y-2 text-sm text-gray-400">
                         <li><a href="/login" class="hover:text-white transition">Login</a></li>
-                        <li><a href="/register" class="hover:text-white transition">Criar Conta</a></li>
                         <li><a href="#funcionalidades" class="hover:text-white transition">Funcionalidades</a></li>
                         <li><a href="#sobre" class="hover:text-white transition">Sobre</a></li>
                     </ul>
@@ -454,6 +456,17 @@
         function toggleMenu() {
             const menu = document.getElementById('mobileMenu');
             menu.classList.toggle('hidden');
+        }
+
+        // Função para redirecionar para assinatura
+        function redirecionarAssinatura(event) {
+            event.preventDefault();
+            
+            // Verifica se o usuário está logado (verifica se há cookie de sessão)
+            // Como não temos acesso direto ao servidor aqui, vamos tentar acessar /cobranca/assinar
+            // Se não estiver logado, o middleware redireciona para /login
+            window.location.href = '/cobranca/assinar';
+            return false;
         }
 
         // Smooth scroll

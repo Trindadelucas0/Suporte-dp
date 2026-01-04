@@ -162,7 +162,11 @@ class CobrancaController {
     const userId = req.session.user?.id;
 
     if (!userId) {
-      return res.redirect('/login');
+      // Salva a URL de retorno para redirecionar após login
+      if (req.session) {
+        req.session.returnTo = '/cobranca/assinar';
+      }
+      return res.redirect('/login?redirect=assinatura');
     }
 
     try {
@@ -229,17 +233,30 @@ class CobrancaController {
       const cobrancaService = require('../services/cobrancaService');
       const cobranca = await cobrancaService.gerarCobrancaMensal(userId);
 
+      console.log('📋 Cobrança criada:', {
+        id: cobranca?.id,
+        external_id: cobranca?.external_id,
+        link_pagamento: cobranca?.link_pagamento ? 'Existe' : 'NÃO EXISTE',
+        status: cobranca?.status
+      });
+
       if (cobranca && cobranca.link_pagamento) {
         // Redireciona para o link do InfinitePay
-        res.redirect(cobranca.link_pagamento);
+        console.log('✅ Redirecionando para:', cobranca.link_pagamento);
+        return res.redirect(cobranca.link_pagamento);
       } else {
-        throw new Error('Não foi possível gerar link de pagamento');
+        console.error('❌ Link de pagamento não gerado:', {
+          cobranca: cobranca ? 'Existe' : 'Não existe',
+          link_pagamento: cobranca?.link_pagamento || 'null/undefined'
+        });
+        throw new Error(`Não foi possível gerar link de pagamento. Status: ${cobranca?.status || 'N/A'}, Link: ${cobranca?.link_pagamento || 'null'}`);
       }
     } catch (error) {
-      console.error('Erro ao redirecionar para assinatura:', error);
+      console.error('❌ Erro ao redirecionar para assinatura:', error);
+      console.error('Stack:', error.stack);
       res.render('error', {
         title: 'Erro - Suporte DP',
-        error: 'Erro ao redirecionar para página de pagamento. Tente novamente.'
+        error: `Erro ao redirecionar para página de pagamento: ${error.message}. Verifique se o InfinitePay está configurado corretamente.`
       });
     }
   }

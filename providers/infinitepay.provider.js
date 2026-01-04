@@ -35,18 +35,33 @@ class InfinitePayProvider {
     this.apiBaseUrl = 'https://api.infinitepay.io/invoices/public/checkout';
     
     // Modo MOCK (para testes)
-    this.useMock = process.env.INFINITEPAY_USE_MOCK === 'true';
+    // Verifica se está explicitamente definido como 'true' (string)
+    const useMockEnv = process.env.INFINITEPAY_USE_MOCK;
+    this.useMock = useMockEnv === 'true' || useMockEnv === true;
     
     // App URL (para redirect_url e webhook_url)
     this.appUrl = process.env.APP_URL || 'http://localhost:3000';
     
+    // Log de configuração
+    console.log('🔧 [InfinitePay] Configuração:', {
+      handle: this.handle,
+      useMock: this.useMock,
+      useMockEnv: useMockEnv,
+      hasAxios: !!axios,
+      appUrl: this.appUrl
+    });
+    
     if (this.useMock) {
       console.warn('⚠️  InfinitePay em modo MOCK (não cria links reais)');
     } else {
-      console.log(`✅ InfinitePay configurado com handle: ${this.handle}`);
-      if (!axios) {
+      if (!this.handle || this.handle.trim() === '') {
+        console.warn('⚠️  INFINITEPAY_HANDLE não configurado. Ativando modo MOCK.');
+        this.useMock = true;
+      } else if (!axios) {
         console.warn('⚠️  Axios não instalado. Sistema funcionará apenas em modo MOCK.');
         this.useMock = true;
+      } else {
+        console.log(`✅ InfinitePay configurado com handle: ${this.handle}`);
       }
     }
   }
@@ -64,17 +79,22 @@ class InfinitePayProvider {
    * @returns {Promise<Object>} Dados da cobrança criada
    */
   async createCharge(data) {
-    // MODO MOCK: Retorna dados simulados
-    if (this.useMock || !axios) {
+    // Verifica se deve usar MOCK
+    const shouldUseMock = this.useMock || !axios || !this.handle || this.handle.trim() === '';
+    
+    if (shouldUseMock) {
       console.log('🔧 [MOCK] Gerando link de pagamento simulado:', {
         valor: data.valor,
         descricao: data.descricao,
-        email: data.emailCliente
+        email: data.emailCliente,
+        motivo: !axios ? 'Axios não disponível' : (!this.handle || this.handle.trim() === '') ? 'Handle não configurado' : 'Modo MOCK ativado'
       });
 
       const appUrl = this.appUrl;
       const externalId = data.referenceId || 'mock_' + Date.now();
       const mockLink = `${appUrl}/cobranca/pagar/${externalId}`;
+
+      console.log('✅ [MOCK] Link gerado:', mockLink);
 
       return {
         success: true,
@@ -122,29 +142,114 @@ class InfinitePayProvider {
         if (data.emailCliente) payload.customer.email = data.emailCliente;
       }
 
+      // Log do payload antes de enviar
+      console.log('📤 Enviando requisição para InfinitePay:', {
+        url: `${this.apiBaseUrl}/links`,
+        handle: this.handle,
+        valorCentavos: valorCentavos,
+        payload: JSON.stringify(payload, null, 2)
+      });
+
       // Faz requisição para API
-      const response = await axios.post(
-        `${this.apiBaseUrl}/links`,
-        payload,
-        {
-          headers: {
-            'Content-Type': 'application/json'
+      let response;
+      try {
+        response = await axios.post(
+          `${this.apiBaseUrl}/links`,
+          payload,
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            timeout: 30000 // 30 segundos de timeout
           }
+        );
+      } catch (axiosError) {
+        console.error('❌ Erro na requisição HTTP para InfinitePay:', {
+          message: axiosError.message,
+          response: axiosError.response?.data,
+          status: axiosError.response?.status,
+          statusText: axiosError.response?.statusText
+        });
+        
+        if (axiosError.response) {
+          // API retornou erro
+          throw new Error(`InfinitePay retornou erro ${axiosError.response.status}: ${JSON.stringify(axiosError.response.data)}`);
+        } else if (axiosError.request) {
+          // Requisição foi feita mas não houve resposta
+          throw new Error(`Sem resposta do InfinitePay. Verifique sua conexão e se a API está acessível.`);
+        } else {
+          // Erro ao configurar a requisição
+          throw new Error(`Erro ao configurar requisição: ${axiosError.message}`);
         }
-      );
+      }
+
+      // Verifica status da resposta
+      if (response.status < 200 || response.status >= 300) {
+        console.error('❌ InfinitePay retornou status inválido:', response.status, response.data);
+        throw new Error(`InfinitePay retornou status ${response.status}: ${JSON.stringify(response.data)}`);
+      }
 
       // API retorna: { link: "https://...", invoice_slug: "...", order_nsu: "..." }
       const apiResponse = response.data;
 
+      console.log('📥 Resposta completa da API InfinitePay:', JSON.stringify(apiResponse, null, 2));
+      console.log('📥 Tipo da resposta:', typeof apiResponse);
+      console.log('📥 Chaves da resposta:', Object.keys(apiResponse || {}));
+
+      // Tenta encontrar o link em diferentes formatos possíveis
+      let linkPagamento = null;
+      
+      // Formato 1: apiResponse.link
+      if (apiResponse.link) {
+        linkPagamento = apiResponse.link;
+      }
+      // Formato 2: apiResponse.data.link (resposta aninhada)
+      else if (apiResponse.data && apiResponse.data.link) {
+        linkPagamento = apiResponse.data.link;
+      }
+      // Formato 3: apiResponse.checkout_url
+      else if (apiResponse.checkout_url) {
+        linkPagamento = apiResponse.checkout_url;
+      }
+      // Formato 4: apiResponse.url
+      else if (apiResponse.url) {
+        linkPagamento = apiResponse.url;
+      }
+      // Formato 5: apiResponse.payment_link
+      else if (apiResponse.payment_link) {
+        linkPagamento = apiResponse.payment_link;
+      }
+
+      // Valida se o link foi encontrado
+      if (!linkPagamento) {
+        console.error('❌ API InfinitePay não retornou link de pagamento:', {
+          respostaCompleta: apiResponse,
+          tipo: typeof apiResponse,
+          chaves: Object.keys(apiResponse || {}),
+          temLink: !!apiResponse.link,
+          temData: !!apiResponse.data,
+          temCheckoutUrl: !!apiResponse.checkout_url,
+          temUrl: !!apiResponse.url,
+          temPaymentLink: !!apiResponse.payment_link,
+          temInvoiceSlug: !!apiResponse.invoice_slug,
+          temOrderNsu: !!apiResponse.order_nsu
+        });
+        throw new Error(`API InfinitePay não retornou link de pagamento. Resposta recebida: ${JSON.stringify(apiResponse)}`);
+      }
+
+      const externalId = apiResponse.order_nsu || apiResponse.invoice_slug || data.referenceId;
+      
       console.log('✅ Link de pagamento InfinitePay criado:', {
+        external_id: externalId,
         invoice_slug: apiResponse.invoice_slug,
-        order_nsu: apiResponse.order_nsu || data.referenceId
+        order_nsu: apiResponse.order_nsu,
+        link: linkPagamento.substring(0, 50) + '...'
       });
 
       return {
         success: true,
-        external_id: apiResponse.order_nsu || apiResponse.invoice_slug || data.referenceId,
-        link_pagamento: apiResponse.link,
+        external_id: externalId,
+        link_pagamento: linkPagamento,
         status: 'pendente',
         invoice_slug: apiResponse.invoice_slug,
         order_nsu: apiResponse.order_nsu,
@@ -152,8 +257,28 @@ class InfinitePayProvider {
       };
 
     } catch (error) {
-      console.error('❌ Erro ao criar link de pagamento InfinitePay:', error.response?.data || error.message);
-      throw new Error(`Erro ao criar link InfinitePay: ${error.response?.data?.message || error.message}`);
+      console.error('❌ Erro ao criar link de pagamento InfinitePay:', {
+        message: error.message,
+        stack: error.stack,
+        response: error.response?.data,
+        status: error.response?.status,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          handle: this.handle,
+          useMock: this.useMock
+        }
+      });
+      
+      // Mensagem de erro mais detalhada
+      let errorMessage = 'Erro ao criar link InfinitePay';
+      if (error.response?.data) {
+        errorMessage += `: ${JSON.stringify(error.response.data)}`;
+      } else if (error.message) {
+        errorMessage += `: ${error.message}`;
+      }
+      
+      throw new Error(errorMessage);
     }
   }
 

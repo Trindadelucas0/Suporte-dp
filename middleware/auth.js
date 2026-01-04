@@ -5,6 +5,8 @@
 
 const { checkInactivity } = require('./activityTracker');
 const User = require('../models/User');
+const Cobranca = require('../models/Cobranca');
+const db = require('../config/database');
 
 async function verificarStatusUsuario(req, res, next) {
   // Verifica se o usuário ainda está ativo e não bloqueado
@@ -64,6 +66,45 @@ async function verificarStatusUsuario(req, res, next) {
         res.redirect('/cobranca/blocked');
         return;
       }
+
+      // VERIFICA SE TEM PAGAMENTO CONFIRMADO (OBRIGATÓRIO)
+      // Admin pode acessar sem pagamento
+      if (!user.is_admin) {
+        const temPagamento = await verificarPagamentoConfirmado(user.id);
+        if (!temPagamento) {
+          console.log('⚠️ [AUTH] Usuário sem pagamento confirmado:', {
+            id: user.id,
+            nome: user.nome,
+            rota: req.path
+          });
+          
+          // Permite acesso apenas a rotas de cobrança/assinatura/cadastro
+          const rotasPermitidas = [
+            '/cobranca/assinar',
+            '/cobranca/assinar/redirect',
+            '/cobranca/blocked',
+            '/cobranca/pagamento-sucesso',
+            '/cobranca/ativacao-sucesso',
+            '/cobranca/pagar/',
+            '/cadastro/',
+            '/logout'
+          ];
+          
+          const rotaAtual = req.path;
+          const podeAcessar = rotasPermitidas.some(rota => rotaAtual.startsWith(rota));
+          
+          if (!podeAcessar) {
+            if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+              return res.status(403).json({ 
+                error: 'É necessário assinar o plano e concluir o pagamento para acessar o sistema',
+                redirect: '/cobranca/assinar'
+              });
+            }
+            res.redirect('/cobranca/assinar');
+            return;
+          }
+        }
+      }
     } catch (error) {
       console.error('❌ [AUTH] Erro ao verificar status do usuário:', error);
       // Em caso de erro, permite continuar (não bloqueia o acesso)
@@ -120,6 +161,32 @@ function requireAdmin(req, res, next) {
       error: 'Você não tem permissão para acessar esta página.'
     });
   });
+}
+
+/**
+ * Verifica se usuário tem pagamento confirmado
+ * @param {string} userId - ID do usuário
+ * @returns {Promise<boolean>} true se tem pagamento confirmado
+ */
+async function verificarPagamentoConfirmado(userId) {
+  try {
+    // Busca cobrança paga nos últimos 35 dias (dá margem para pagamento mensal)
+    const result = await db.query(
+      `SELECT COUNT(*) as total
+       FROM cobrancas
+       WHERE user_id = $1
+       AND status = 'paga'
+       AND data_pagamento >= CURRENT_DATE - INTERVAL '35 days'`,
+      [userId]
+    );
+
+    const total = parseInt(result.rows[0]?.total || 0);
+    return total > 0;
+  } catch (error) {
+    console.error('❌ [AUTH] Erro ao verificar pagamento:', error);
+    // Em caso de erro, permite acesso (não bloqueia)
+    return true;
+  }
 }
 
 module.exports = {
