@@ -31,7 +31,7 @@ class Order {
    */
   static async findByOrderNsu(orderNsu) {
     const result = await db.query(
-      `SELECT id, order_nsu, status, valor, data_criacao, checkout_url, invoice_slug, user_id, created_at, updated_at
+      `SELECT id, order_nsu, status, valor, data_criacao, checkout_url, invoice_slug, user_id, customer_email, created_at, updated_at
        FROM orders
        WHERE order_nsu = $1`,
       [orderNsu]

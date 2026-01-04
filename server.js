@@ -255,6 +255,7 @@ if (process.env.NODE_ENV === 'test') {
 const authRoutes = require("./routes/auth");
 const adquirirRoutes = require("./routes/adquirir");
 const renovarRoutes = require("./routes/renovar");
+const checkoutRoutes = require("./routes/checkout");
 const dashboardRoutes = require("./routes/dashboard");
 const calendarioRoutes = require("./routes/calendario");
 const inssRoutes = require("./routes/inss");
@@ -281,6 +282,8 @@ app.use("/webhook", require("./routes/webhook")); // Webhooks não precisam de C
 // Aplicamos CSRF apenas nas rotas protegidas
 app.use(csrfProtection); // Protege POST/PUT/DELETE e adiciona req.csrfToken()
 app.use(csrfHelper); // Disponibiliza token nas views
+app.use("/renovar", renovarRoutes);
+app.use("/checkout", checkoutRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/calendario", calendarioRoutes);
 app.use("/inss", inssRoutes);

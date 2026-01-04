@@ -106,10 +106,10 @@ class WebhookController {
           );
 
           // 5.3. Verificar se já existe usuário para esse order_nsu (dentro da transação)
-          // SOLUÇÃO MELHORADA: Busca user_id diretamente do order (se for renovação)
+          // SOLUÇÃO MELHORADA: Busca user_id diretamente do order (se for renovação ou checkout após cadastro)
           let existingUser = null;
           
-          // Se order tem user_id, é RENOVAÇÃO - buscar usuário diretamente
+          // Se order tem user_id, buscar usuário diretamente (renovação ou checkout após cadastro)
           if (order.user_id) {
             const userResult = await client.query(
               'SELECT id, nome, email, is_admin, order_nsu, subscription_status, subscription_expires_at FROM users WHERE id = $1',
@@ -118,12 +118,40 @@ class WebhookController {
             existingUser = userResult.rows[0] || null;
             
             if (existingUser) {
-              console.log('🔄 RENOVAÇÃO detectada: order tem user_id, buscando usuário:', existingUser.id);
+              console.log('✅ Usuário encontrado pelo user_id do order:', existingUser.id);
             }
           }
           
-          // Se não encontrou pelo user_id do order, pode ser PRIMEIRO PAGAMENTO
-          // Tenta buscar pelo order_nsu do usuário (funciona para primeiro pagamento)
+          // Se não encontrou pelo user_id, tenta buscar pelo email do order (se disponível)
+          if (!existingUser && order.customer_email) {
+            const userResult = await client.query(
+              'SELECT id, nome, email, is_admin, order_nsu, subscription_status, subscription_expires_at FROM users WHERE email = $1',
+              [order.customer_email]
+            );
+            existingUser = userResult.rows[0] || null;
+            
+            if (existingUser) {
+              console.log('✅ Usuário encontrado pelo email do order:', existingUser.id);
+            }
+          }
+          
+          // Se ainda não encontrou, tenta buscar pelo email do payload do webhook
+          if (!existingUser) {
+            const customerEmail = payload.customer_email || payload.email || null;
+            if (customerEmail) {
+              const userResult = await client.query(
+                'SELECT id, nome, email, is_admin, order_nsu, subscription_status, subscription_expires_at FROM users WHERE email = $1',
+                [customerEmail]
+              );
+              existingUser = userResult.rows[0] || null;
+              
+              if (existingUser) {
+                console.log('✅ Usuário encontrado pelo email do webhook:', existingUser.id);
+              }
+            }
+          }
+          
+          // Se ainda não encontrou, tenta buscar pelo order_nsu do usuário (fallback antigo)
           if (!existingUser) {
             const userResult = await client.query(
               'SELECT id, nome, email, is_admin, order_nsu, subscription_status, subscription_expires_at FROM users WHERE order_nsu = $1',
@@ -132,7 +160,7 @@ class WebhookController {
             existingUser = userResult.rows[0] || null;
             
             if (existingUser) {
-              console.log('🆕 PRIMEIRO PAGAMENTO detectado: usuário encontrado pelo order_nsu:', existingUser.id);
+              console.log('✅ Usuário encontrado pelo order_nsu (fallback):', existingUser.id);
             }
           }
           

@@ -26,7 +26,7 @@ class InfinitePayService {
    * @returns {Object} Resposta da API InfinitePay
    */
   static async criarLinkCheckout(dados) {
-    const { orderNsu, valor, descricao = 'Assinatura Suporte DP' } = dados;
+    const { orderNsu, valor, descricao = 'Assinatura Suporte DP', customerEmail = null } = dados;
 
     try {
       // Garante que valor é um número (em reais)
@@ -51,7 +51,7 @@ class InfinitePayService {
           }
         ],
         order_nsu: orderNsu,
-        redirect_url: `${this.APP_URL}/register?order_nsu=${orderNsu}`,
+        redirect_url: `${this.APP_URL}/checkout/sucesso`,
         webhook_url: `${this.APP_URL}/webhook/infinitepay`
       };
 
