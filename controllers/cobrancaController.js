@@ -176,13 +176,11 @@ class CobrancaController {
       const cobrancaAtiva = cobrancas.find(c => c.status === 'pendente' || c.status === 'vencida');
       const cobrancaPaga = cobrancas.find(c => c.status === 'paga');
 
-      // Gera link do plano InfinitePay
-      const InfinitePayProvider = require('../providers/infinitepay.provider');
-      const planLink = InfinitePayProvider.getPlanLink(
-        user.email,
-        user.nome,
-        `user_${userId}_${new Date().toISOString().split('T')[0]}`
-      );
+      // Se já tem cobrança ativa, usa o link existente
+      let planLink = null;
+      if (cobrancaAtiva && cobrancaAtiva.link_pagamento) {
+        planLink = cobrancaAtiva.link_pagamento;
+      }
 
       res.render('cobranca/assinar', {
         title: 'Assinar Plano - Suporte DP',
@@ -203,7 +201,7 @@ class CobrancaController {
   }
 
   /**
-   * Redireciona para link do InfinitePay
+   * Redireciona para link do InfinitePay (cria cobrança via API REST)
    */
   static async redirecionarAssinatura(req, res) {
     const userId = req.session.user?.id;
@@ -218,21 +216,30 @@ class CobrancaController {
         return res.redirect('/login');
       }
 
-      // Gera link do plano InfinitePay
-      const InfinitePayProvider = require('../providers/infinitepay.provider');
-      const planLink = InfinitePayProvider.getPlanLink(
-        user.email,
-        user.nome,
-        `user_${userId}_${new Date().toISOString().split('T')[0]}`
-      );
+      // Verifica se já tem cobrança ativa
+      const cobrancas = await Cobranca.findByUserId(userId);
+      const cobrancaAtiva = cobrancas.find(c => c.status === 'pendente' || c.status === 'vencida');
+      
+      // Se já tem cobrança ativa, usa o link existente
+      if (cobrancaAtiva && cobrancaAtiva.link_pagamento) {
+        return res.redirect(cobrancaAtiva.link_pagamento);
+      }
 
-      // Redireciona para o InfinitePay
-      res.redirect(planLink);
+      // Cria nova cobrança via API REST
+      const cobrancaService = require('../services/cobrancaService');
+      const cobranca = await cobrancaService.gerarCobrancaMensal(userId);
+
+      if (cobranca && cobranca.link_pagamento) {
+        // Redireciona para o link do InfinitePay
+        res.redirect(cobranca.link_pagamento);
+      } else {
+        throw new Error('Não foi possível gerar link de pagamento');
+      }
     } catch (error) {
       console.error('Erro ao redirecionar para assinatura:', error);
       res.render('error', {
         title: 'Erro - Suporte DP',
-        error: 'Erro ao redirecionar para página de pagamento'
+        error: 'Erro ao redirecionar para página de pagamento. Tente novamente.'
       });
     }
   }
