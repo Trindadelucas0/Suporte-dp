@@ -88,6 +88,7 @@ class AdquirirController {
       });
 
       // 5. Redirecionar usuário para checkout InfinitePay
+      console.log('🚀 REDIRECIONANDO para:', infinitepayResponse.data.checkout_url);
       return res.redirect(infinitepayResponse.data.checkout_url);
     } catch (error) {
       console.error('Erro no processo de aquisição:', error);
