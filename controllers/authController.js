@@ -75,7 +75,7 @@ class AuthController {
         });
       }
 
-      // VERIFICAÇÃO DE PAGAMENTO: Se tiver pago, permite login. Se não, bloqueia.
+      // VERIFICAÇÃO DE PAGAMENTO: Se tiver pago, permite login. Se não, bloqueia ou redireciona.
       // ADMIN: Sempre permite login (sem verificação de pagamento)
       if (!user.is_admin) {
         // CLIENTE: Verifica se tem pagamento ativo
@@ -93,19 +93,46 @@ class AuthController {
         const assinaturaPendente = user.subscription_status === 'pendente';
         const semAssinatura = !user.subscription_expires_at || !user.subscription_status || user.subscription_status === null;
 
-        if (semAssinatura || assinaturaExpirada || assinaturaInadimplente || assinaturaPendente) {
+        // Se assinatura está pendente, permite login mas redireciona para checkout
+        if (assinaturaPendente) {
+          // Cria sessão primeiro
+          req.session.user = {
+            id: user.id,
+            nome: user.nome,
+            email: user.email,
+            is_admin: user.is_admin
+          };
+          req.session.lastActivity = Date.now();
+          
+          // Atualiza último login
+          await User.updateLastLogin(user.id);
+          
+          // Salva sessão e redireciona para checkout
+          req.session.save((err) => {
+            if (err) {
+              console.error('Erro ao salvar sessão:', err);
+              return res.render('auth/login', {
+                title: 'Login - Suporte DP',
+                error: 'Erro ao fazer login. Tente novamente.',
+                success: null
+              });
+            }
+            return res.redirect('/checkout');
+          });
+          return;
+        }
+
+        // Se assinatura está expirada ou inadimplente, bloqueia login
+        if (semAssinatura || assinaturaExpirada || assinaturaInadimplente) {
           console.log('⚠️ [LOGIN] Cliente tentando login sem pagamento ativo:', {
             user_id: user.id,
             email: user.email,
             subscription_expires_at: user.subscription_expires_at,
             subscription_status: user.subscription_status
           });
-          const mensagem = assinaturaPendente 
-            ? 'Complete seu pagamento para liberar o acesso. Acesse a página de checkout após fazer login.'
-            : 'Sua assinatura está expirada ou não foi paga. Por favor, renove sua assinatura para continuar usando o sistema.';
           return res.render('auth/login', {
             title: 'Login - Suporte DP',
-            error: mensagem,
+            error: 'Sua assinatura está expirada ou não foi paga. Por favor, renove sua assinatura para continuar usando o sistema.',
             success: null
           });
         }
