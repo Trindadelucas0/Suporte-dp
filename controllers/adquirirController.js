@@ -70,26 +70,33 @@ class AdquirirController {
         });
       }
 
-      // 4. Atualizar pedido com checkout_url e invoice_slug (se necessário)
-      // O InfinitePay já retorna os dados, mas podemos salvar para referência
-      try {
-        await Order.updateCheckoutInfo(
-          order.order_nsu,
-          infinitepayResponse.data.checkout_url,
-          infinitepayResponse.data.invoice_slug
-        );
-      } catch (updateError) {
-        console.warn('Erro ao atualizar checkout info (não crítico):', updateError.message);
-      }
-
       console.log('Link de checkout criado com sucesso:', {
         order_nsu: order.order_nsu,
         checkout_url: infinitepayResponse.data.checkout_url
       });
 
-      // 5. Redirecionar usuário para checkout InfinitePay
-      console.log('🚀 REDIRECIONANDO para:', infinitepayResponse.data.checkout_url);
-      return res.redirect(infinitepayResponse.data.checkout_url);
+      // 4. Atualizar pedido com checkout_url e invoice_slug (em paralelo, não bloqueia redirect)
+      // O InfinitePay já retorna os dados, mas podemos salvar para referência
+      Order.updateCheckoutInfo(
+        order.order_nsu,
+        infinitepayResponse.data.checkout_url,
+        infinitepayResponse.data.invoice_slug
+      ).catch(updateError => {
+        console.warn('Erro ao atualizar checkout info (não crítico):', updateError.message);
+      });
+
+      // 5. Redirecionar usuário para checkout InfinitePay IMEDIATAMENTE
+      const checkoutUrl = infinitepayResponse.data.checkout_url;
+      console.log('🚀 REDIRECIONANDO para:', checkoutUrl);
+      
+      // Verificar se resposta já foi enviada
+      if (res.headersSent) {
+        console.error('❌ ERRO: Resposta já foi enviada, não é possível redirecionar');
+        return;
+      }
+
+      // Redirecionar imediatamente (302 é o padrão, mas sendo explícito)
+      return res.redirect(checkoutUrl);
     } catch (error) {
       console.error('Erro no processo de aquisição:', error);
       return res.render('adquirir', {
