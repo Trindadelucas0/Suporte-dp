@@ -118,17 +118,33 @@ class InfinitePayProvider {
       // Converte valor de reais para centavos
       const valorCentavos = Math.round(parseFloat(data.valor) * 100);
       
-      // Monta payload para API
+      // Valida valor
+      if (!valorCentavos || valorCentavos <= 0) {
+        throw new Error('Valor inválido para cobrança');
+      }
+      
+      // Valida descrição
+      const descricao = data.descricao || 'Mensalidade - Suporte DP';
+      if (!descricao || descricao.trim() === '') {
+        throw new Error('Descrição é obrigatória');
+      }
+      
+      // Monta payload para API (usa "items" em inglês conforme documentação)
       const payload = {
         handle: this.handle,
-        itens: [
+        items: [
           {
             quantity: 1,
             price: valorCentavos,
-            description: data.descricao || 'Mensalidade - Suporte DP'
+            description: descricao.trim()
           }
         ]
       };
+      
+      // Valida se items foi criado corretamente
+      if (!payload.items || payload.items.length === 0) {
+        throw new Error('Array de items está vazio');
+      }
 
       // Adiciona order_nsu se fornecido
       if (data.referenceId) {
@@ -148,11 +164,19 @@ class InfinitePayProvider {
         if (data.emailCliente) payload.customer.email = data.emailCliente;
       }
 
+      // Validação final do payload
+      if (!payload.handle || !payload.items || payload.items.length === 0) {
+        throw new Error('Payload inválido: handle ou items faltando');
+      }
+      
       // Log do payload antes de enviar
       console.log('📤 Enviando requisição para InfinitePay:', {
         url: `${this.apiBaseUrl}/links`,
         handle: this.handle,
         valorCentavos: valorCentavos,
+        valorReais: data.valor,
+        itemsCount: payload.items.length,
+        items: payload.items,
         payload: JSON.stringify(payload, null, 2)
       });
 
