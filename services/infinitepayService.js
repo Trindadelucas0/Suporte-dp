@@ -29,33 +29,38 @@ class InfinitePayService {
     const { orderNsu, valor, descricao = 'Assinatura Suporte DP' } = dados;
 
     try {
-      // Garante que valor é um número
+      // Garante que valor é um número (em reais)
       const valorNumerico = typeof valor === 'string' ? parseFloat(valor) : Number(valor);
       
-      // Valida valor mínimo (deve ser maior que 1)
-      if (isNaN(valorNumerico) || valorNumerico <= 1) {
-        throw new Error(`Valor inválido: ${valor}. Deve ser maior que 1.`);
+      // Valida valor mínimo (deve ser maior que 1 centavo = R$ 0,01)
+      if (isNaN(valorNumerico) || valorNumerico <= 0.01) {
+        throw new Error(`Valor inválido: ${valor}. Deve ser maior que R$ 0,01.`);
       }
+
+      // Converte reais para centavos (API InfinitePay espera valores em centavos)
+      // Ex: R$ 19,90 = 1990 centavos
+      const valorEmCentavos = Math.round(valorNumerico * 100);
 
       const payload = {
         handle: this.HANDLE,
         items: [
           {
             quantity: 1,
-            price: valorNumerico, // Valor em reais (a API InfinitePay aceita reais, não centavos)
+            price: valorEmCentavos, // Valor em centavos (ex: 1990 para R$ 19,90)
             description: descricao
           }
         ],
         order_nsu: orderNsu,
-        redirect_url: `${this.APP_URL}/register`,
+        redirect_url: `${this.APP_URL}/register?order_nsu=${orderNsu}`,
         webhook_url: `${this.APP_URL}/webhook/infinitepay`
       };
 
       console.log('InfinitePay - Criando link de checkout:', {
         handle: this.HANDLE,
         order_nsu: orderNsu,
-        valor: valorNumerico,
-        payload_completo: payload,
+        valor_reais: valorNumerico,
+        valor_centavos: valorEmCentavos,
+        items: payload.items,
         redirect_url: payload.redirect_url,
         webhook_url: payload.webhook_url
       });
@@ -88,8 +93,14 @@ class InfinitePayService {
       console.error('InfinitePay - Erro ao criar link de checkout:', {
         message: error.message,
         response: error.response?.data,
-        status: error.response?.status
+        status: error.response?.status,
+        errors: error.response?.data?.errors
       });
+
+      // Log detalhado dos erros da API
+      if (error.response?.data?.errors) {
+        console.error('InfinitePay - Detalhes dos erros:', JSON.stringify(error.response.data.errors, null, 2));
+      }
 
       return {
         success: false,

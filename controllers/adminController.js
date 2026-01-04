@@ -151,6 +151,19 @@ class AdminController {
         calculosDataBase.rows.length +
         calculosContratoExperiencia.rows.length;
 
+      // Busca pagamentos do usuário
+      let pagamentos = [];
+      try {
+        const paymentsResult = await db.query(
+          'SELECT * FROM payments WHERE user_id = $1 ORDER BY paid_at DESC',
+          [id]
+        );
+        pagamentos = paymentsResult.rows || [];
+      } catch (error) {
+        console.log('Erro ao buscar pagamentos (tabela pode não existir):', error.message);
+        pagamentos = [];
+      }
+
       res.render('admin/usuario-detalhes', {
         title: `Usuário: ${usuario.nome} - Suporte DP`,
         usuario,

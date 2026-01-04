@@ -28,7 +28,7 @@ class AdquirirController {
 
     // POST - cria pedido e redireciona
     try {
-      const valor = 50.00; // Valor fixo do sistema
+      const valor = 19.90; // Valor fixo do sistema
 
       // 1. Criar pedido interno no banco
       const order = await Order.create(valor);

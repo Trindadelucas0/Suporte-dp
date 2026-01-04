@@ -12,7 +12,7 @@
 1. Sistema cria um pedido interno no banco com:
    - `order_nsu` (UUID único)
    - `status = "pending"`
-   - `valor` (R$ 50,00)
+   - `valor` (R$ 19,90)
    - `data_criacao`
 
 2. Sistema chama a API InfinitePay:
@@ -24,7 +24,7 @@
        "items": [
          {
            "quantity": 1,
-           "price": 50,
+           "price": 19.90,
            "description": "suporte-dp"
          }
        ],
@@ -209,8 +209,8 @@ CREATE INDEX IF NOT EXISTS idx_users_subscription_status ON users(subscription_s
      "order_nsu": "uuid-do-pedido",
      "transaction_nsu": "trans-12345",
      "invoice_slug": "invoice-abc123",
-     "amount": 50.00,
-     "paid_amount": 50.00,
+     "amount": 19.90,
+     "paid_amount": 19.90,
      "capture_method": "credit_card",
      "receipt_url": "https://...",
      "status": "paid",
