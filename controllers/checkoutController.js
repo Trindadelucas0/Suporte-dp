@@ -36,33 +36,42 @@ class CheckoutController {
 
     const userId = req.session.user.id;
 
-    // GET - mostra página
-    if (req.method === 'GET') {
-      try {
-        // Busca dados do usuário
-        const user = await User.findById(userId);
-        if (!user) {
-          req.session.destroy();
-          return res.redirect('/login');
-        }
+      // GET - mostra página
+      if (req.method === 'GET') {
+        try {
+          // Busca dados do usuário
+          const user = await User.findById(userId);
+          if (!user) {
+            req.session.destroy();
+            return res.redirect('/login');
+          }
 
-        // Verifica se já tem pagamento aprovado
-        const Payment = require('../models/Payment');
-        const payments = await Payment.findByUserId(userId);
-        const hasPaidPayment = payments && payments.length > 0 && payments.some(p => p.status === 'paid');
+          // Verifica se já tem pagamento aprovado
+          const Payment = require('../models/Payment');
+          const payments = await Payment.findByUserId(userId);
+          const hasPaidPayment = payments && payments.length > 0 && payments.some(p => p.status === 'paid');
 
-        // Se já tem pagamento aprovado, redireciona para dashboard
-        if (hasPaidPayment && user.subscription_status === 'ativa') {
-          return res.redirect('/dashboard');
-        }
+          // Se já tem pagamento aprovado, redireciona para dashboard
+          if (hasPaidPayment && user.subscription_status === 'ativa') {
+            return res.redirect('/dashboard');
+          }
 
-        return res.render('checkout', {
-          title: 'Finalizar Pagamento - Suporte DP',
-          user: user,
-          error: null,
-          checkoutUrl: null,
-          orderNsu: null
-        });
+          // Recupera mensagem de sucesso da sessão (se houver)
+          let successMessage = null;
+          if (req.session.successMessage) {
+            successMessage = req.session.successMessage;
+            delete req.session.successMessage;
+            req.session.save();
+          }
+
+          return res.render('checkout', {
+            title: 'Finalizar Pagamento - Suporte DP',
+            user: user,
+            error: null,
+            successMessage: successMessage,
+            checkoutUrl: null,
+            orderNsu: null
+          });
       } catch (error) {
         console.error('Erro ao carregar página de checkout:', error);
         return res.render('checkout', {

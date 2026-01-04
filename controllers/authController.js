@@ -300,7 +300,11 @@ class AuthController {
         }
 
         // NOVO FLUXO: Redireciona para /checkout (página de pagamento)
-        res.redirect('/checkout');
+        // Adiciona mensagem de sucesso na sessão
+        req.session.successMessage = 'Conta criada com sucesso! Agora finalize o pagamento para liberar o acesso.';
+        req.session.save(() => {
+          res.redirect('/checkout');
+        });
       });
     } catch (error) {
       console.error('Erro no cadastro:', error);
