@@ -5,6 +5,7 @@
 
 const Order = require('../models/Order');
 const User = require('../models/User');
+const Payment = require('../models/Payment');
 const InfinitePayService = require('../services/infinitepayService');
 
 class RenovarController {
@@ -60,6 +61,58 @@ class RenovarController {
         req.session.destroy();
         return res.redirect('/login');
       }
+
+      // VALIDAÇÃO: Verifica se pode renovar (só permite após 30 dias ou se assinatura expirou)
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      
+      let dataExpiracao = null;
+      if (user.subscription_expires_at) {
+        dataExpiracao = new Date(user.subscription_expires_at);
+        dataExpiracao.setHours(0, 0, 0, 0);
+      }
+      
+      const assinaturaExpirada = dataExpiracao && dataExpiracao < hoje;
+      
+      // Se assinatura ainda está ativa (não expirou), verifica último pagamento
+      if (!assinaturaExpirada && user.subscription_status === 'ativa') {
+        // Busca último pagamento do usuário
+        const pagamentos = await Payment.findByUserId(userId);
+        if (pagamentos && pagamentos.length > 0) {
+          // Pega o pagamento mais recente
+          const ultimoPagamento = pagamentos[0];
+          
+          if (ultimoPagamento.paid_at) {
+            const dataUltimoPagamento = new Date(ultimoPagamento.paid_at);
+            dataUltimoPagamento.setHours(0, 0, 0, 0);
+            
+            // Calcula diferença em dias
+            const diffTime = hoje - dataUltimoPagamento;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            // Se ainda não se passaram 30 dias, bloqueia renovação
+            if (diffDays < 30) {
+              const diasRestantes = 30 - diffDays;
+              console.log('⚠️ Tentativa de renovação antes dos 30 dias:', {
+                user_id: userId,
+                dias_desde_ultimo_pagamento: diffDays,
+                dias_restantes: diasRestantes,
+                data_ultimo_pagamento: ultimoPagamento.paid_at
+              });
+              
+              return res.render('renovar', {
+                title: 'Renovar Assinatura - Suporte DP',
+                user: user,
+                error: `Você só pode renovar sua assinatura após 30 dias do último pagamento. Ainda faltam ${diasRestantes} dia(s) para poder renovar. Sua assinatura está ativa até ${dataExpiracao ? dataExpiracao.toLocaleDateString('pt-BR') : 'N/A'}.`,
+                checkoutUrl: null,
+                orderNsu: null
+              });
+            }
+          }
+        }
+      }
+      
+      // Se chegou aqui, pode renovar (assinatura expirada OU já se passaram 30 dias)
 
       // 1. Criar pedido interno no banco (novo order_nsu para renovação)
       const order = await Order.create(valor);

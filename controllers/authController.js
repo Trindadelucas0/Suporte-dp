@@ -40,7 +40,8 @@ class AuthController {
     if (!errors.isEmpty()) {
       return res.render('auth/login', {
         title: 'Login - Suporte DP',
-        error: 'Por favor, preencha todos os campos corretamente.'
+        error: 'Por favor, preencha todos os campos corretamente.',
+        success: null
       });
     }
 
@@ -50,7 +51,8 @@ class AuthController {
       if (!user) {
         return res.render('auth/login', {
           title: 'Login - Suporte DP',
-          error: 'Email ou senha incorretos.'
+          error: 'Email ou senha incorretos.',
+        success: null
         });
       }
 
@@ -59,7 +61,8 @@ class AuthController {
       if (!senhaValida) {
         return res.render('auth/login', {
           title: 'Login - Suporte DP',
-          error: 'Email ou senha incorretos.'
+          error: 'Email ou senha incorretos.',
+        success: null
         });
       }
 
@@ -67,7 +70,8 @@ class AuthController {
       if (user.ativo === false || user.bloqueado === true) {
         return res.render('auth/login', {
           title: 'Login - Suporte DP',
-          error: 'Sua conta está desativada ou bloqueada. Entre em contato com o administrador.'
+          error: 'Sua conta está desativada ou bloqueada. Entre em contato com o administrador.',
+        success: null
         });
       }
 
@@ -97,7 +101,8 @@ class AuthController {
           });
           return res.render('auth/login', {
             title: 'Login - Suporte DP',
-            error: 'Sua assinatura está expirada ou não foi paga. Por favor, renove sua assinatura para continuar usando o sistema.'
+            error: 'Sua assinatura está expirada ou não foi paga. Por favor, renove sua assinatura para continuar usando o sistema.',
+            success: null
           });
         }
       }
@@ -132,7 +137,8 @@ class AuthController {
           console.error('Detalhes:', err.message);
           return res.render('auth/login', {
             title: 'Login - Suporte DP',
-            error: 'Erro ao fazer login. Tente novamente.'
+            error: 'Erro ao fazer login. Tente novamente.',
+          success: null
           });
         }
 
@@ -147,7 +153,8 @@ class AuthController {
       console.error('Stack:', error.stack);
       res.render('auth/login', {
         title: 'Login - Suporte DP',
-        error: 'Erro ao fazer login. Tente novamente. ' + (process.env.NODE_ENV === 'development' ? error.message : '')
+        error: 'Erro ao fazer login. Tente novamente. ' + (process.env.NODE_ENV === 'development' ? error.message : ''),
+        success: null
       });
     }
   }
@@ -186,11 +193,44 @@ class AuthController {
           });
         }
         
-        // SOLUÇÃO: Se InfinitePay redirecionou, pagamento foi aprovado
-        // Não precisamos verificar Payment.findPaidByOrderNsu
-        // Apenas verificamos se já existe usuário para evitar duplicação
+        // VALIDAÇÃO DE SEGURANÇA: Verificar se existe pagamento aprovado
+        // Busca pagamento aprovado (pode ter chegado antes do redirect)
+        payment = await Payment.findPaidByOrderNsu(order_nsu);
         
-        console.log('✅ Redirect do InfinitePay detectado - pagamento aprovado:', order_nsu);
+        // Se não encontrou payment, verifica se order está como 'paid' (webhook pode ter processado)
+        if (!payment && order.status === 'paid') {
+          // Order está como paid mas payment não encontrado ainda - aguarda um pouco
+          console.log('⚠️ Order status é "paid" mas payment não encontrado, aguardando processamento do webhook...');
+          for (let tentativa = 0; tentativa < 3; tentativa++) {
+            await new Promise(resolve => setTimeout(resolve, 2000)); // 2 segundos por tentativa
+            payment = await Payment.findPaidByOrderNsu(order_nsu);
+            if (payment) {
+              console.log(`✅ Payment encontrado após ${tentativa + 1} tentativa(s)`);
+              break;
+            }
+          }
+        }
+        
+        // Se ainda não encontrou payment E order não está como 'paid', negar acesso
+        if (!payment && order.status !== 'paid') {
+          console.log('⚠️ Tentativa de acesso sem pagamento aprovado:', {
+            order_nsu: order_nsu,
+            order_status: order.status,
+            payment_exists: !!payment
+          });
+          return res.render('auth/register', {
+            title: 'Cadastro - Suporte DP',
+            error: 'Pagamento não encontrado ou ainda não foi processado. Aguarde alguns instantes e tente novamente. Se o problema persistir, verifique se o pagamento foi concluído.',
+            order_nsu: null,
+            payment: null
+          });
+        }
+        
+        console.log('✅ Pagamento aprovado detectado:', {
+          order_nsu: order_nsu,
+          order_status: order.status,
+          payment_exists: !!payment
+        });
         
         // Verifica se já existe usuário para esse order_nsu (evita duplicação)
         const existingUser = await User.findByOrderNsu(order_nsu);
@@ -209,8 +249,6 @@ class AuthController {
           delete req.session.pendingOrderNsu;
           req.session.save();
         }
-        
-        // Tudo OK - permite cadastro (não precisa verificar payment, confia no redirect)
       } else {
         error = 'Acesso direto ao cadastro não permitido. Por favor, adquira o sistema primeiro.';
       }
@@ -276,29 +314,70 @@ class AuthController {
         });
       }
       
-      // SOLUÇÃO: Se InfinitePay redirecionou, pagamento foi aprovado
-      // NÃO bloqueamos cadastro esperando webhook processar
-      // Webhook salvará payment no banco (já está salvando)
-      // No login, verificamos se tem payment ativo para acessar
-      
-      // Tenta buscar payment (opcional - apenas para usar next_billing_date se já processado)
-      let payment = await Payment.findPaidByOrderNsu(order_nsu);
-      let nextBillingDate;
-      
-      if (payment && payment.next_billing_date) {
-        // Se payment já foi processado pelo webhook, usa a data dele
-        nextBillingDate = payment.next_billing_date;
-        console.log('✅ Payment já processado, usando next_billing_date:', nextBillingDate);
-      } else {
-        // Se ainda não foi processado, calcula 30 dias a partir de hoje
-        // O webhook vai atualizar depois quando processar
-        const dataFutura = new Date();
-        dataFutura.setDate(dataFutura.getDate() + 30);
-        nextBillingDate = dataFutura.toISOString().split('T')[0];
-        console.log('⚠️ Payment ainda não processado pelo webhook, usando data padrão (30 dias). Webhook atualizará depois.');
+      // Se order foi cancelado, negar acesso
+      if (order.status === 'cancelled') {
+        console.log('⚠️ Tentativa de cadastro com order cancelado:', order_nsu);
+        return res.render('auth/register', {
+          title: 'Cadastro - Suporte DP',
+          error: 'Este pedido foi cancelado. Por favor, adquira o sistema novamente.',
+          order_nsu: null
+        });
       }
       
-      // NÃO BLOQUEIA CADASTRO - confia no redirect do InfinitePay
+      // VALIDAÇÃO OBRIGATÓRIA: Verificar se existe pagamento aprovado
+      let payment = await Payment.findPaidByOrderNsu(order_nsu);
+      
+      // Se não encontrou payment, verifica se order está como 'paid' e tenta aguardar webhook processar
+      if (!payment && order.status === 'paid') {
+        console.log('⚠️ Order status é "paid" mas payment não encontrado, aguardando processamento do webhook...', order_nsu);
+        for (let tentativa = 0; tentativa < 5; tentativa++) {
+          await new Promise(resolve => setTimeout(resolve, 2000)); // 2 segundos por tentativa
+          payment = await Payment.findPaidByOrderNsu(order_nsu);
+          if (payment) {
+            console.log(`✅ Payment encontrado após ${tentativa + 1} tentativa(s) no POST`, order_nsu);
+            break;
+          }
+        }
+      }
+      
+      // Se ainda não encontrou payment E order não está como 'paid', BLOQUEAR cadastro
+      if (!payment && order.status !== 'paid') {
+        console.log('⚠️ Tentativa de cadastro sem pagamento aprovado:', {
+          order_nsu: order_nsu,
+          order_status: order.status,
+          payment_exists: !!payment
+        });
+        return res.render('auth/register', {
+          title: 'Cadastro - Suporte DP',
+          error: 'Pagamento não encontrado ou ainda não foi processado. Aguarde alguns instantes e tente novamente. Se o problema persistir, recarregue a página ou verifique se o pagamento foi concluído.',
+          order_nsu: order_nsu
+        });
+      }
+      
+      // Se ainda não encontrou payment mesmo com order.status = 'paid', também bloquear (webhook pode ter falhado)
+      if (!payment) {
+        console.error('❌ Order status é "paid" mas payment não foi encontrado após retry:', order_nsu);
+        return res.render('auth/register', {
+          title: 'Cadastro - Suporte DP',
+          error: 'Erro ao processar pagamento. Entre em contato com o suporte informando o número do pedido.',
+          order_nsu: order_nsu
+        });
+      }
+      
+      // Payment encontrado - usar next_billing_date do payment
+      let nextBillingDate;
+      if (payment.next_billing_date) {
+        // Usa a data calculada pelo webhook (30 dias a partir do paid_at)
+        nextBillingDate = payment.next_billing_date;
+        console.log('✅ Payment encontrado, usando next_billing_date do payment:', nextBillingDate);
+      } else {
+        // Fallback: calcula 30 dias a partir do paid_at do payment
+        const paidDate = new Date(payment.paid_at);
+        const dataFutura = new Date(paidDate);
+        dataFutura.setDate(dataFutura.getDate() + 30);
+        nextBillingDate = dataFutura.toISOString().split('T')[0];
+        console.log('⚠️ Payment encontrado mas sem next_billing_date, calculando a partir do paid_at:', nextBillingDate);
+      }
 
       // Verifica se já existe usuário para esse order_nsu
       const existingUserForOrder = await User.findByOrderNsu(order_nsu);

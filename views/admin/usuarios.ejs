@@ -86,10 +86,10 @@
                                                 Status</th>
                                             <th
                                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Assinatura</th>
+                                                Pagamento</th>
                                             <th
                                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Dias Restantes</th>
+                                                Assinatura</th>
                                             <th
                                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Último Pagamento</th>
@@ -198,31 +198,36 @@
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                         <% if (usuario.ultimoPagamento) { %>
-                                                            <div class="font-semibold text-green-600">R$ <%=
-                                                                    parseFloat(usuario.ultimoPagamento.paid_amount ||
-                                                                    0).toFixed(2) %>
+                                                            <div class="font-semibold text-green-600">
+                                                                <i class="fas fa-money-bill-wave mr-1"></i>
+                                                                R$ <%= parseFloat(usuario.ultimoPagamento.paid_amount || 0).toFixed(2).replace('.', ',') %>
+                                                            </div>
+                                                            <div class="text-xs text-gray-500 mt-1">
+                                                                <i class="fas fa-calendar mr-1"></i>
+                                                                <%= new Date(usuario.ultimoPagamento.paid_at).toLocaleDateString('pt-BR') %>
                                                             </div>
                                                             <div class="text-xs text-gray-400 mt-1">
-                                                                <%= new
-                                                                    Date(usuario.ultimoPagamento.paid_at).toLocaleDateString('pt-BR')
-                                                                    %>
+                                                                Método: <%= usuario.ultimoPagamento.capture_method || 'N/A' %>
                                                             </div>
-                                                            <div class="text-xs text-gray-400">
-                                                                <%= usuario.ultimoPagamento.capture_method || 'N/A' %>
-                                                            </div>
-                                                            <% if (usuario.ultimoPagamento.status==='paid' ) { %>
-                                                                <span
-                                                                    class="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">Pago</span>
-                                                                <% } else { %>
-                                                                    <span
-                                                                        class="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                                                                        <%= usuario.ultimoPagamento.status || 'N/A' %>
-                                                                    </span>
-                                                                    <% } %>
-                                                                        <% } else { %>
-                                                                            <span class="text-gray-400 text-xs">Nunca
-                                                                                pagou</span>
-                                                                            <% } %>
+                                                            <% if (usuario.ultimoPagamento.status==='paid') { %>
+                                                                <span class="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                                    <i class="fas fa-check mr-1"></i>Confirmado
+                                                                </span>
+                                                            <% } else { %>
+                                                                <span class="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                                    <%= usuario.ultimoPagamento.status || 'Pendente' %>
+                                                                </span>
+                                                            <% } %>
+                                                            <% if (typeof usuario.totalPago === 'number' && usuario.totalPago > 0 && usuario.totalPagamentos > 1) { %>
+                                                                <div class="text-xs text-blue-600 mt-1">
+                                                                    Total: R$ <%= usuario.totalPago.toFixed(2).replace('.', ',') %>
+                                                                </div>
+                                                            <% } %>
+                                                        <% } else { %>
+                                                            <span class="text-gray-400 text-xs">
+                                                                <i class="fas fa-times-circle mr-1"></i>Nunca pagou
+                                                            </span>
+                                                        <% } %>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                         <% if (usuario.last_login) { %>

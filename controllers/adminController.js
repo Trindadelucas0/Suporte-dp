@@ -87,13 +87,22 @@ class AdminController {
             estaExpirado = diasRestantes < 0;
           }
 
+          // Calcula informações adicionais de pagamento
+          const pagamentosPagos = todosPagamentos.filter(p => p.status === 'paid');
+          const totalPagamentos = pagamentosPagos.length;
+          const totalPago = pagamentosPagos.reduce((sum, p) => sum + parseFloat(p.paid_amount || 0), 0);
+          const temPagamentoAtivo = ultimoPagamento && ultimoPagamento.status === 'paid' && !estaExpirado;
+
           return {
             ...usuario,
             pagamento: ultimoPagamento, // Mantém compatibilidade com código existente
             ultimoPagamento: ultimoPagamento,
             todosPagamentos: todosPagamentos,
             diasRestantes: diasRestantes,
-            estaExpirado: estaExpirado
+            estaExpirado: estaExpirado,
+            totalPagamentos: totalPagamentos,
+            totalPago: totalPago,
+            temPagamentoAtivo: temPagamentoAtivo
           };
         })
       );
