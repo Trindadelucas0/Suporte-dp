@@ -166,6 +166,7 @@
             <% } else { %>
                 <!-- Formulário para gerar link de pagamento -->
                 <form method="POST" action="/checkout" class="mt-8">
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                     <div class="text-center">
                         <button type="submit"
                             class="px-12 py-4 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-lg font-bold text-lg hover:opacity-90 transition shadow-xl transform hover:scale-105">
