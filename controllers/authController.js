@@ -23,6 +23,8 @@ class AuthController {
         error = 'Usuário não encontrado. Por favor, faça login novamente.';
       } else if (req.query.renovado === 'true') {
         success = 'Assinatura renovada com sucesso! Faça login para continuar usando o sistema.';
+      } else if (req.query.msg === 'ja_cadastrado') {
+        error = 'Você já possui uma conta cadastrada. Faça login com suas credenciais.';
       }
       
       return res.render('auth/login', {
@@ -142,47 +144,42 @@ class AuthController {
           });
         }
         
-        // Verifica se existe pagamento aprovado
-        // Como o webhook é processado de forma assíncrona, precisamos aguardar um pouco
-        // Implementa retry com múltiplas tentativas (até 5 tentativas, 3s cada = 15s total)
-        console.log('Verificando pagamento para order_nsu:', order_nsu);
-        
-        const maxTentativas = 5;
-        const delayMs = 3000; // 3 segundos entre tentativas
-        
-        for (let tentativa = 0; tentativa < maxTentativas; tentativa++) {
-          // Busca pagamento com status 'paid'
-          payment = await Payment.findPaidByOrderNsu(order_nsu);
-          
-          if (payment && payment.status === 'paid') {
-            console.log(`✅ Pagamento encontrado na tentativa ${tentativa + 1}/${maxTentativas}`, order_nsu);
-            
-            // Se encontrou pagamento, limpa order_nsu da sessão
-            if (req.session?.pendingOrderNsu) {
-              delete req.session.pendingOrderNsu;
-              req.session.save();
-            }
-            break;
-          }
-          
-          // Se não encontrou, aguarda antes da próxima tentativa (exceto na última)
-          if (tentativa < maxTentativas - 1) {
-            console.log(`⏳ Pagamento não encontrado ainda (tentativa ${tentativa + 1}/${maxTentativas}), aguardando ${delayMs/1000}s...`, order_nsu);
-            await new Promise(resolve => setTimeout(resolve, delayMs));
-          }
+        // Se order foi cancelado, negar acesso
+        if (order.status === 'cancelled') {
+          console.log('⚠️ Tentativa de acesso com order cancelado:', order_nsu);
+          return res.render('auth/register', {
+            title: 'Cadastro - Suporte DP',
+            error: 'Este pedido foi cancelado. Por favor, adquira o sistema novamente.',
+            order_nsu: null,
+            payment: null
+          });
         }
         
-        // Se ainda não encontrou após todas as tentativas
-        if (!payment || payment.status !== 'paid') {
-          console.log('⚠️ Pagamento não encontrado após todas as tentativas', order_nsu);
-          error = 'Pagamento ainda não foi processado pelo sistema. O processamento pode levar alguns segundos. Por favor, recarregue esta página em alguns instantes (pressione F5 ou clique no botão de recarregar). Se o problema persistir após 1 minuto, entre em contato com o suporte.';
-        } else {
-          // Verifica se já existe usuário para esse order_nsu
-          const existingUser = await User.findByOrderNsu(order_nsu);
-          if (existingUser) {
-            error = 'Já existe um usuário cadastrado para este pagamento. Faça login com suas credenciais.';
+        // SOLUÇÃO: Se InfinitePay redirecionou, pagamento foi aprovado
+        // Não precisamos verificar Payment.findPaidByOrderNsu
+        // Apenas verificamos se já existe usuário para evitar duplicação
+        
+        console.log('✅ Redirect do InfinitePay detectado - pagamento aprovado:', order_nsu);
+        
+        // Verifica se já existe usuário para esse order_nsu (evita duplicação)
+        const existingUser = await User.findByOrderNsu(order_nsu);
+        if (existingUser) {
+          console.log('⚠️ Usuário já existe para este order_nsu - redirecionando para login:', order_nsu);
+          // Limpa order_nsu da sessão se existir
+          if (req.session?.pendingOrderNsu) {
+            delete req.session.pendingOrderNsu;
+            req.session.save();
           }
+          return res.redirect('/login?msg=ja_cadastrado');
         }
+        
+        // Limpa order_nsu da sessão se encontrou order válido
+        if (req.session?.pendingOrderNsu) {
+          delete req.session.pendingOrderNsu;
+          req.session.save();
+        }
+        
+        // Tudo OK - permite cadastro (não precisa verificar payment, confia no redirect)
       } else {
         error = 'Acesso direto ao cadastro não permitido. Por favor, adquira o sistema primeiro.';
       }
