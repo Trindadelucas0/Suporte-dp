@@ -209,6 +209,9 @@ class CobrancaController {
    * Cria usuário temporário e redireciona para InfinitePay
    */
   static async assinarDireto(req, res) {
+    // Garante que sempre retorna JSON
+    res.setHeader('Content-Type', 'application/json');
+    
     try {
       const { email, nome, telefone } = req.body;
 
@@ -233,11 +236,17 @@ class CobrancaController {
           redirect: true
         });
       } else {
-        throw new Error('Não foi possível gerar link de pagamento');
+        return res.status(500).json({
+          success: false,
+          error: 'Não foi possível gerar link de pagamento'
+        });
       }
     } catch (error) {
       console.error('Erro ao criar assinatura direta:', error);
-      res.status(500).json({
+      console.error('Stack:', error.stack);
+      
+      // Garante que sempre retorna JSON, mesmo em caso de erro
+      return res.status(500).json({
         success: false,
         error: error.message || 'Erro ao processar assinatura'
       });

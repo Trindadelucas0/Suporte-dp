@@ -34,6 +34,12 @@ class InfinitePayProvider {
     // URL base da API
     this.apiBaseUrl = 'https://api.infinitepay.io/invoices/public/checkout';
     
+    // Link fixo de checkout (alternativa quando API REST não funciona)
+    this.checkoutLink = process.env.INFINITEPAY_CHECKOUT_LINK || null;
+    
+    // Link fixo de plano (alternativa)
+    this.planLink = process.env.INFINITEPAY_PLAN_LINK || null;
+    
     // Modo MOCK (para testes)
     // Verifica se está explicitamente definido como 'true' (string)
     const useMockEnv = process.env.INFINITEPAY_USE_MOCK;
@@ -222,19 +228,32 @@ class InfinitePayProvider {
 
       // Valida se o link foi encontrado
       if (!linkPagamento) {
-        console.error('❌ API InfinitePay não retornou link de pagamento:', {
-          respostaCompleta: apiResponse,
-          tipo: typeof apiResponse,
-          chaves: Object.keys(apiResponse || {}),
-          temLink: !!apiResponse.link,
-          temData: !!apiResponse.data,
-          temCheckoutUrl: !!apiResponse.checkout_url,
-          temUrl: !!apiResponse.url,
-          temPaymentLink: !!apiResponse.payment_link,
-          temInvoiceSlug: !!apiResponse.invoice_slug,
-          temOrderNsu: !!apiResponse.order_nsu
-        });
-        throw new Error(`API InfinitePay não retornou link de pagamento. Resposta recebida: ${JSON.stringify(apiResponse)}`);
+        console.warn('⚠️ API InfinitePay não retornou link de pagamento. Tentando usar link fixo...');
+        
+        // Tenta usar link fixo de checkout como fallback
+        if (this.checkoutLink) {
+          console.log('✅ Usando link fixo de checkout como fallback:', this.checkoutLink);
+          linkPagamento = this.checkoutLink;
+        } else if (this.planLink) {
+          console.log('✅ Usando link fixo de plano como fallback:', this.planLink);
+          linkPagamento = this.planLink;
+        } else {
+          console.error('❌ API InfinitePay não retornou link de pagamento e nenhum link fixo configurado:', {
+            respostaCompleta: apiResponse,
+            tipo: typeof apiResponse,
+            chaves: Object.keys(apiResponse || {}),
+            temLink: !!apiResponse.link,
+            temData: !!apiResponse.data,
+            temCheckoutUrl: !!apiResponse.checkout_url,
+            temUrl: !!apiResponse.url,
+            temPaymentLink: !!apiResponse.payment_link,
+            temInvoiceSlug: !!apiResponse.invoice_slug,
+            temOrderNsu: !!apiResponse.order_nsu,
+            temCheckoutLink: !!this.checkoutLink,
+            temPlanLink: !!this.planLink
+          });
+          throw new Error(`API InfinitePay não retornou link de pagamento. Resposta recebida: ${JSON.stringify(apiResponse)}. Configure INFINITEPAY_CHECKOUT_LINK ou INFINITEPAY_PLAN_LINK como alternativa.`);
+        }
       }
 
       const externalId = apiResponse.order_nsu || apiResponse.invoice_slug || data.referenceId;

@@ -87,7 +87,10 @@ class AssinaturaService {
         success: chargeResult.success,
         external_id: chargeResult.external_id,
         link_pagamento: chargeResult.link_pagamento ? 'Existe' : 'NÃO EXISTE',
-        status: chargeResult.status
+        link_pagamento_valor: chargeResult.link_pagamento ? chargeResult.link_pagamento.substring(0, 50) + '...' : 'null',
+        status: chargeResult.status,
+        useMock: chargeResult.data?.mock || false,
+        respostaCompleta: JSON.stringify(chargeResult, null, 2)
       });
 
       externalId = chargeResult.external_id;
@@ -95,7 +98,13 @@ class AssinaturaService {
       status = chargeResult.status;
 
       if (!linkPagamento) {
-        throw new Error('API InfinitePay não retornou link de pagamento');
+        console.error('❌ Link de pagamento é null/undefined:', {
+          chargeResult: chargeResult,
+          temLinkPagamento: !!chargeResult.link_pagamento,
+          tipo: typeof chargeResult.link_pagamento,
+          todasChaves: Object.keys(chargeResult || {})
+        });
+        throw new Error('API InfinitePay não retornou link de pagamento. Verifique os logs do servidor para mais detalhes.');
       }
     } catch (error) {
       console.error(`❌ Erro ao criar cobrança no InfinitePay:`, error.message);

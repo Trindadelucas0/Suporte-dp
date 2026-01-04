@@ -90,7 +90,7 @@
                 <a href="#funcionalidades" class="block text-gray-700 hover:text-primary-red">Funcionalidades</a>
                 <a href="#sobre" class="block text-gray-700 hover:text-primary-red">Sobre</a>
                 <a href="#contato" class="block text-gray-700 hover:text-primary-red">Contato</a>
-                <a href="/adquirir" onclick="return redirecionarAssinatura(event)" class="block bg-gradient-to-r from-primary-red to-primary-yellow text-white px-4 py-2 rounded-lg text-center font-medium">
+                <a href="/adquirir" class="block bg-gradient-to-r from-primary-red to-primary-yellow text-white px-4 py-2 rounded-lg text-center font-medium">
                     <i class="fas fa-shopping-cart mr-2"></i>Adquirir Agora
                 </a>
                 <a href="/login" class="block bg-primary-red text-white px-4 py-2 rounded-lg text-center">
@@ -115,7 +115,7 @@
                 <span class="block mt-2">Feito especialmente para quem está começando!</span>
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <a href="/adquirir" onclick="return redirecionarAssinatura(event)" class="bg-white text-primary-red px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition shadow-lg hover:shadow-xl transform hover:scale-105 pulse-slow">
+                <a href="/adquirir" class="bg-white text-primary-red px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition shadow-lg hover:shadow-xl transform hover:scale-105 pulse-slow">
                     <i class="fas fa-shopping-cart mr-2"></i>Adquirir Sistema Agora
                 </a>
                 <a href="/login" class="bg-white bg-opacity-20 text-white border-2 border-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-opacity-30 transition shadow-lg">
@@ -320,7 +320,7 @@
                 simplificar seus cálculos trabalhistas.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="/adquirir" onclick="return redirecionarAssinatura(event)" class="bg-white text-primary-red px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition shadow-lg hover:shadow-xl transform hover:scale-105">
+                <a href="/adquirir" class="bg-white text-primary-red px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition shadow-lg hover:shadow-xl transform hover:scale-105">
                     <i class="fas fa-rocket mr-2"></i>Começar Agora - R$ 19,90/mês
                 </a>
                 <a href="/login" class="bg-white bg-opacity-20 text-white border-2 border-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-opacity-30 transition shadow-lg">
@@ -458,16 +458,8 @@
             menu.classList.toggle('hidden');
         }
 
-        // Função para redirecionar para assinatura
-        function redirecionarAssinatura(event) {
-            event.preventDefault();
-            
-            // Verifica se o usuário está logado (verifica se há cookie de sessão)
-            // Como não temos acesso direto ao servidor aqui, vamos tentar acessar /cobranca/assinar
-            // Se não estiver logado, o middleware redireciona para /login
-            window.location.href = '/cobranca/assinar';
-            return false;
-        }
+        // Função para redirecionar para assinatura (não precisa mais, links vão direto para /adquirir)
+        // Removida - links agora apontam diretamente para /adquirir
 
         // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
