@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <!-- Logo e Título -->
+        <div class="text-center">
+            <div class="gradient-bg rounded-lg p-6 mb-4 inline-block">
+                <i class="fas fa-shield-alt text-white text-4xl"></i>
+            </div>
+            <h2 class="text-3xl font-extrabold text-gray-900">
+                Validar Pagamento
+            </h2>
+            <p class="mt-2 text-sm text-gray-600">
+                Insira o token recebido por email para liberar o acesso
+            </p>
+        </div>
+
+        <!-- Mensagens de Erro/Sucesso -->
+        <% if (error) { %>
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle text-red-500"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-red-700">
+                        <%= error %>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <% if (success) { %>
+        <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-green-500"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700">
+                        <%= success %>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Formulário -->
+        <form class="mt-8 space-y-6" action="/validar-pagamento" method="POST">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+            
+            <div class="rounded-md shadow-sm -space-y-px">
+                <!-- Email -->
+                <div>
+                    <label for="email" class="sr-only">Email</label>
+                    <input 
+                        id="email" 
+                        name="email" 
+                        type="email" 
+                        required 
+                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary-red focus:border-primary-red focus:z-10 sm:text-sm" 
+                        placeholder="Email usado no pagamento"
+                        value="<%= email || '' %>"
+                    >
+                </div>
+                
+                <!-- Token -->
+                <div>
+                    <label for="token" class="sr-only">Token</label>
+                    <input 
+                        id="token" 
+                        name="token" 
+                        type="text" 
+                        required 
+                        class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary-red focus:border-primary-red focus:z-10 sm:text-sm font-mono" 
+                        placeholder="Token de validação"
+                        value="<%= token || '' %>"
+                    >
+                </div>
+            </div>
+
+            <!-- Informações -->
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-yellow-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            <strong>Importante:</strong>
+                            <br>• O token foi enviado para seu email após o pagamento
+                            <br>• O token expira em 24 horas
+                            <br>• Use o mesmo email usado no pagamento
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botão -->
+            <div>
+                <button 
+                    type="submit" 
+                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white gradient-bg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-red transition duration-150"
+                >
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <i class="fas fa-check-circle text-white"></i>
+                    </span>
+                    Validar Token
+                </button>
+            </div>
+
+            <!-- Links -->
+            <div class="text-center">
+                <p class="text-sm text-gray-600">
+                    Não recebeu o token? 
+                    <a href="/login" class="font-medium text-primary-red hover:text-red-700">
+                        Entre em contato
+                    </a>
+                </p>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+

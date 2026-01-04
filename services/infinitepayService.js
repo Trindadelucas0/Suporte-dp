@@ -144,9 +144,17 @@ class InfinitePayService {
       return false;
     }
 
-    if (payload.status !== 'paid') {
+    // Se o payload tem status, valida que é 'paid'
+    // Se não tem status, assume que é pagamento aprovado (comum em alguns webhooks)
+    if (payload.status && payload.status !== 'paid') {
       console.log('InfinitePay - Webhook com status diferente de paid:', payload.status);
       // Não é erro, mas só processamos status 'paid'
+      return false;
+    }
+    
+    // Se não tem status mas tem transaction_nsu e paid_amount, assume pagamento aprovado
+    if (!payload.status && (!payload.transaction_nsu || !payload.paid_amount)) {
+      console.log('InfinitePay - Webhook sem status e sem campos obrigatórios');
       return false;
     }
 

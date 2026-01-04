@@ -6,6 +6,7 @@
 const Order = require('../models/Order');
 const Payment = require('../models/Payment');
 const User = require('../models/User');
+const PaymentToken = require('../models/PaymentToken');
 const InfinitePayService = require('../services/infinitepayService');
 const db = require('../config/database');
 const emailService = require('../services/emailService');
@@ -62,7 +63,8 @@ class WebhookController {
         }
 
         // 4. Calcular next_billing_date (30 dias após pagamento)
-        const paidDate = new Date(paid_at);
+        // Se paid_at não vier no payload, usa data/hora atual
+        const paidDate = paid_at ? new Date(paid_at) : new Date();
         const nextBillingDate = new Date(paidDate);
         nextBillingDate.setDate(nextBillingDate.getDate() + 30);
 
@@ -86,8 +88,8 @@ class WebhookController {
               parseFloat(paid_amount),
               capture_method,
               receipt_url,
-              status,
-              paid_at,
+              status || 'paid', // Se não tem status no payload, assume 'paid'
+              paid_at || paidDate.toISOString(), // Se não tem paid_at, usa data atual
               nextBillingDate.toISOString().split('T')[0] // Formato DATE
             ]
           );

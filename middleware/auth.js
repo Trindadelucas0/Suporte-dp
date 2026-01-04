@@ -112,6 +112,17 @@ async function requireActiveSubscription(req, res, next) {
 
     const assinaturaExpirada = dataExpiracao && dataExpiracao < hoje;
     const assinaturaInadimplente = user.subscription_status === 'inadimplente';
+    const assinaturaPendente = user.subscription_status === 'pendente';
+
+    // Se assinatura está pendente, redireciona para checkout
+    if (assinaturaPendente) {
+      console.log('⚠️ [AUTH] Cliente com assinatura pendente - redirecionando para checkout:', {
+        user_id: user.id,
+        nome: user.nome,
+        status: user.subscription_status
+      });
+      return res.redirect('/checkout');
+    }
 
     if (assinaturaExpirada || assinaturaInadimplente) {
       // Assinatura expirada - redireciona para renovação
