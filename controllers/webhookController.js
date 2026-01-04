@@ -197,29 +197,51 @@ class WebhookController {
               subscription_expires_at: nextBillingDate.toISOString().split('T')[0]
             });
           } else {
-            // PRIMEIRO PAGAMENTO - aguarda cadastro
-            console.log('🆕 PRIMEIRO PAGAMENTO: Usuário ainda não existe, aguardando cadastro');
+            // PRIMEIRO PAGAMENTO - gera token de validação
+            console.log('🆕 PRIMEIRO PAGAMENTO: Usuário ainda não existe, gerando token de validação');
             
-            // 5.3.3. Enviar email de confirmação (se SMTP configurado)
-            // Nota: Não temos email ainda (será coletado no cadastro)
-            // Mas podemos tentar buscar do payload se disponível
-            const customerEmail = payload.customer_email || payload.email || null;
+            // 5.3.3. Gerar token de validação e enviar por email
+            const customerEmail = payload.customer_email || payload.email || order.customer_email || null;
             
             if (customerEmail) {
-              const appUrl = process.env.APP_URL || 'http://localhost:3000';
-              const linkCadastro = `${appUrl}/register?order_nsu=${order_nsu}`;
-              
-              emailService.sendPaymentConfirmation({
-                email: customerEmail,
-                nome: payload.customer_name || 'Cliente',
-                orderNsu: order_nsu,
-                valor: paid_amount,
-                linkCadastro: linkCadastro
-              }).catch(emailError => {
-                console.error('Erro ao enviar email de confirmação (não crítico):', emailError);
-              });
+              try {
+                // Gerar token de validação
+                const paymentToken = await PaymentToken.create(
+                  order_nsu,
+                  customerEmail,
+                  null // user_id será null até o cadastro
+                );
+                
+                console.log('✅ Token de pagamento gerado:', {
+                  token: paymentToken.token,
+                  email: customerEmail,
+                  order_nsu: order_nsu
+                });
+                
+                // Converter valor de centavos para reais (paid_amount vem em centavos)
+                const valorReais = parseFloat(paid_amount) / 100;
+                
+                // Enviar email com token
+                emailService.sendPaymentToken({
+                  email: customerEmail,
+                  token: paymentToken.token,
+                  nome: payload.customer_name || order.customer_email || 'Cliente',
+                  orderNsu: order_nsu,
+                  valor: valorReais
+                }).then(result => {
+                  if (result.success) {
+                    console.log('✅ Email com token enviado com sucesso:', customerEmail);
+                  } else {
+                    console.error('❌ Erro ao enviar email com token:', result.error);
+                  }
+                }).catch(emailError => {
+                  console.error('❌ Erro ao enviar email com token (não crítico):', emailError);
+                });
+              } catch (tokenError) {
+                console.error('❌ Erro ao gerar token de pagamento:', tokenError);
+              }
             } else {
-              console.log('⚠️ Email do cliente não disponível no webhook. Email será enviado após cadastro.');
+              console.log('⚠️ Email do cliente não disponível no webhook. Token será gerado após cadastro.');
             }
           }
         });
