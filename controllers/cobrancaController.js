@@ -135,11 +135,16 @@ class CobrancaController {
    */
   static async pagamentoSucesso(req, res) {
     try {
+      const db = require('../config/database');
+      const cadastroService = require('../services/cadastroService');
+      
       // Tenta buscar informações da cobrança pelos parâmetros da URL (se vier do InfinitePay)
       const { order_nsu, slug, transaction_nsu } = req.query;
       
       let cobranca = null;
       let user = null;
+      let userHasPassword = false;
+      let tokenCadastro = null;
       
       // Se tiver order_nsu, tenta buscar a cobrança
       if (order_nsu) {
@@ -147,18 +152,64 @@ class CobrancaController {
         if (cobranca) {
           const User = require('../models/User');
           user = await User.findById(cobranca.user_id);
+          
+          // Verifica se usuário tem senha
+          if (user) {
+            const userWithPassword = await db.query(
+              'SELECT senha_hash FROM users WHERE id = $1',
+              [user.id]
+            );
+            userHasPassword = userWithPassword.rows[0]?.senha_hash && 
+                             userWithPassword.rows[0].senha_hash.length > 0;
+            
+            // Se não tem senha, gera token de cadastro
+            if (!userHasPassword) {
+              // Busca ou cria token de cadastro
+              const linkCadastro = await cadastroService.gerarLinkCadastro(
+                user.email, 
+                user.nome || 'Cliente'
+              );
+              // Extrai o token da URL (formato: https://app.com/cadastro/TOKEN)
+              const tokenMatch = linkCadastro.match(/\/cadastro\/([^\/\?]+)/);
+              tokenCadastro = tokenMatch ? tokenMatch[1] : null;
+            }
+          }
         }
       }
       
       // Se o usuário estiver logado, usa os dados da sessão
       if (req.session?.user) {
-        user = req.session.user;
+        const User = require('../models/User');
+        const userFull = await User.findById(req.session.user.id);
+        if (userFull) {
+          user = userFull;
+          // Verifica se tem senha
+          const userWithPassword = await db.query(
+            'SELECT senha_hash FROM users WHERE id = $1',
+            [user.id]
+          );
+          userHasPassword = userWithPassword.rows[0]?.senha_hash && 
+                           userWithPassword.rows[0].senha_hash.length > 0;
+          
+          // Se não tem senha, gera token de cadastro
+          if (!userHasPassword) {
+            const linkCadastro = await cadastroService.gerarLinkCadastro(
+              user.email, 
+              user.nome || 'Cliente'
+            );
+            // Extrai o token da URL (formato: https://app.com/cadastro/TOKEN)
+            const tokenMatch = linkCadastro.match(/\/cadastro\/([^\/\?]+)/);
+            tokenCadastro = tokenMatch ? tokenMatch[1] : null;
+          }
+        }
       }
       
       res.render('cobranca/pagamento-sucesso', {
         title: 'Pagamento Confirmado - Suporte DP',
-        user: user || { nome: 'Cliente' },
-        cobranca: cobranca
+        user: user || { nome: 'Cliente', email: '' },
+        cobranca: cobranca,
+        userHasPassword: userHasPassword,
+        tokenCadastro: tokenCadastro
       });
     } catch (error) {
       console.error('Erro ao carregar página de sucesso:', error);
