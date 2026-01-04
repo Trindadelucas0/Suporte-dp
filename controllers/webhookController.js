@@ -105,8 +105,12 @@ class WebhookController {
             ['paid', order_nsu]
           );
 
-          // 5.3. Verificar se já existe usuário para esse order_nsu
-          const existingUser = await User.findByOrderNsu(order_nsu);
+          // 5.3. Verificar se já existe usuário para esse order_nsu (dentro da transação)
+          const userResult = await client.query(
+            'SELECT id, nome, email, is_admin, order_nsu, subscription_status, subscription_expires_at FROM users WHERE order_nsu = $1',
+            [order_nsu]
+          );
+          const existingUser = userResult.rows[0] || null;
           
           if (existingUser) {
             // RENOVAÇÃO - usuário já existe
