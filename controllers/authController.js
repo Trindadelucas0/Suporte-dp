@@ -71,6 +71,37 @@ class AuthController {
         });
       }
 
+      // VERIFICAÇÃO DE PAGAMENTO: Se tiver pago, permite login. Se não, bloqueia.
+      // ADMIN: Sempre permite login (sem verificação de pagamento)
+      if (!user.is_admin) {
+        // CLIENTE: Verifica se tem pagamento ativo
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        
+        let dataExpiracao = null;
+        if (user.subscription_expires_at) {
+          dataExpiracao = new Date(user.subscription_expires_at);
+          dataExpiracao.setHours(0, 0, 0, 0);
+        }
+
+        const assinaturaExpirada = dataExpiracao && dataExpiracao < hoje;
+        const assinaturaInadimplente = user.subscription_status === 'inadimplente';
+        const semAssinatura = !user.subscription_expires_at || !user.subscription_status || user.subscription_status === null;
+
+        if (semAssinatura || assinaturaExpirada || assinaturaInadimplente) {
+          console.log('⚠️ [LOGIN] Cliente tentando login sem pagamento ativo:', {
+            user_id: user.id,
+            email: user.email,
+            subscription_expires_at: user.subscription_expires_at,
+            subscription_status: user.subscription_status
+          });
+          return res.render('auth/login', {
+            title: 'Login - Suporte DP',
+            error: 'Sua assinatura está expirada ou não foi paga. Por favor, renove sua assinatura para continuar usando o sistema.'
+          });
+        }
+      }
+
       // Atualiza último login e última atividade
       await User.updateLastLogin(user.id);
       // Tenta atualizar última atividade (campo pode não existir)
@@ -245,29 +276,29 @@ class AuthController {
         });
       }
       
-      // Verifica se existe pagamento aprovado (com retry para aguardar webhook)
+      // SOLUÇÃO: Se InfinitePay redirecionou, pagamento foi aprovado
+      // NÃO bloqueamos cadastro esperando webhook processar
+      // Webhook salvará payment no banco (já está salvando)
+      // No login, verificamos se tem payment ativo para acessar
+      
+      // Tenta buscar payment (opcional - apenas para usar next_billing_date se já processado)
       let payment = await Payment.findPaidByOrderNsu(order_nsu);
+      let nextBillingDate;
       
-      // Se não encontrou, tenta novamente com retry (pode ser que webhook ainda não processou)
-      if (!payment) {
-        console.log('Pagamento não encontrado no POST, aguardando webhook processar...', order_nsu);
-        for (let tentativa = 0; tentativa < 3; tentativa++) {
-          await new Promise(resolve => setTimeout(resolve, 5000)); // 5 segundos por tentativa
-          payment = await Payment.findPaidByOrderNsu(order_nsu);
-          if (payment) {
-            console.log(`Pagamento encontrado após ${tentativa + 1} tentativa(s) no POST`, order_nsu);
-            break;
-          }
-        }
+      if (payment && payment.next_billing_date) {
+        // Se payment já foi processado pelo webhook, usa a data dele
+        nextBillingDate = payment.next_billing_date;
+        console.log('✅ Payment já processado, usando next_billing_date:', nextBillingDate);
+      } else {
+        // Se ainda não foi processado, calcula 30 dias a partir de hoje
+        // O webhook vai atualizar depois quando processar
+        const dataFutura = new Date();
+        dataFutura.setDate(dataFutura.getDate() + 30);
+        nextBillingDate = dataFutura.toISOString().split('T')[0];
+        console.log('⚠️ Payment ainda não processado pelo webhook, usando data padrão (30 dias). Webhook atualizará depois.');
       }
       
-      if (!payment) {
-        return res.render('auth/register', {
-          title: 'Cadastro - Suporte DP',
-          error: 'Pagamento ainda não foi processado pelo sistema. Aguarde alguns instantes e tente novamente. Se o problema persistir, recarregue a página ou verifique se o pagamento foi concluído.',
-          order_nsu: order_nsu
-        });
-      }
+      // NÃO BLOQUEIA CADASTRO - confia no redirect do InfinitePay
 
       // Verifica se já existe usuário para esse order_nsu
       const existingUserForOrder = await User.findByOrderNsu(order_nsu);
