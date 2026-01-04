@@ -123,6 +123,8 @@ class AuthController {
         const returnTo = req.session.returnTo || '/dashboard';
         delete req.session.returnTo;
         
+        // Garante que a resposta é um redirect HTML, não JSON
+        res.setHeader('Content-Type', 'text/html');
         // Redireciona imediatamente (sem delay)
         res.redirect(returnTo);
       });

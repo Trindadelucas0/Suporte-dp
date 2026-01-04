@@ -319,7 +319,7 @@ class InfinitePayProvider {
       invoice_slug: invoiceSlug,
       order_nsu: orderNsu,
       paid_amount: paidAmount ? paidAmount / 100 : null, // Converte centavos para reais
-      customer: customer // Inclui dados do cliente se disponíveis
+      customer: customer, // Inclui dados do cliente se disponíveis
       capture_method: payload.capture_method, // "credit_card" ou "pix"
       receipt_url: payload.receipt_url,
       data: payload
