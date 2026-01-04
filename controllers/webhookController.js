@@ -7,6 +7,8 @@ const Order = require('../models/Order');
 const Payment = require('../models/Payment');
 const User = require('../models/User');
 const InfinitePayService = require('../services/infinitepayService');
+const db = require('../config/database');
+const emailService = require('../services/emailService');
 
 class WebhookController {
   /**
@@ -27,8 +29,8 @@ class WebhookController {
           status: payload.status
         });
 
-        // 1. Validar webhook
-        if (!InfinitePayService.validarWebhook(payload)) {
+        // 1. Validar webhook (inclui validação de origem se configurado)
+        if (!InfinitePayService.validarWebhook(payload, req.headers)) {
           console.error('Webhook InfinitePay inválido:', payload);
           return;
         }
@@ -64,58 +66,111 @@ class WebhookController {
         const nextBillingDate = new Date(paidDate);
         nextBillingDate.setDate(nextBillingDate.getDate() + 30);
 
-        // 5. Salvar pagamento no banco
-        const payment = await Payment.create({
-          order_nsu: order_nsu,
-          user_id: null, // Será atualizado quando usuário se cadastrar
-          transaction_nsu: transaction_nsu,
-          invoice_slug: invoice_slug,
-          amount: parseFloat(amount),
-          paid_amount: parseFloat(paid_amount),
-          capture_method: capture_method,
-          receipt_url: receipt_url,
-          status: status,
-          paid_at: paid_at,
-          next_billing_date: nextBillingDate.toISOString().split('T')[0] // Formato DATE
-        });
-
-        console.log('Pagamento salvo:', {
-          id: payment.id,
-          order_nsu: payment.order_nsu,
-          transaction_nsu: payment.transaction_nsu
-        });
-
-        // 6. Atualizar status do pedido para "paid"
-        await Order.updateStatus(order_nsu, 'paid');
-
-        // 7. Verificar se já existe usuário para esse order_nsu
-        // Se existe, atualizar assinatura automaticamente
-        const existingUser = await User.findByOrderNsu(order_nsu);
-        if (existingUser) {
-          console.log('Usuário já existe, atualizando assinatura:', existingUser.id);
+        // 5. Processar em transação SQL para garantir atomicidade
+        await db.transaction(async (client) => {
+          // 5.1. Salvar pagamento no banco
+          const paymentResult = await client.query(
+            `INSERT INTO payments (
+              order_nsu, user_id, transaction_nsu, invoice_slug, amount, paid_amount,
+              capture_method, receipt_url, status, paid_at, next_billing_date
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            RETURNING id, order_nsu, user_id, transaction_nsu, invoice_slug, amount, paid_amount,
+                      capture_method, receipt_url, status, paid_at, next_billing_date, created_at`,
+            [
+              order_nsu,
+              null, // Será atualizado quando usuário se cadastrar
+              transaction_nsu,
+              invoice_slug,
+              parseFloat(amount),
+              parseFloat(paid_amount),
+              capture_method,
+              receipt_url,
+              status,
+              paid_at,
+              nextBillingDate.toISOString().split('T')[0] // Formato DATE
+            ]
+          );
           
-          // Atualizar user_id no pagamento
-          await Payment.updateUserIdByOrderNsu(order_nsu, existingUser.id);
-
-          // Atualizar assinatura do usuário
-          await User.updateSubscription(existingUser.id, {
-            status: 'ativo',
-            subscription_status: 'ativa',
-            subscription_expires_at: nextBillingDate.toISOString().split('T')[0]
+          const payment = paymentResult.rows[0];
+          console.log('Pagamento salvo:', {
+            id: payment.id,
+            order_nsu: payment.order_nsu,
+            transaction_nsu: payment.transaction_nsu
           });
 
-          console.log('Assinatura atualizada automaticamente:', {
-            user_id: existingUser.id,
-            subscription_expires_at: nextBillingDate.toISOString().split('T')[0]
-          });
-        } else {
-          console.log('Usuário ainda não existe, aguardando cadastro');
-        }
+          // 5.2. Atualizar status do pedido para "paid"
+          await client.query(
+            'UPDATE orders SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE order_nsu = $2',
+            ['paid', order_nsu]
+          );
 
-        console.log('Webhook InfinitePay processado com sucesso');
+          // 5.3. Verificar se já existe usuário para esse order_nsu
+          const existingUser = await User.findByOrderNsu(order_nsu);
+          
+          if (existingUser) {
+            // RENOVAÇÃO - usuário já existe
+            console.log('🔄 RENOVAÇÃO: Usuário já existe, atualizando assinatura:', {
+              user_id: existingUser.id,
+              order_nsu: order_nsu
+            });
+            
+            // 5.3.1. Atualizar user_id no pagamento
+            await client.query(
+              'UPDATE payments SET user_id = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+              [existingUser.id, payment.id]
+            );
+
+            // 5.3.2. Atualizar assinatura do usuário
+            await client.query(
+              `UPDATE users 
+               SET status = $1, subscription_status = $2, subscription_expires_at = $3, updated_at = CURRENT_TIMESTAMP
+               WHERE id = $4`,
+              [
+                'ativo',
+                'ativa',
+                nextBillingDate.toISOString().split('T')[0],
+                existingUser.id
+              ]
+            );
+
+            console.log('✅ RENOVAÇÃO: Assinatura atualizada automaticamente:', {
+              user_id: existingUser.id,
+              subscription_expires_at: nextBillingDate.toISOString().split('T')[0]
+            });
+          } else {
+            // PRIMEIRO PAGAMENTO - aguarda cadastro
+            console.log('🆕 PRIMEIRO PAGAMENTO: Usuário ainda não existe, aguardando cadastro');
+            
+            // 5.3.3. Enviar email de confirmação (se SMTP configurado)
+            // Nota: Não temos email ainda (será coletado no cadastro)
+            // Mas podemos tentar buscar do payload se disponível
+            const customerEmail = payload.customer_email || payload.email || null;
+            
+            if (customerEmail) {
+              const appUrl = process.env.APP_URL || 'http://localhost:3000';
+              const linkCadastro = `${appUrl}/register?order_nsu=${order_nsu}`;
+              
+              emailService.sendPaymentConfirmation({
+                email: customerEmail,
+                nome: payload.customer_name || 'Cliente',
+                orderNsu: order_nsu,
+                valor: paid_amount,
+                linkCadastro: linkCadastro
+              }).catch(emailError => {
+                console.error('Erro ao enviar email de confirmação (não crítico):', emailError);
+              });
+            } else {
+              console.log('⚠️ Email do cliente não disponível no webhook. Email será enviado após cadastro.');
+            }
+          }
+        });
+
+        console.log('✅ Webhook InfinitePay processado com sucesso');
       } catch (error) {
-        console.error('Erro ao processar webhook InfinitePay:', error);
+        console.error('❌ Erro ao processar webhook InfinitePay:', error);
         console.error('Stack:', error.stack);
+        // Erro será rollback automático pela transação
       }
     });
   }

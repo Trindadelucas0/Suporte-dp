@@ -208,7 +208,12 @@ class User {
         ...row,
         ativo: hasAtivo ? (row.ativo !== undefined ? row.ativo : true) : true,
         bloqueado: hasBloqueado ? (row.bloqueado !== undefined ? row.bloqueado : false) : false,
-        last_login: hasLastLogin ? row.last_login : null
+        last_login: hasLastLogin ? row.last_login : null,
+        subscription_status: hasSubscriptionStatus ? (row.subscription_status || 'ativa') : 'ativa',
+        subscription_expires_at: hasSubscriptionExpiresAt ? row.subscription_expires_at : null,
+        order_nsu: hasOrderNsu ? row.order_nsu : null,
+        whatsapp: hasWhatsapp ? row.whatsapp : null,
+        status: hasStatus ? (row.status || 'ativo') : 'ativo'
       }));
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);

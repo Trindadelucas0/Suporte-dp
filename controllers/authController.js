@@ -12,6 +12,7 @@ class AuthController {
   static async login(req, res) {
     if (req.method === 'GET') {
       let error = null;
+      let success = null;
       
       if (req.query.expired) {
         error = 'Sua sessão expirou por inatividade (10 minutos). Por favor, faça login novamente.';
@@ -19,11 +20,14 @@ class AuthController {
         error = 'Sua conta está desativada ou bloqueada. Entre em contato com o administrador.';
       } else if (req.query.error === 'usuario_nao_encontrado') {
         error = 'Usuário não encontrado. Por favor, faça login novamente.';
+      } else if (req.query.renovado === 'true') {
+        success = 'Assinatura renovada com sucesso! Faça login para continuar usando o sistema.';
       }
       
       return res.render('auth/login', {
         title: 'Login - Suporte DP',
-        error: error
+        error: error,
+        success: success
       });
     }
 
@@ -124,23 +128,42 @@ class AuthController {
 
       if (order_nsu) {
         // Verifica se existe pagamento aprovado
-        // Tenta encontrar pagamento com status 'paid'
+        // Tenta encontrar pagamento com status 'paid' (com retry para aguardar webhook)
         payment = await Payment.findPaidByOrderNsu(order_nsu);
         
         // Se não encontrou com status 'paid', tenta buscar qualquer pagamento recente
         // (pode estar com outro status ou webhook ainda não processou)
         if (!payment) {
           payment = await Payment.findByOrderNsu(order_nsu);
-          // Se encontrou pagamento mas não está 'paid', pode ser que webhook ainda não processou
-          if (payment && payment.status !== 'paid') {
-            // Aguarda um pouco e tenta novamente (para dar tempo do webhook processar)
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            payment = await Payment.findPaidByOrderNsu(order_nsu);
+          
+          // Se não encontrou nenhum pagamento, pode ser que webhook ainda não processou
+          // Implementa retry com múltiplas tentativas (até 3 tentativas, 5s cada = 15s total)
+          if (!payment) {
+            console.log('Pagamento não encontrado, aguardando webhook processar...', order_nsu);
+            for (let tentativa = 0; tentativa < 3; tentativa++) {
+              await new Promise(resolve => setTimeout(resolve, 5000)); // 5 segundos por tentativa
+              payment = await Payment.findPaidByOrderNsu(order_nsu);
+              if (payment) {
+                console.log(`Pagamento encontrado após ${tentativa + 1} tentativa(s)`, order_nsu);
+                break;
+              }
+            }
+          } else if (payment.status !== 'paid') {
+            // Se encontrou pagamento mas não está 'paid', aguarda webhook processar
+            console.log('Pagamento encontrado mas não está pago, aguardando processamento...', order_nsu);
+            for (let tentativa = 0; tentativa < 3; tentativa++) {
+              await new Promise(resolve => setTimeout(resolve, 5000)); // 5 segundos por tentativa
+              payment = await Payment.findPaidByOrderNsu(order_nsu);
+              if (payment && payment.status === 'paid') {
+                console.log(`Pagamento processado após ${tentativa + 1} tentativa(s)`, order_nsu);
+                break;
+              }
+            }
           }
         }
         
         if (!payment || payment.status !== 'paid') {
-          error = 'Pagamento ainda não foi processado. Aguarde alguns instantes e recarregue a página, ou realize o pagamento primeiro.';
+          error = 'Pagamento ainda não foi processado pelo sistema. Aguarde alguns instantes e recarregue esta página. Se o problema persistir, verifique se o pagamento foi concluído.';
         } else {
           // Verifica se já existe usuário para esse order_nsu
           const existingUser = await User.findByOrderNsu(order_nsu);
@@ -197,12 +220,26 @@ class AuthController {
     }
 
     try {
-      // Verifica se existe pagamento aprovado
-      const payment = await Payment.findPaidByOrderNsu(order_nsu);
+      // Verifica se existe pagamento aprovado (com retry para aguardar webhook)
+      let payment = await Payment.findPaidByOrderNsu(order_nsu);
+      
+      // Se não encontrou, tenta novamente com retry (pode ser que webhook ainda não processou)
+      if (!payment) {
+        console.log('Pagamento não encontrado no POST, aguardando webhook processar...', order_nsu);
+        for (let tentativa = 0; tentativa < 3; tentativa++) {
+          await new Promise(resolve => setTimeout(resolve, 5000)); // 5 segundos por tentativa
+          payment = await Payment.findPaidByOrderNsu(order_nsu);
+          if (payment) {
+            console.log(`Pagamento encontrado após ${tentativa + 1} tentativa(s) no POST`, order_nsu);
+            break;
+          }
+        }
+      }
+      
       if (!payment) {
         return res.render('auth/register', {
           title: 'Cadastro - Suporte DP',
-          error: 'Pagamento não encontrado ou não aprovado. Por favor, realize o pagamento primeiro.',
+          error: 'Pagamento ainda não foi processado pelo sistema. Aguarde alguns instantes e tente novamente. Se o problema persistir, recarregue a página ou verifique se o pagamento foi concluído.',
           order_nsu: order_nsu
         });
       }

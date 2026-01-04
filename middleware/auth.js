@@ -57,6 +57,65 @@ async function verificarStatusUsuario(req, res, next) {
   return next();
 }
 
+/**
+ * Middleware para verificar se usuário tem assinatura ativa
+ * Redireciona para /renovar se assinatura expirada ou inadimplente
+ * Permite acesso a /renovar mesmo com assinatura expirada
+ */
+async function requireActiveSubscription(req, res, next) {
+  // Se está tentando acessar /renovar, permite (mesmo com assinatura expirada)
+  if (req.path === '/renovar' || req.path.startsWith('/renovar')) {
+    return next();
+  }
+
+  // Verifica se está autenticado
+  if (!req.session || !req.session.user) {
+    if (req.session) {
+      req.session.returnTo = req.originalUrl;
+    }
+    return res.redirect('/login');
+  }
+
+  try {
+    const user = await User.findById(req.session.user.id);
+    
+    if (!user) {
+      req.session.destroy();
+      return res.redirect('/login');
+    }
+
+    // Verifica se assinatura está expirada ou inadimplente
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    let dataExpiracao = null;
+    if (user.subscription_expires_at) {
+      dataExpiracao = new Date(user.subscription_expires_at);
+      dataExpiracao.setHours(0, 0, 0, 0);
+    }
+
+    const assinaturaExpirada = dataExpiracao && dataExpiracao < hoje;
+    const assinaturaInadimplente = user.subscription_status === 'inadimplente';
+
+    if (assinaturaExpirada || assinaturaInadimplente) {
+      // Assinatura expirada - redireciona para renovação
+      console.log('⚠️ [AUTH] Assinatura expirada/inadimplente - redirecionando para renovação:', {
+        user_id: user.id,
+        expires_at: user.subscription_expires_at,
+        status: user.subscription_status
+      });
+      return res.redirect('/renovar');
+    }
+
+    // Assinatura ativa - permite acesso
+    return next();
+  } catch (error) {
+    console.error('❌ [AUTH] Erro ao verificar assinatura:', error);
+    // Em caso de erro, permite continuar (não bloqueia o acesso)
+    return next();
+  }
+}
+
 function requireAuth(req, res, next) {
   // Verifica se está autenticado primeiro
   if (!req.session || !req.session.user) {
@@ -107,6 +166,7 @@ function requireAdmin(req, res, next) {
 
 module.exports = {
   requireAuth,
-  requireAdmin
+  requireAdmin,
+  requireActiveSubscription
 };
 

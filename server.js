@@ -254,6 +254,7 @@ if (process.env.NODE_ENV === 'test') {
 // Rotas
 const authRoutes = require("./routes/auth");
 const adquirirRoutes = require("./routes/adquirir");
+const renovarRoutes = require("./routes/renovar");
 const dashboardRoutes = require("./routes/dashboard");
 const calendarioRoutes = require("./routes/calendario");
 const inssRoutes = require("./routes/inss");

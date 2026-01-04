@@ -54,16 +54,46 @@ class AdminController {
       const usuarios = await User.findAll(filtros);
       console.log(`Encontrados ${usuarios.length} usuários`);
 
-      // Busca pagamentos para cada usuário
+      // Busca pagamentos e informações adicionais para cada usuário
       const usuariosComPagamentos = await Promise.all(
         usuarios.map(async (usuario) => {
-          let pagamento = null;
-          if (usuario.order_nsu) {
-            pagamento = await Payment.findPaidByOrderNsu(usuario.order_nsu);
+          // Busca último pagamento do usuário (mais recente, pode ser renovação)
+          let ultimoPagamento = null;
+          let todosPagamentos = [];
+          try {
+            todosPagamentos = await Payment.findByUserId(usuario.id);
+            if (todosPagamentos && todosPagamentos.length > 0) {
+              // Ordena por data de pagamento (mais recente primeiro) e pega o primeiro
+              ultimoPagamento = todosPagamentos.sort((a, b) => {
+                const dateA = a.paid_at ? new Date(a.paid_at) : new Date(0);
+                const dateB = b.paid_at ? new Date(b.paid_at) : new Date(0);
+                return dateB - dateA;
+              })[0];
+            }
+          } catch (error) {
+            console.error(`Erro ao buscar pagamentos para usuário ${usuario.id}:`, error);
           }
+
+          // Calcula dias restantes até expiração
+          let diasRestantes = null;
+          let estaExpirado = false;
+          if (usuario.subscription_expires_at) {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            const dataExpiracao = new Date(usuario.subscription_expires_at);
+            dataExpiracao.setHours(0, 0, 0, 0);
+            const diffTime = dataExpiracao - hoje;
+            diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            estaExpirado = diasRestantes < 0;
+          }
+
           return {
             ...usuario,
-            pagamento: pagamento
+            pagamento: ultimoPagamento, // Mantém compatibilidade com código existente
+            ultimoPagamento: ultimoPagamento,
+            todosPagamentos: todosPagamentos,
+            diasRestantes: diasRestantes,
+            estaExpirado: estaExpirado
           };
         })
       );

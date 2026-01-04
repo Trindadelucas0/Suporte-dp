@@ -75,19 +75,29 @@
                                 <table class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50">
                                         <tr>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Usuário</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Email / WhatsApp</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Status</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Assinatura</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Dias Restantes</th>
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Último Pagamento</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Próxima Renovação</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Último Login</th>
+                                            <th
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Ações</th>
                                         </tr>
                                     </thead>
@@ -118,55 +128,139 @@
                                                         </div>
                                                         <% if (usuario.whatsapp) { %>
                                                             <div class="text-xs text-gray-500">
-                                                                <i class="fas fa-phone mr-1"></i><%= usuario.whatsapp %>
+                                                                <i class="fas fa-phone mr-1"></i>
+                                                                <%= usuario.whatsapp %>
                                                             </div>
-                                                        <% } %>
+                                                            <% } %>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap">
-                                                        <% const isBloqueado = usuario.status === 'bloqueado' || usuario.bloqueado === true; %>
-                                                        <% const isAtivo = usuario.status === 'ativo'; %>
-                                                        <% if (isBloqueado) { %>
-                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Bloqueado</span>
-                                                        <% } else if (!isAtivo) { %>
-                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Inativo</span>
-                                                        <% } else { %>
-                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativo</span>
-                                                        <% } %>
+                                                        <% const isBloqueado=usuario.status==='bloqueado' ||
+                                                            usuario.bloqueado===true; %>
+                                                            <% const isAtivo=usuario.status==='ativo' ; %>
+                                                                <% if (isBloqueado) { %>
+                                                                    <span
+                                                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Bloqueado</span>
+                                                                    <% } else if (!isAtivo) { %>
+                                                                        <span
+                                                                            class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Inativo</span>
+                                                                        <% } else { %>
+                                                                            <span
+                                                                                class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativo</span>
+                                                                            <% } %>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap">
-                                                        <% const subscriptionStatus = usuario.subscription_status || 'N/A'; %>
-                                                        <% if (subscriptionStatus === 'ativa') { %>
-                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativa</span>
-                                                        <% } else if (subscriptionStatus === 'inadimplente') { %>
-                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Inadimplente</span>
-                                                        <% } else { %>
-                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800"><%= subscriptionStatus %></span>
-                                                        <% } %>
-                                                        <% if (usuario.subscription_expires_at) { %>
-                                                            <div class="text-xs text-gray-500 mt-1">
-                                                                Expira: <%= new Date(usuario.subscription_expires_at).toLocaleDateString('pt-BR') %>
-                                                            </div>
-                                                        <% } %>
+                                                        <% const subscriptionStatus=usuario.subscription_status || 'N/A'
+                                                            ; %>
+                                                            <% if (subscriptionStatus==='ativa' ) { %>
+                                                                <span
+                                                                    class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativa</span>
+                                                                <% } else if (subscriptionStatus==='inadimplente' ) { %>
+                                                                    <span
+                                                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Inadimplente</span>
+                                                                    <% } else { %>
+                                                                        <span
+                                                                            class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                                            <%= subscriptionStatus %>
+                                                                        </span>
+                                                                        <% } %>
+                                                                            <% if (usuario.subscription_expires_at) { %>
+                                                                                <div class="text-xs text-gray-500 mt-1">
+                                                                                    Expira: <%= new
+                                                                                        Date(usuario.subscription_expires_at).toLocaleDateString('pt-BR')
+                                                                                        %>
+                                                                                </div>
+                                                                                <% } %>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                        <% if (typeof usuario.diasRestantes==='number' ) { %>
+                                                            <% if (usuario.estaExpirado) { %>
+                                                                <span
+                                                                    class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                                                    Expirado (<%= Math.abs(usuario.diasRestantes) %>
+                                                                        dias)
+                                                                </span>
+                                                                <% } else if (usuario.diasRestantes <=7) { %>
+                                                                    <span
+                                                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                                        <%= usuario.diasRestantes %> dia<%=
+                                                                                usuario.diasRestantes !==1 ? 's' : '' %>
+                                                                    </span>
+                                                                    <% } else { %>
+                                                                        <span
+                                                                            class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                                            <%= usuario.diasRestantes %> dias
+                                                                        </span>
+                                                                        <% } %>
+                                                                            <% } else { %>
+                                                                                <span
+                                                                                    class="text-gray-400 text-xs">N/A</span>
+                                                                                <% } %>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        <% if (usuario.pagamento) { %>
-                                                            <div>R$ <%= parseFloat(usuario.pagamento.paid_amount || 0).toFixed(2) %></div>
-                                                            <div class="text-xs text-gray-400">
-                                                                <%= usuario.pagamento.capture_method || 'N/A' %>
+                                                        <% if (usuario.ultimoPagamento) { %>
+                                                            <div class="font-semibold text-green-600">R$ <%=
+                                                                    parseFloat(usuario.ultimoPagamento.paid_amount ||
+                                                                    0).toFixed(2) %>
+                                                            </div>
+                                                            <div class="text-xs text-gray-400 mt-1">
+                                                                <%= new
+                                                                    Date(usuario.ultimoPagamento.paid_at).toLocaleDateString('pt-BR')
+                                                                    %>
                                                             </div>
                                                             <div class="text-xs text-gray-400">
-                                                                <%= new Date(usuario.pagamento.paid_at).toLocaleDateString('pt-BR') %>
+                                                                <%= usuario.ultimoPagamento.capture_method || 'N/A' %>
                                                             </div>
-                                                        <% } else { %>
-                                                            <span class="text-gray-400">N/A</span>
-                                                        <% } %>
+                                                            <% if (usuario.ultimoPagamento.status==='paid' ) { %>
+                                                                <span
+                                                                    class="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">Pago</span>
+                                                                <% } else { %>
+                                                                    <span
+                                                                        class="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                                        <%= usuario.ultimoPagamento.status || 'N/A' %>
+                                                                    </span>
+                                                                    <% } %>
+                                                                        <% } else { %>
+                                                                            <span class="text-gray-400 text-xs">Nunca
+                                                                                pagou</span>
+                                                                            <% } %>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        <% if (usuario.pagamento && usuario.pagamento.next_billing_date) { %>
-                                                            <%= new Date(usuario.pagamento.next_billing_date).toLocaleDateString('pt-BR') %>
-                                                        <% } else { %>
-                                                            <span class="text-gray-400">N/A</span>
-                                                        <% } %>
+                                                        <% if (usuario.last_login) { %>
+                                                            <div class="text-gray-900">
+                                                                <%= new
+                                                                    Date(usuario.last_login).toLocaleDateString('pt-BR')
+                                                                    %>
+                                                            </div>
+                                                            <div class="text-xs text-gray-400">
+                                                                <%= new
+                                                                    Date(usuario.last_login).toLocaleTimeString('pt-BR',
+                                                                    { hour: '2-digit' , minute: '2-digit' }) %>
+                                                            </div>
+                                                            <% const ultimoLoginDate=new Date(usuario.last_login); const
+                                                                hojeDate=new Date(); const diffDias=Math.floor((hojeDate
+                                                                - ultimoLoginDate) / (1000 * 60 * 60 * 24)); %>
+                                                                <div class="text-xs mt-1">
+                                                                    <% if (diffDias===0) { %>
+                                                                        <span class="text-green-600">Hoje</span>
+                                                                        <% } else if (diffDias===1) { %>
+                                                                            <span class="text-green-600">Ontem</span>
+                                                                            <% } else if (diffDias <=7) { %>
+                                                                                <span class="text-yellow-600">
+                                                                                    <%= diffDias %> dias atrás
+                                                                                </span>
+                                                                                <% } else if (diffDias <=30) { %>
+                                                                                    <span class="text-orange-600">
+                                                                                        <%= diffDias %> dias atrás
+                                                                                    </span>
+                                                                                    <% } else { %>
+                                                                                        <span class="text-red-600">
+                                                                                            <%= diffDias %> dias atrás
+                                                                                        </span>
+                                                                                        <% } %>
+                                                                </div>
+                                                                <% } else { %>
+                                                                    <span class="text-gray-400 text-xs">Nunca</span>
+                                                                    <% } %>
                                                     </td>
                                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                         <div class="flex space-x-2">
@@ -213,9 +307,9 @@
                                                     </td>
                                                 </tr>
                                                 <% }); %>
-                                                        <% } else { %>
+                                                    <% } else { %>
                                                         <tr>
-                                                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                                            <td colspan="8" class="px-6 py-4 text-center text-gray-500">
                                                                 Nenhum usuário encontrado
                                                             </td>
                                                         </tr>
@@ -227,7 +321,7 @@
                             <script>
                                 // Define CSRF token e função helper se não existirem
                                 window.csrfToken = window.csrfToken || '<%= typeof csrfToken !== "undefined" && csrfToken ? csrfToken : "" %>';
-                                
+
                                 function getCSRFHeaders() {
                                     const headers = { 'Content-Type': 'application/json' };
                                     if (window.csrfToken) {
@@ -268,7 +362,7 @@
 
                                         const data = await response.json();
                                         console.log('Resposta do servidor:', data);
-                                        
+
                                         if (data.success) {
                                             alert('✅ ' + acao.charAt(0).toUpperCase() + acao.slice(1) + ' realizado com sucesso!');
                                             location.reload();

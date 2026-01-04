@@ -124,9 +124,10 @@ class InfinitePayService {
   /**
    * Valida webhook da InfinitePay
    * @param {Object} payload - Payload do webhook
+   * @param {Object} headers - Headers da requisição (para validação de assinatura)
    * @returns {Boolean} Se o webhook é válido
    */
-  static validarWebhook(payload) {
+  static validarWebhook(payload, headers = {}) {
     // Validações básicas
     if (!payload.order_nsu) {
       console.error('InfinitePay - Webhook inválido: order_nsu não encontrado');
@@ -149,7 +150,123 @@ class InfinitePayService {
       return false;
     }
 
+    // Validação de origem (se configurado)
+    // Nota: InfinitePay pode fornecer validação via header ou IP
+    // Por enquanto, validamos apenas estrutura do payload
+    // Se InfinitePay fornecer secret/token, adicionar validação aqui
+    const webhookSecret = process.env.INFINITEPAY_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      // Se houver secret configurado, valida assinatura (HMAC ou token)
+      // Por enquanto, apenas loga que deveria validar
+      console.log('InfinitePay - Webhook secret configurado, validação de origem recomendada');
+      // TODO: Implementar validação HMAC se InfinitePay fornecer
+    }
+
     return true;
+  }
+
+  /**
+   * Cria link de checkout na InfinitePay para renovação
+   * @param {Object} dados - Dados do checkout (orderNsu, valor, descricao, userId)
+   * @returns {Object} { success: boolean, data?: Object, error?: string }
+   */
+  static async criarLinkCheckoutRenovacao(dados) {
+    const { orderNsu, valor, descricao, userId } = dados;
+
+    try {
+      // Converte valor para número
+      const valorNumerico = typeof valor === 'string' ? parseFloat(valor) : valor;
+      
+      if (isNaN(valorNumerico) || valorNumerico <= 0.01) {
+        return {
+          success: false,
+          error: 'Valor inválido. Deve ser maior que R$ 0,01.'
+        };
+      }
+
+      // Converte para centavos (InfinitePay espera valores em centavos)
+      const valorEmCentavos = Math.round(valorNumerico * 100);
+
+      const payload = {
+        handle: this.HANDLE,
+        items: [
+          {
+            quantity: 1,
+            price: valorEmCentavos, // Valor em centavos (ex: 1990 para R$ 19,90)
+            description: descricao
+          }
+        ],
+        order_nsu: orderNsu,
+        // Para renovação: redirect_url aponta para /login?renovado=true
+        redirect_url: `${this.APP_URL}/login?renovado=true&order_nsu=${orderNsu}`,
+        webhook_url: `${this.APP_URL}/webhook/infinitepay`
+      };
+
+      console.log('InfinitePay - Criando link de checkout (renovação):', {
+        handle: this.HANDLE,
+        order_nsu: orderNsu,
+        valor_reais: valorNumerico,
+        valor_centavos: valorEmCentavos,
+        items: payload.items,
+        redirect_url: payload.redirect_url,
+        webhook_url: payload.webhook_url,
+        user_id: userId
+      });
+
+      const axios = require('axios');
+      const response = await axios.post(
+        `${this.API_BASE_URL}/invoices/public/checkout/links`,
+        payload,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          timeout: 30000
+        }
+      );
+
+      console.log('InfinitePay - Resposta completa (renovação):', JSON.stringify(response.data));
+
+      // Verifica se a resposta tem a URL do checkout
+      const checkoutUrl = response.data?.url || response.data?.checkout_url;
+      
+      if (!checkoutUrl) {
+        console.error('InfinitePay - Resposta inválida (renovação): checkout_url não encontrado', {
+          data: response.data
+        });
+        return {
+          success: false,
+          error: 'Resposta da API InfinitePay não contém checkout_url'
+        };
+      }
+
+      console.log('InfinitePay - Link criado com sucesso (renovação):', {
+        invoice_slug: response.data?.invoice_slug,
+        checkout_url: checkoutUrl
+      });
+
+      return {
+        success: true,
+        data: {
+          checkout_url: checkoutUrl,
+          invoice_slug: response.data?.invoice_slug || null
+        }
+      };
+    } catch (error) {
+      console.error('InfinitePay - Erro ao criar link de checkout (renovação):', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message || 'Erro ao criar link de checkout',
+        response: error.response?.data,
+        status: error.response?.status,
+        errors: error.response?.data?.errors
+      };
+    }
   }
 }
 

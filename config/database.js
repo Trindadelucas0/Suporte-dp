@@ -82,8 +82,29 @@ pool.on('error', (err, client) => {
   process.exit(-1);
 });
 
+/**
+ * Executa uma função dentro de uma transação SQL
+ * @param {Function} callback - Função assíncrona que recebe o client da transação
+ * @returns {Promise<*>} Resultado da função callback
+ */
+async function transaction(callback) {
+  const client = await pool.connect();
+  
+  try {
+    await client.query('BEGIN');
+    const result = await callback(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 module.exports = {
   pool,
-  query: (text, params) => pool.query(text, params)
+  query: (text, params) => pool.query(text, params),
+  transaction
 };
-
