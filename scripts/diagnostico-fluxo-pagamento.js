@@ -20,9 +20,6 @@ const emailService = require('../services/emailService');
 // Importa função de gerar tokens para execução automática
 const gerarTokensParaUsuarios = require('./gerar-tokens-para-usuarios');
 
-// Importa função de gerar tokens
-const gerarTokensParaUsuarios = require('./gerar-tokens-para-usuarios');
-
 async function diagnosticarFluxo(emailFiltro = null) {
   try {
     console.log('🔍 INICIANDO DIAGNÓSTICO DO FLUXO DE PAGAMENTO\n');

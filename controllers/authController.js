@@ -136,7 +136,8 @@ class AuthController {
             [user.email]
           );
           const allPayments = [...paymentsByUserId, ...paymentsByEmail.rows];
-          const hasPaidPayment = allPayments.length > 0 && allPayments.some(p => p.status === 'paid');
+          const paidPayments = allPayments.filter(p => p.status === 'paid');
+          const hasPaidPayment = paidPayments.length > 0;
           
           // Se há pagamento confirmado, verifica se há token pendente
           if (hasPaidPayment) {
@@ -173,16 +174,86 @@ class AuthController {
               });
               return;
             } else {
-              // Há pagamento confirmado mas não há token pendente - precisa gerar token
-              console.log('⚠️ [LOGIN] Pagamento confirmado mas sem token pendente. Execute o script para gerar tokens:', {
+              // Há pagamento confirmado mas não há token pendente - tenta gerar token automaticamente
+              console.log('🔄 [LOGIN] Pagamento confirmado mas sem token pendente. Tentando gerar token automaticamente...', {
                 user_id: user.id,
                 email: user.email
               });
-              return res.render('auth/login', {
-                title: 'Login - Suporte DP',
-                error: 'Seu pagamento foi confirmado, mas não há token de validação disponível. Entre em contato com o suporte ou execute o script de geração de tokens.',
-                success: null
-              });
+              
+              try {
+                // Busca o order_nsu mais recente com pagamento confirmado
+                const paymentMaisRecente = paidPayments.sort((a, b) => {
+                  const dateA = new Date(a.paid_at || a.created_at || 0);
+                  const dateB = new Date(b.paid_at || b.created_at || 0);
+                  return dateB - dateA;
+                })[0];
+                
+                if (paymentMaisRecente && paymentMaisRecente.order_nsu) {
+                  // Tenta gerar token automaticamente
+                  const paymentToken = await PaymentToken.create(
+                    paymentMaisRecente.order_nsu,
+                    user.email,
+                    user.id
+                  );
+                  
+                  console.log('✅ [LOGIN] Token gerado automaticamente:', {
+                    token: paymentToken.token,
+                    email: user.email,
+                    order_nsu: paymentMaisRecente.order_nsu
+                  });
+                  
+                  // Envia email com token (assíncrono, não bloqueia)
+                  setImmediate(async () => {
+                    try {
+                      const valorReais = parseFloat(paymentMaisRecente.paid_amount || 1990) / 100;
+                      await emailService.sendPaymentToken({
+                        email: user.email,
+                        token: paymentToken.token,
+                        nome: user.nome,
+                        orderNsu: paymentMaisRecente.order_nsu,
+                        valor: valorReais
+                      });
+                    } catch (emailError) {
+                      console.error('⚠️ [LOGIN] Erro ao enviar email com token (não crítico):', emailError);
+                    }
+                  });
+                  
+                  // Redireciona para validação
+                  req.session.user = {
+                    id: user.id,
+                    nome: user.nome,
+                    email: user.email,
+                    is_admin: user.is_admin
+                  };
+                  req.session.lastActivity = Date.now();
+                  req.session.requireTokenValidation = true;
+                  
+                  await User.updateLastLogin(user.id);
+                  
+                  req.session.save((err) => {
+                    if (err) {
+                      console.error('Erro ao salvar sessão:', err);
+                      return res.render('auth/login', {
+                        title: 'Login - Suporte DP',
+                        error: 'Erro ao fazer login. Tente novamente.',
+                        success: null
+                      });
+                    }
+                    return res.redirect(`/validar-pagamento?email=${encodeURIComponent(user.email)}&from=login`);
+                  });
+                  return;
+                } else {
+                  throw new Error('Order NSU não encontrado');
+                }
+              } catch (tokenError) {
+                console.error('❌ [LOGIN] Erro ao gerar token automaticamente:', tokenError);
+                // Se falhar, mostra mensagem amigável
+                return res.render('auth/login', {
+                  title: 'Login - Suporte DP',
+                  error: 'Seu pagamento foi confirmado, mas houve um problema ao gerar seu token de validação. Por favor, entre em contato com o suporte informando seu email.',
+                  success: null
+                });
+              }
             }
           }
           
