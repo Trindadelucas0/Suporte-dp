@@ -16,12 +16,17 @@ require('dotenv').config();
 // Tenta carregar Resend (opcional)
 let Resend = null;
 try {
+  // Resend exporta como { Resend: [class Resend] }, então usamos destructuring
   const resendModule = require('resend');
-  // Resend pode ser exportado como default ou named export
-  Resend = resendModule.default || resendModule.Resend || resendModule;
+  Resend = resendModule.Resend; // Forma correta: { Resend } = require('resend')
+  if (!Resend || typeof Resend !== 'function') {
+    console.warn('⚠️ EmailService: Classe Resend não encontrada ou inválida no módulo');
+    Resend = null;
+  }
 } catch (e) {
   // Resend não instalado - usará SMTP
   console.warn('⚠️ EmailService: Pacote "resend" não encontrado:', e.message);
+  Resend = null;
 }
 
 class EmailService {
@@ -242,11 +247,17 @@ Se você não realizou este pagamento, ignore este email.
     // Isso garante que mesmo se a variável foi adicionada após o servidor iniciar, ainda funciona
     if (!this.useResendAPI && Resend && process.env.RESEND_API_KEY) {
       try {
+        // Verifica se Resend é uma função/construtor
+        if (typeof Resend !== 'function') {
+          console.error('❌ EmailService: Resend não é um construtor. Tipo:', typeof Resend);
+          throw new Error('Resend não é um construtor válido');
+        }
         this.resendClient = new Resend(process.env.RESEND_API_KEY);
         this.useResendAPI = true;
         console.log('✅ EmailService: API do Resend detectada e inicializada (configurada após startup)');
       } catch (e) {
-        console.warn('⚠️ EmailService: Erro ao inicializar Resend:', e.message);
+        console.error('❌ EmailService: Erro ao inicializar Resend:', e.message);
+        console.error('   - Stack:', e.stack);
       }
     }
     
