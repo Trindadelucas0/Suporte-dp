@@ -98,57 +98,15 @@ class AuthController {
         const semAssinatura = !user.subscription_expires_at || !user.subscription_status || user.subscription_status === null;
         const assinaturaAtiva = user.subscription_status === 'ativa' && dataExpiracao && dataExpiracao >= hoje;
 
-        // Se assinatura está ATIVA, verifica se foi ativada há menos de 30 dias
-        // Se sim, verifica se há token pendente (novo pagamento) mas não gera novo token
+        // REGRA PRINCIPAL: Se assinatura está ATIVA, permite login direto SEM verificar tokens
+        // Tokens pendentes só importam se a assinatura NÃO está ativa
         if (assinaturaAtiva) {
-          // Calcula dias desde ativação
-          let diasDesdeAtivacao = null;
-          if (dataExpiracao) {
-            const hojeTimestamp = hoje.getTime();
-            const expiracaoTimestamp = dataExpiracao.getTime();
-            const diasRestantes = Math.ceil((expiracaoTimestamp - hojeTimestamp) / (1000 * 60 * 60 * 24));
-            diasDesdeAtivacao = 30 - diasRestantes; // Dias desde que a assinatura foi ativada
-          }
-          
-          // Se foi ativada há menos de 30 dias, verifica se há token pendente mas não reenvia email
-          if (diasDesdeAtivacao !== null && diasDesdeAtivacao < 30) {
-            const tokenPendente = await PaymentToken.findPendingTokenByEmail(user.email);
-            if (tokenPendente) {
-              // Há token pendente - NÃO reenvia email, apenas redireciona para validação
-              // O email já foi enviado quando o token foi gerado
-              console.log('🔐 [LOGIN] Token pendente encontrado (assinatura ativa há menos de 30 dias):', {
-                user_id: user.id,
-                email: user.email,
-                token: tokenPendente.token,
-                dias_desde_ativacao: diasDesdeAtivacao
-              });
-              
-              // Cria sessão mas redireciona para validação de token
-              req.session.user = {
-                id: user.id,
-                nome: user.nome,
-                email: user.email,
-                is_admin: user.is_admin
-              };
-              req.session.lastActivity = Date.now();
-              req.session.requireTokenValidation = true;
-              
-              await User.updateLastLogin(user.id);
-              
-              req.session.save((err) => {
-                if (err) {
-                  console.error('Erro ao salvar sessão:', err);
-                  return res.render('auth/login', {
-                    title: 'Login - Suporte DP',
-                    error: 'Erro ao fazer login. Tente novamente.',
-                    success: null
-                  });
-                }
-                return res.redirect(`/validar-pagamento?email=${encodeURIComponent(user.email)}&from=login`);
-              });
-              return;
-            }
-          }
+          console.log('✅ [LOGIN] Assinatura ativa - permitindo login direto:', {
+            user_id: user.id,
+            email: user.email,
+            subscription_status: user.subscription_status,
+            subscription_expires_at: user.subscription_expires_at
+          });
           
           // Cria sessão e permite acesso normalmente
           req.session.user = {
@@ -209,7 +167,7 @@ class AuthController {
           return;
         }
 
-        // NOVO: Se não tem assinatura ativa, verifica se há pagamento confirmado aguardando validação de token
+        // Se não tem assinatura ativa (expirada, inadimplente ou sem assinatura), verifica se há pagamento confirmado aguardando validação de token
         if (semAssinatura || assinaturaExpirada || assinaturaInadimplente) {
           // Verifica se há pagamento confirmado para este usuário (pode estar aguardando validação de token)
           // Busca por user_id e também por email (caso pagamento tenha sido feito antes do cadastro)
@@ -418,46 +376,6 @@ class AuthController {
             error: 'Sua assinatura está expirada ou não foi paga. Por favor, renove sua assinatura para continuar usando o sistema.',
             success: null
           });
-        }
-
-        // NOVO: Verifica se há token pendente mesmo com assinatura ativa (para novos pagamentos)
-        // Mas NÃO reenvia email - o email já foi enviado quando o token foi gerado
-        const tokenPendente = await PaymentToken.findPendingTokenByEmail(user.email);
-        
-        if (tokenPendente) {
-          // Há token pendente - NÃO reenvia email, apenas redireciona para validação
-          console.log('🔐 [LOGIN] Token pendente encontrado (renovação):', {
-            user_id: user.id,
-            email: user.email,
-            token: tokenPendente.token,
-            order_nsu: tokenPendente.order_nsu,
-            nota: 'Email já foi enviado quando token foi gerado - não reenviando'
-          });
-          
-          // Cria sessão mas redireciona para validação de token
-          req.session.user = {
-            id: user.id,
-            nome: user.nome,
-            email: user.email,
-            is_admin: user.is_admin
-          };
-          req.session.lastActivity = Date.now();
-          req.session.requireTokenValidation = true;
-          
-          await User.updateLastLogin(user.id);
-          
-          req.session.save((err) => {
-            if (err) {
-              console.error('Erro ao salvar sessão:', err);
-              return res.render('auth/login', {
-                title: 'Login - Suporte DP',
-                error: 'Erro ao fazer login. Tente novamente.',
-                success: null
-              });
-            }
-            return res.redirect(`/validar-pagamento?email=${encodeURIComponent(user.email)}&from=login`);
-          });
-          return;
         }
       }
 
