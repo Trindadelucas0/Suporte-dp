@@ -17,8 +17,11 @@ const Order = require('../models/Order');
 const User = require('../models/User');
 const emailService = require('../services/emailService');
 
+// Importa função de gerar tokens para execução automática
+const gerarTokensParaUsuarios = require('./gerar-tokens-para-usuarios');
+
 // Importa função de gerar tokens
-const gerarTokensScript = require('./gerar-tokens-para-usuarios');
+const gerarTokensParaUsuarios = require('./gerar-tokens-para-usuarios');
 
 async function diagnosticarFluxo(emailFiltro = null) {
   try {
@@ -251,6 +254,24 @@ async function diagnosticarFluxo(emailFiltro = null) {
       console.log('✅ Nenhum problema identificado! O fluxo está funcionando corretamente.');
     } else {
       problemas.forEach(problema => console.log(problema));
+      
+      // Se há pagamentos sem token, executa automaticamente a geração de tokens
+      const temPagamentosSemToken = problemas.some(p => p.includes('SEM TOKEN gerado') || p.includes('SEM TOKEN'));
+      if (temPagamentosSemToken) {
+        console.log('\n\n🔧 EXECUTANDO CORREÇÃO AUTOMÁTICA...');
+        console.log('='.repeat(80));
+        console.log('Executando script de geração de tokens para corrigir os problemas encontrados...\n');
+        
+        try {
+          // Executa a função de gerar tokens (não como script standalone)
+          await gerarTokensParaUsuarios();
+          console.log('\n✅ Correção automática concluída!');
+        } catch (gerarTokensError) {
+          console.error('❌ Erro ao executar geração automática de tokens:', gerarTokensError.message);
+          console.error('Stack:', gerarTokensError.stack);
+          console.log('\n💡 Execute manualmente: node scripts/gerar-tokens-para-usuarios.js');
+        }
+      }
     }
     
     // 5. VERIFICAR CONFIGURAÇÃO DO WEBHOOK

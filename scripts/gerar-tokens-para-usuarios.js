@@ -43,7 +43,11 @@ async function gerarTokensParaUsuarios() {
 
     if (payments.length === 0) {
       console.log('✅ Nenhum pagamento confirmado encontrado.');
-      process.exit(0);
+      // Só encerra o processo se executado diretamente (não quando importado como módulo)
+      if (require.main === module) {
+        process.exit(0);
+      }
+      return; // Retorna sem encerrar se chamado como módulo
     }
 
     let tokensGerados = 0;
@@ -124,11 +128,19 @@ async function gerarTokensParaUsuarios() {
     console.log(`📊 Total processado: ${payments.length}`);
     console.log('='.repeat(50));
 
-    process.exit(0);
+    // Só encerra o processo se executado diretamente (não quando importado como módulo)
+    if (require.main === module) {
+      process.exit(0);
+    }
   } catch (error) {
     console.error('❌ Erro ao gerar tokens para usuários:', error);
     console.error('Stack:', error.stack);
-    process.exit(1);
+    // Só encerra o processo se executado diretamente (não quando importado como módulo)
+    if (require.main === module) {
+      process.exit(1);
+    }
+    // Se chamado como módulo, relança o erro para ser tratado pelo chamador
+    throw error;
   }
 }
 
@@ -139,6 +151,4 @@ if (require.main === module) {
 
 // Exporta função para uso em outros scripts
 module.exports = gerarTokensParaUsuarios;
-
-module.exports = { gerarTokensParaUsuarios };
 
