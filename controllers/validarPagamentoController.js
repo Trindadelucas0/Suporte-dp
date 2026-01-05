@@ -148,16 +148,19 @@ class ValidarPagamentoController {
           // Formata data para YYYY-MM-DD (sem hora)
           const dataExpiracaoFormatada = dataExpiracao.toISOString().split('T')[0];
 
-          await client.query(
+          const updateResult = await client.query(
             `UPDATE users 
              SET subscription_status = $1, 
                  subscription_expires_at = $2,
                  status = $3,
                  updated_at = CURRENT_TIMESTAMP
-             WHERE id = $4`,
+             WHERE id = $4
+             RETURNING id, subscription_status, subscription_expires_at, status`,
             ['ativa', dataExpiracaoFormatada, 'ativo', existingUser.id]
           );
 
+          const userAtualizado = updateResult.rows[0];
+          
           console.log('✅ Token validado - Assinatura ativada por 30 dias:', {
             user_id: existingUser.id,
             email: existingUser.email,
@@ -166,6 +169,9 @@ class ValidarPagamentoController {
             data_ativacao: agora.toISOString(),
             data_expiracao: dataExpiracaoFormatada,
             dias_acesso: 30,
+            subscription_status_atualizado: userAtualizado.subscription_status,
+            subscription_expires_at_atualizado: userAtualizado.subscription_expires_at,
+            status_atualizado: userAtualizado.status,
             nota: 'Token trocado por 30 dias de acesso - email vinculado ao token'
           });
           

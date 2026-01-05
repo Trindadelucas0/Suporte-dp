@@ -86,6 +86,15 @@ class AuthController {
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
         
+        // Log para debug
+        console.log('🔍 [LOGIN] Verificando assinatura do usuário:', {
+          user_id: user.id,
+          email: user.email,
+          subscription_status: user.subscription_status,
+          subscription_expires_at: user.subscription_expires_at,
+          status: user.status
+        });
+        
         let dataExpiracao = null;
         if (user.subscription_expires_at) {
           dataExpiracao = new Date(user.subscription_expires_at);
