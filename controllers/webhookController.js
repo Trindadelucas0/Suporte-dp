@@ -290,26 +290,25 @@ class WebhookController {
               }
               
                 // IMPORTANTE: Cada pagamento (order_nsu) deve ter seu próprio token
-                // Verifica se já existe token válido (não usado, não expirado) para ESTE pagamento específico
+                // Verifica se já existe QUALQUER token para ESTE pagamento específico (mesmo usado ou expirado)
+                // Token só deve ser gerado UMA VEZ por pagamento, não sempre que o webhook é chamado
                 const tokensExistentes = await PaymentToken.findByOrderNsu(order_nsu);
-                const now = new Date();
-                const tokenValidoExistente = tokensExistentes.find(t => {
-                  if (t.used) return false; // Token já foi usado
-                  const expiresAt = new Date(t.expires_at);
-                  return expiresAt > now; // Token não expirou
-                });
                 
-                if (tokenValidoExistente) {
-                  // Já existe token válido para ESTE pagamento específico - não gera novo
-                  console.log('ℹ️ [WEBHOOK] Já existe token válido para este pagamento, não gerando novo token:', {
+                if (tokensExistentes && tokensExistentes.length > 0) {
+                  // Já existe token para ESTE pagamento específico - não gera novo
+                  // Independente de estar usado ou expirado, cada pagamento tem apenas UM token
+                  const tokenExistente = tokensExistentes[0]; // Pega o mais recente
+                  console.log('ℹ️ [WEBHOOK] Já existe token para este pagamento, não gerando novo token:', {
                     order_nsu: order_nsu,
-                    token_existente: tokenValidoExistente.token,
+                    token_existente: tokenExistente.token,
                     email: emailParaToken,
-                    created_at: tokenValidoExistente.created_at,
-                    expires_at: tokenValidoExistente.expires_at,
-                    nota: 'Cada pagamento tem seu próprio token - este pagamento já tem token válido'
+                    token_usado: tokenExistente.used,
+                    token_expirado: new Date(tokenExistente.expires_at) < new Date(),
+                    created_at: tokenExistente.created_at,
+                    expires_at: tokenExistente.expires_at,
+                    nota: 'Cada pagamento tem apenas UM token - este pagamento já tem token (mesmo que usado/expirado)'
                   });
-                  // Não gera novo token - já existe um válido para este pagamento específico
+                  // Não gera novo token - já existe um para este pagamento específico
                   // Não faz return aqui para não sair da transação - apenas não gera token
                 } else {
                   // Não há token válido para ESTE pagamento - gera novo token e envia email
