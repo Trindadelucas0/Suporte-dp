@@ -37,30 +37,16 @@ class EmailService {
     this.resendClient = null;
     this.useResendAPI = false;
     
-    // Verifica se deve usar API do Resend
+    // DESABILITADO: Não usar API do Resend - usar apenas SMTP (Brevo)
     console.log('🔍 EmailService: Verificando configuração de email...');
-    console.log('   - Resend instalado:', Resend ? '✅ SIM' : '❌ NÃO');
-    console.log('   - RESEND_API_KEY configurado:', process.env.RESEND_API_KEY ? '✅ SIM' : '❌ NÃO');
     console.log('   - SMTP_HOST configurado:', process.env.SMTP_HOST ? '✅ SIM' : '❌ NÃO');
+    console.log('   - SMTP_USER configurado:', process.env.SMTP_USER ? '✅ SIM' : '❌ NÃO');
+    console.log('   - SMTP_PASS configurado:', process.env.SMTP_PASS ? '✅ SIM' : '❌ NÃO');
+    console.log('📧 EmailService: Usando SMTP (Brevo recomendado)');
     
-    if (Resend && process.env.RESEND_API_KEY) {
-      try {
-        this.resendClient = new Resend(process.env.RESEND_API_KEY);
-        this.useResendAPI = true;
-        console.log('✅ EmailService: Usando API do Resend (recomendado para Render)');
-        console.log('   - API Key:', process.env.RESEND_API_KEY.substring(0, 10) + '...');
-      } catch (e) {
-        console.warn('⚠️ EmailService: Erro ao inicializar Resend, usando SMTP:', e.message);
-      }
-    } else {
-      if (!Resend) {
-        console.warn('⚠️ EmailService: Pacote "resend" não instalado. Instale com: npm install resend');
-      }
-      if (!process.env.RESEND_API_KEY) {
-        console.warn('⚠️ EmailService: RESEND_API_KEY não configurado. Configure no Render para evitar timeout SMTP.');
-      }
-      console.log('📧 EmailService: Usando SMTP tradicional (pode ter timeout no Render)');
-    }
+    // Força uso de SMTP apenas (não usa Resend API)
+    this.useResendAPI = false;
+    this.resendClient = null;
   }
 
   /**
