@@ -13,8 +13,22 @@ class PaymentToken {
    * @param {String} email - Email onde o token será enviado
    * @param {String} userId - ID do usuário (opcional)
    * @returns {Object} Token criado
+   * @throws {Error} Se não houver pagamento confirmado para o order_nsu
    */
   static async create(orderNsu, email, userId = null) {
+    // Validação: Verifica se há pagamento confirmado para este order_nsu
+    const paymentCheck = await db.query(
+      `SELECT id, status, paid_at 
+       FROM payments 
+       WHERE order_nsu = $1 AND status = 'paid'
+       LIMIT 1`,
+      [orderNsu]
+    );
+
+    if (!paymentCheck.rows || paymentCheck.rows.length === 0) {
+      throw new Error(`Não é possível gerar token: Não há pagamento confirmado para o pedido ${orderNsu}. Tokens só podem ser gerados para pagamentos confirmados.`);
+    }
+
     const token = uuidv4();
     // Token expira em 24 horas
     const expiresAt = new Date();
