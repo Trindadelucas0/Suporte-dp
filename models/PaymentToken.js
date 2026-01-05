@@ -30,9 +30,9 @@ class PaymentToken {
     }
 
     const token = uuidv4();
-    // Token expira em 24 horas
+    // Token expira em 30 dias (alinhado com duração da assinatura)
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 24);
+    expiresAt.setDate(expiresAt.getDate() + 30);
 
     const result = await db.query(
       `INSERT INTO payment_tokens (token, order_nsu, user_id, email, expires_at)
@@ -217,9 +217,9 @@ class PaymentToken {
     }
 
     const token = uuidv4();
-    // Token expira em 24 horas
+    // Token expira em 30 dias (alinhado com duração da assinatura)
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 24);
+    expiresAt.setDate(expiresAt.getDate() + 30);
 
     const result = await dbClient.query(
       `INSERT INTO payment_tokens (token, order_nsu, user_id, email, expires_at)

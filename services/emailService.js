@@ -193,7 +193,7 @@ class EmailService {
             <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;">
               <p style="margin: 0; font-size: 14px; color: #856404;">
                 <strong>⚠️ Importante:</strong>
-                <br>• Este token expira em 24 horas
+                <br>• Este token expira em 30 dias
                 <br>• O token só pode ser usado uma vez
                 <br>• Use o email: <strong>${data.email}</strong> junto com o token
                 <br>• Valor pago: R$ ${data.valor.toFixed(2).replace('.', ',')}
@@ -223,7 +223,7 @@ Acesse: ${validationUrl}
 OU acesse ${appUrl}/validar-pagamento e insira o email e token.
 
 Importante:
-- Este token expira em 24 horas
+- Este token expira em 30 dias
 - O token só pode ser usado uma vez
 - Use o email: ${data.email} junto com o token
 - Valor pago: R$ ${data.valor.toFixed(2).replace('.', ',')}
@@ -388,7 +388,7 @@ Se você não realizou este pagamento, ignore este email.
               <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;">
                 <p style="margin: 0; font-size: 14px; color: #856404;">
                   <strong>⚠️ Importante:</strong>
-                  <br>• Este token expira em 24 horas
+                  <br>• Este token expira em 30 dias
                   <br>• O token só pode ser usado uma vez
                   <br>• Use o email: <strong>${data.email}</strong> junto com o token
                   <br>• Valor pago: R$ ${data.valor.toFixed(2).replace('.', ',')}
@@ -417,7 +417,7 @@ Acesse: ${validationUrl}
 OU acesse ${appUrl}/validar-pagamento e insira o email e token.
 
 Importante:
-- Este token expira em 24 horas
+- Este token expira em 30 dias
 - O token só pode ser usado uma vez
 - Use o email: ${data.email} junto com o token
 - Valor pago: R$ ${data.valor.toFixed(2).replace('.', ',')}

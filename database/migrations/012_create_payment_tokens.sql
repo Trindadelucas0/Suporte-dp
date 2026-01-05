@@ -28,5 +28,5 @@ COMMENT ON COLUMN payment_tokens.token IS 'Token UUID único (one-time use)';
 COMMENT ON COLUMN payment_tokens.order_nsu IS 'Pedido vinculado ao token';
 COMMENT ON COLUMN payment_tokens.email IS 'Email onde o token foi enviado';
 COMMENT ON COLUMN payment_tokens.used IS 'Se o token já foi usado';
-COMMENT ON COLUMN payment_tokens.expires_at IS 'Data de expiração do token (24 horas)';
+COMMENT ON COLUMN payment_tokens.expires_at IS 'Data de expiração do token (30 dias, alinhado com duração da assinatura)';
 
