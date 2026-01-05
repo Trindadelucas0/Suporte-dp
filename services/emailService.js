@@ -44,7 +44,7 @@ class EmailService {
       return null;
     }
 
-    // Cria transporter
+    // Cria transporter com configurações de timeout
     this.transporter = nodemailer.createTransport({
       host: smtpHost,
       port: parseInt(smtpPort),
@@ -52,7 +52,12 @@ class EmailService {
       auth: {
         user: smtpUser,
         pass: smtpPass
-      }
+      },
+      connectionTimeout: 20000, // 20 segundos para estabelecer conexão
+      greetingTimeout: 20000, // 20 segundos para greeting
+      socketTimeout: 20000, // 20 segundos para timeout de socket
+      // Não usar pool em produção (pode causar problemas de conexão)
+      pool: false
     });
 
     this.isConfigured = true;

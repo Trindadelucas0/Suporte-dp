@@ -64,22 +64,21 @@ async function gerarTokensParaUsuarios() {
           continue;
         }
 
-        // Verifica se já existe token pendente válido
-        const tokenPendente = await PaymentToken.findPendingTokenByEmail(email);
+        // Verifica se já existe token válido (não usado, não expirado) para este pagamento específico
+        const tokensExistentes = await PaymentToken.findByOrderNsu(payment.order_nsu);
+        const tokenValidoExistente = tokensExistentes.find(t => {
+          const now = new Date();
+          const expiresAt = new Date(t.expires_at);
+          return !t.used && expiresAt > now;
+        });
 
-        if (tokenPendente) {
-          console.log(`✅ Usuário ${email} já possui token pendente válido`);
+        if (tokenValidoExistente) {
+          console.log(`✅ Pagamento ${payment.order_nsu} (${email}) já possui token válido - não gerando novo`);
           tokensJaExistentes++;
           continue;
         }
 
-        // Verifica se já existe token usado para este order_nsu (evita duplicar)
-        const tokensExistentes = await PaymentToken.findByOrderNsu(payment.order_nsu);
-        if (tokensExistentes && tokensExistentes.length > 0) {
-          console.log(`⚠️  Order ${payment.order_nsu} já possui token (usado ou expirado) - gerando novo`);
-        }
-
-        // Gera novo token
+        // Gera novo token apenas se não houver token válido para este pagamento
         console.log(`🔄 Gerando token para: ${email} (order: ${payment.order_nsu})`);
 
         const paymentToken = await PaymentToken.create(

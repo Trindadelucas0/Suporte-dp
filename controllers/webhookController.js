@@ -190,21 +190,32 @@ class WebhookController {
               }
               
               // Verifica se já existe token válido (não usado, não expirado) para este pagamento
+              // IMPORTANTE: Esta verificação deve ser feita ANTES de tentar gerar token
               const tokensExistentes = await PaymentToken.findByOrderNsu(order_nsu);
+              const now = new Date();
               const tokenValidoExistente = tokensExistentes.find(t => {
-                const now = new Date();
+                if (t.used) return false; // Token já foi usado
                 const expiresAt = new Date(t.expires_at);
-                return !t.used && expiresAt > now;
+                return expiresAt > now; // Token não expirou
               });
               
               if (tokenValidoExistente) {
-                console.log('ℹ️ [WEBHOOK] Já existe token válido para este pagamento, não gerando novo:', {
+                console.log('ℹ️ [WEBHOOK] Já existe token válido para este pagamento, não gerando novo token:', {
                   order_nsu: order_nsu,
                   token_existente: tokenValidoExistente.token,
-                  email: customerEmail
+                  email: customerEmail,
+                  created_at: tokenValidoExistente.created_at,
+                  expires_at: tokenValidoExistente.expires_at
                 });
-                // Não gera novo token - já existe um válido
+                // Não gera novo token - já existe um válido para este pagamento
+                // Não faz return aqui para não sair da transação - apenas não gera token
               } else {
+                console.log('🔄 [WEBHOOK] Não há token válido para este pagamento, gerando novo token:', {
+                  order_nsu: order_nsu,
+                  email: customerEmail,
+                  tokens_existentes_total: tokensExistentes.length,
+                  tokens_existentes_usados: tokensExistentes.filter(t => t.used).length
+                });
                 // Só gera token se não houver token válido para este pagamento
                 const paymentToken = await PaymentToken.create(
                   order_nsu,
