@@ -38,10 +38,26 @@ async function verificarPagamento(email) {
     console.log('');
 
     // 2. Buscar orders do usuário
-    const ordersResult = await db.query(
-      'SELECT order_nsu, status, customer_email, user_id, created_at FROM orders WHERE user_id = $1 OR customer_email = $1 ORDER BY created_at DESC',
+    const ordersByUserId = await db.query(
+      'SELECT order_nsu, status, customer_email, user_id, created_at FROM orders WHERE user_id = $1 ORDER BY created_at DESC',
+      [user.id]
+    );
+    
+    const ordersByEmail = await db.query(
+      'SELECT order_nsu, status, customer_email, user_id, created_at FROM orders WHERE LOWER(customer_email) = LOWER($1) ORDER BY created_at DESC',
       [email.toLowerCase()]
     );
+    
+    // Combinar e remover duplicatas
+    const allOrders = [...ordersByUserId.rows, ...ordersByEmail.rows];
+    const uniqueOrders = allOrders.reduce((acc, order) => {
+      if (!acc.find(o => o.order_nsu === order.order_nsu)) {
+        acc.push(order);
+      }
+      return acc;
+    }, []);
+    
+    const ordersResult = { rows: uniqueOrders };
 
     console.log('📋 Orders encontrados:', ordersResult.rows.length);
     ordersResult.rows.forEach((order, index) => {
@@ -85,18 +101,21 @@ async function verificarPagamento(email) {
       console.log('');
     });
 
-    // 5. Buscar TODOS os pagamentos (qualquer status)
-    const allPayments = await db.query(
-      `SELECT p.*, o.customer_email, o.user_id as order_user_id 
-       FROM payments p
-       LEFT JOIN orders o ON p.order_nsu = o.order_nsu
-       WHERE p.order_nsu IN (
-         SELECT order_nsu FROM orders 
-         WHERE user_id = $1::uuid OR LOWER(customer_email) = LOWER($2)
-       )
-       ORDER BY p.created_at DESC`,
-      [user.id, email.toLowerCase()]
-    );
+    // 5. Buscar TODOS os pagamentos (qualquer status) - buscar por order_nsu dos orders encontrados
+    const orderNsus = uniqueOrders.map(o => o.order_nsu);
+    let allPayments = { rows: [] };
+    
+    if (orderNsus.length > 0) {
+      const placeholders = orderNsus.map((_, i) => `$${i + 1}`).join(', ');
+      allPayments = await db.query(
+        `SELECT p.*, o.customer_email, o.user_id as order_user_id 
+         FROM payments p
+         LEFT JOIN orders o ON p.order_nsu = o.order_nsu
+         WHERE p.order_nsu IN (${placeholders})
+         ORDER BY p.created_at DESC`,
+        orderNsus
+      );
+    }
 
     console.log('💳 TODOS os pagamentos (qualquer status):', allPayments.rows.length);
     allPayments.rows.forEach((payment, index) => {

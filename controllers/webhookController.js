@@ -45,8 +45,14 @@ class WebhookController {
         });
 
         // 1. Validar webhook (inclui validação de origem se configurado)
-        if (!InfinitePayService.validarWebhook(payload, req.headers)) {
-          console.error('Webhook InfinitePay inválido:', payload);
+        const isValid = InfinitePayService.validarWebhook(payload, req.headers);
+        console.log('🔍 [WEBHOOK] Validação do webhook:', isValid ? '✅ VÁLIDO' : '❌ INVÁLIDO');
+        
+        if (!isValid) {
+          console.error('❌ [WEBHOOK] Webhook InfinitePay inválido:', {
+            payload: payload,
+            headers: req.headers
+          });
           return;
         }
 
@@ -64,8 +70,17 @@ class WebhookController {
 
         // 2. Verificar se order_nsu existe
         const order = await Order.findByOrderNsu(order_nsu);
+        console.log('🔍 [WEBHOOK] Busca do order:', {
+          order_nsu: order_nsu,
+          encontrado: order ? '✅ SIM' : '❌ NÃO',
+          order_user_id: order?.user_id || 'N/A',
+          order_customer_email: order?.customer_email || 'N/A',
+          order_status: order?.status || 'N/A'
+        });
+        
         if (!order) {
-          console.error('Webhook InfinitePay - Pedido não encontrado:', order_nsu);
+          console.error('❌ [WEBHOOK] Webhook InfinitePay - Pedido não encontrado:', order_nsu);
+          console.error('💡 [WEBHOOK] Verifique se o order_nsu está correto e se o pedido foi criado antes do pagamento');
           return;
         }
 
