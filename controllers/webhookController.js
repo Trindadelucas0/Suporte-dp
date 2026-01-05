@@ -207,6 +207,7 @@ class WebhookController {
               const valorReais = parseFloat(paid_amount) / 100;
               
               // SEMPRE enviar email com token
+              console.log('📧 [WEBHOOK] Iniciando envio de email com token para:', customerEmail);
               emailService.sendPaymentToken({
                 email: customerEmail,
                 token: paymentToken.token,
@@ -215,12 +216,14 @@ class WebhookController {
                 valor: valorReais
               }).then(result => {
                 if (result.success) {
-                  console.log('✅ Email com token enviado com sucesso:', customerEmail);
+                  console.log('✅ [WEBHOOK] Email com token enviado com sucesso:', customerEmail);
+                  console.log('📬 [WEBHOOK] Message ID:', result.messageId);
                 } else {
-                  console.error('❌ Erro ao enviar email com token:', result.error);
+                  console.error('❌ [WEBHOOK] Erro ao enviar email com token:', result.error);
                 }
               }).catch(emailError => {
-                console.error('❌ Erro ao enviar email com token (não crítico):', emailError);
+                console.error('❌ [WEBHOOK] Erro ao enviar email com token (não crítico):', emailError);
+                console.error('❌ [WEBHOOK] Stack do erro:', emailError.stack);
               });
               
               // IMPORTANTE: NÃO atualizar assinatura aqui - aguarda validação do token

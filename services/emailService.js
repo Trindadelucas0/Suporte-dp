@@ -175,7 +175,9 @@ Se você não realizou este pagamento, ignore este email.
       };
 
       const info = await transporter.sendMail(mailOptions);
-      console.log('✅ EmailService: Token de pagamento enviado:', info.messageId);
+      console.log('✅ EmailService: Token de pagamento enviado para:', data.email);
+      console.log('📬 EmailService: Message ID:', info.messageId);
+      console.log('📋 EmailService: Token enviado:', data.token);
       
       return {
         success: true,
