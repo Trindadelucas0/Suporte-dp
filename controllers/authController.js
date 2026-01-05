@@ -126,8 +126,16 @@ class AuthController {
         // NOVO: Se não tem assinatura ativa, verifica se há pagamento confirmado aguardando validação de token
         if (semAssinatura || assinaturaExpirada || assinaturaInadimplente) {
           // Verifica se há pagamento confirmado para este usuário (pode estar aguardando validação de token)
-          const payments = await Payment.findByUserId(user.id);
-          const hasPaidPayment = payments && payments.length > 0 && payments.some(p => p.status === 'paid');
+          // Busca por user_id e também por email (caso pagamento tenha sido feito antes do cadastro)
+          const paymentsByUserId = await Payment.findByUserId(user.id);
+          const paymentsByEmail = await db.query(
+            `SELECT p.* FROM payments p
+             INNER JOIN orders o ON p.order_nsu = o.order_nsu
+             WHERE o.customer_email = $1 AND p.status = 'paid'`,
+            [user.email]
+          );
+          const allPayments = [...paymentsByUserId, ...paymentsByEmail.rows];
+          const hasPaidPayment = allPayments.length > 0 && allPayments.some(p => p.status === 'paid');
           
           // Se há pagamento confirmado, verifica se há token pendente
           if (hasPaidPayment) {
