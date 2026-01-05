@@ -189,10 +189,35 @@ Se você não realizou este pagamento, ignore este email.
         messageId: info.messageId
       };
     } catch (error) {
-      console.error('❌ EmailService: Erro ao enviar email de token:', error);
+      // Log detalhado do erro
+      console.error('❌ EmailService: Erro ao enviar email de token:', error.message);
+      console.error('❌ EmailService: Código do erro:', error.code || 'N/A');
+      console.error('❌ EmailService: Email destinatário:', data.email);
+      console.error('❌ EmailService: Token:', data.token);
+      
+      // Mensagem de erro mais específica baseada no tipo de erro
+      let errorMessage = error.message;
+      if (error.code === 'ETIMEDOUT' || error.code === 'ECONNREFUSED') {
+        errorMessage = 'Timeout ou conexão recusada com servidor SMTP. Verifique a configuração de email e conectividade de rede.';
+        console.error('❌ EmailService: Erro de conexão SMTP - verifique:');
+        console.error('   - SMTP_HOST:', process.env.SMTP_HOST);
+        console.error('   - SMTP_PORT:', process.env.SMTP_PORT);
+        console.error('   - Conectividade de rede/firewall');
+        console.error('   - Se o servidor SMTP está acessível');
+      } else if (error.code === 'EAUTH') {
+        errorMessage = 'Falha na autenticação SMTP. Verifique SMTP_USER e SMTP_PASS.';
+        console.error('❌ EmailService: Erro de autenticação SMTP - verifique credenciais');
+      } else if (error.code === 'ESOCKET') {
+        errorMessage = 'Erro de socket ao conectar ao servidor SMTP. Verifique conectividade.';
+        console.error('❌ EmailService: Erro de socket SMTP - verifique conectividade de rede');
+      }
+      
+      console.error('❌ EmailService: Stack:', error.stack);
+      
       return {
         success: false,
-        error: error.message
+        error: errorMessage,
+        code: error.code
       };
     }
   }
