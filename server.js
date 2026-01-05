@@ -352,6 +352,18 @@ if (process.env.NODE_ENV !== 'test') {
       // Inicializa banco de dados automaticamente (cria tabelas se não existirem)
       const initDatabase = require("./scripts/auto-init-database-psql");
       await initDatabase();
+
+      // Executa diagnóstico do fluxo de pagamento (assíncrono, não bloqueia servidor)
+      setImmediate(async () => {
+        try {
+          const { diagnosticarFluxo } = require("./scripts/diagnostico-fluxo-pagamento");
+          console.log("\n🔍 Executando diagnóstico do fluxo de pagamento...");
+          await diagnosticarFluxo();
+        } catch (diagnosticoError) {
+          // Não bloqueia o servidor se houver erro no diagnóstico
+          console.warn("⚠️  Aviso: Erro ao executar diagnóstico (não crítico):", diagnosticoError.message);
+        }
+      });
     } catch (error) {
       console.error("❌ Erro ao conectar com PostgreSQL:", error.message);
       
