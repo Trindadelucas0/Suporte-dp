@@ -132,12 +132,31 @@ class AuthController {
           const paymentsByEmail = await db.query(
             `SELECT p.* FROM payments p
              INNER JOIN orders o ON p.order_nsu = o.order_nsu
-             WHERE o.customer_email = $1 AND p.status = 'paid'`,
+             WHERE LOWER(o.customer_email) = LOWER($1) AND p.status = 'paid'`,
             [user.email]
           );
           const allPayments = [...paymentsByUserId, ...paymentsByEmail.rows];
-          const paidPayments = allPayments.filter(p => p.status === 'paid');
+          // Remove duplicatas baseado em order_nsu
+          const uniquePayments = allPayments.reduce((acc, payment) => {
+            if (!acc.find(p => p.order_nsu === payment.order_nsu)) {
+              acc.push(payment);
+            }
+            return acc;
+          }, []);
+          const paidPayments = uniquePayments.filter(p => p.status === 'paid');
           const hasPaidPayment = paidPayments.length > 0;
+          
+          // Log de debug
+          console.log('🔍 [LOGIN] Verificando pagamentos:', {
+            user_id: user.id,
+            email: user.email,
+            payments_by_user_id: paymentsByUserId.length,
+            payments_by_email: paymentsByEmail.rows.length,
+            all_payments: allPayments.length,
+            unique_payments: uniquePayments.length,
+            paid_payments: paidPayments.length,
+            has_paid_payment: hasPaidPayment
+          });
           
           // Se há pagamento confirmado, verifica se há token pendente
           if (hasPaidPayment) {

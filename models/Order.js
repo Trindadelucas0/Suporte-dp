@@ -11,15 +11,16 @@ class Order {
    * Cria um novo pedido
    * @param {Number} valor - Valor do pedido
    * @param {String} userId - ID do usuário (opcional, para renovação)
+   * @param {String} customerEmail - Email do cliente (opcional)
    * @returns {Object} Pedido criado
    */
-  static async create(valor, userId = null) {
+  static async create(valor, userId = null, customerEmail = null) {
     const orderNsu = uuidv4();
     const result = await db.query(
-      `INSERT INTO orders (order_nsu, status, valor, data_criacao, user_id)
-       VALUES ($1, $2, $3, CURRENT_TIMESTAMP, $4)
-       RETURNING id, order_nsu, status, valor, data_criacao, user_id, created_at`,
-      [orderNsu, 'pending', valor, userId]
+      `INSERT INTO orders (order_nsu, status, valor, data_criacao, user_id, customer_email)
+       VALUES ($1, $2, $3, CURRENT_TIMESTAMP, $4, $5)
+       RETURNING id, order_nsu, status, valor, data_criacao, user_id, customer_email, created_at`,
+      [orderNsu, 'pending', valor, userId, customerEmail]
     );
     return result.rows[0];
   }
