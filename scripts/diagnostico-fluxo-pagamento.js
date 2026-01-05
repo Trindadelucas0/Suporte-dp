@@ -25,42 +25,60 @@ async function diagnosticarFluxo(emailFiltro = null) {
     console.log('🔍 INICIANDO DIAGNÓSTICO DO FLUXO DE PAGAMENTO\n');
     console.log('='.repeat(80));
     
-    // 1. VERIFICAR CONFIGURAÇÃO SMTP
-    console.log('\n📧 1. VERIFICANDO CONFIGURAÇÃO DE EMAIL (SMTP)');
+    // 1. VERIFICAR CONFIGURAÇÃO DE EMAIL
+    console.log('\n📧 1. VERIFICANDO CONFIGURAÇÃO DE EMAIL');
     console.log('-'.repeat(80));
-    const smtpHost = process.env.SMTP_HOST;
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS ? '***configurado***' : '❌ NÃO CONFIGURADO';
     
-    console.log(`SMTP_HOST: ${smtpHost || '❌ NÃO CONFIGURADO'}`);
-    console.log(`SMTP_USER: ${smtpUser || '❌ NÃO CONFIGURADO'}`);
-    console.log(`SMTP_PASS: ${smtpPass}`);
+    // Verifica Brevo API (recomendado)
+    const brevoApiKey = process.env.BREVO_API_KEY;
+    const smtpFrom = process.env.SMTP_FROM;
     
-    if (!smtpHost || !smtpUser || !process.env.SMTP_PASS) {
-      console.log('⚠️  PROBLEMA: SMTP não está configurado! Emails não serão enviados.');
-      console.log('💡 Configure SMTP_HOST, SMTP_USER e SMTP_PASS no .env');
+    console.log(`BREVO_API_KEY: ${brevoApiKey ? '✅ CONFIGURADO' : '❌ NÃO CONFIGURADO'}`);
+    console.log(`SMTP_FROM: ${smtpFrom || '❌ NÃO CONFIGURADO'}`);
+    
+    if (brevoApiKey) {
+      console.log('✅ Brevo API configurado - usando API HTTP (recomendado para Render)');
+      console.log('   💡 Emails serão enviados via API HTTP (sem timeout)');
     } else {
-      console.log('✅ SMTP configurado');
+      console.log('⚠️  BREVO_API_KEY não configurado!');
+      console.log('   💡 Configure BREVO_API_KEY no Render para usar API HTTP');
+      console.log('   💡 Sem BREVO_API_KEY, o sistema tentará usar SMTP (pode dar timeout no Render)');
       
-      // Testa envio de email (teste básico - não envia email real)
-      try {
-        const transporter = emailService.getTransporter();
-        if (transporter) {
-          console.log('✅ Transporter de email inicializado com sucesso');
-          
-          // Testa se consegue criar um email de teste (sem enviar)
-          try {
-            await transporter.verify();
-            console.log('✅ Conexão SMTP verificada com sucesso');
-          } catch (verifyError) {
-            console.log(`⚠️  Erro ao verificar conexão SMTP: ${verifyError.message}`);
-            console.log('   💡 Verifique as credenciais SMTP no .env');
+      // Verifica SMTP como fallback
+      const smtpHost = process.env.SMTP_HOST;
+      const smtpUser = process.env.SMTP_USER;
+      const smtpPass = process.env.SMTP_PASS ? '***configurado***' : '❌ NÃO CONFIGURADO';
+      
+      console.log(`\n   SMTP (fallback):`);
+      console.log(`   SMTP_HOST: ${smtpHost || '❌ NÃO CONFIGURADO'}`);
+      console.log(`   SMTP_USER: ${smtpUser || '❌ NÃO CONFIGURADO'}`);
+      console.log(`   SMTP_PASS: ${smtpPass}`);
+      
+      if (!smtpHost || !smtpUser || !process.env.SMTP_PASS) {
+        console.log('   ⚠️  SMTP também não está configurado! Emails não serão enviados.');
+      } else {
+        console.log('   ✅ SMTP configurado (mas pode dar timeout no Render)');
+        
+        // Testa envio de email (teste básico - não envia email real)
+        try {
+          const transporter = emailService.getTransporter();
+          if (transporter) {
+            console.log('   ✅ Transporter de email inicializado com sucesso');
+            
+            // Testa se consegue criar um email de teste (sem enviar)
+            try {
+              await transporter.verify();
+              console.log('   ✅ Conexão SMTP verificada com sucesso');
+            } catch (verifyError) {
+              console.log(`   ⚠️  Erro ao verificar conexão SMTP: ${verifyError.message}`);
+              console.log('      💡 Isso é normal no Render - use BREVO_API_KEY ao invés de SMTP');
+            }
+          } else {
+            console.log('   ❌ Erro ao inicializar transporter de email');
           }
-        } else {
-          console.log('❌ Erro ao inicializar transporter de email');
+        } catch (emailError) {
+          console.log(`   ❌ Erro ao testar email: ${emailError.message}`);
         }
-      } catch (emailError) {
-        console.log(`❌ Erro ao testar email: ${emailError.message}`);
       }
     }
     
