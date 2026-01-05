@@ -56,9 +56,9 @@ O sistema está usando **SMTP** e dando timeout porque `BREVO_API_KEY` **NÃO es
 
    **Valor:**
    ```
-   seu-email@brevo.com
+   ads.mktt@gmail.com
    ```
-   (Use o email da sua conta Brevo)
+   (Email da sua conta Brevo)
 
 7. **Salve** (o Render reinicia automaticamente)
 
@@ -99,15 +99,15 @@ O sistema está usando **SMTP** e dando timeout porque `BREVO_API_KEY` **NÃO es
 
 **Obrigatório:**
 ```
-BREVO_API_KEY=xkeysib-sua-api-key-aqui
-SMTP_FROM=seu-email@brevo.com
+BREVO_API_KEY=xsmtpsib-b0a992ef6d6e0916f8c557e9bb689ccb26eb07b7bb2124bd3f53488b6908c25f-iwllVP06b47AgrAc
+SMTP_FROM=ads.mktt@gmail.com
 ```
 
 **Opcional (pode remover se quiser):**
 ```
 SMTP_HOST=smtp-relay.brevo.com
 SMTP_PORT=587
-SMTP_USER=seu-email@brevo.com
+SMTP_USER=ads.mktt@gmail.com
 SMTP_PASS=sua-senha-smtp
 ```
 

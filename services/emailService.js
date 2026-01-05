@@ -37,33 +37,57 @@ class EmailService {
     this.useBrevoAPI = false;
     
     // Verifica se deve usar API HTTP do Brevo
-    console.log('🔍 EmailService: Verificando configuração de email...');
+    console.log('\n🔍 EmailService: Verificando configuração de email...');
     console.log('   - Brevo API instalado:', BrevoApi ? '✅ SIM' : '❌ NÃO');
-    console.log('   - BREVO_API_KEY configurado:', process.env.BREVO_API_KEY ? '✅ SIM' : '❌ NÃO');
+    if (!BrevoApi) {
+      console.log('      💡 O pacote será instalado automaticamente no próximo deploy do Render');
+    }
+    
+    const brevoApiKey = process.env.BREVO_API_KEY;
+    console.log('   - BREVO_API_KEY configurado:', brevoApiKey ? '✅ SIM' : '❌ NÃO');
+    if (brevoApiKey) {
+      console.log('      - API Key (primeiros 20 chars):', brevoApiKey.substring(0, 20) + '...');
+    } else {
+      console.log('      💡 Configure BREVO_API_KEY no Render: Environment > Add Environment Variable');
+    }
     console.log('   - SMTP_HOST configurado:', process.env.SMTP_HOST ? '✅ SIM' : '❌ NÃO');
     
-    if (BrevoApi && process.env.BREVO_API_KEY) {
+    if (BrevoApi && brevoApiKey) {
       try {
+        // Configura API Key do Brevo
         const defaultClient = BrevoApi.ApiClient.instance;
-        const apiKey = defaultClient.authentications['api-key'];
-        apiKey.apiKey = process.env.BREVO_API_KEY;
+        const apiKeyAuth = defaultClient.authentications['api-key'];
+        if (!apiKeyAuth) {
+          throw new Error('Autenticação api-key não encontrada no Brevo API Client');
+        }
+        apiKeyAuth.apiKey = brevoApiKey;
         
+        // Cria instância da API
         this.brevoClient = new BrevoApi.TransactionalEmailsApi();
         this.useBrevoAPI = true;
-        console.log('✅ EmailService: Usando API HTTP do Brevo (recomendado para Render)');
-        console.log('   - API Key:', process.env.BREVO_API_KEY.substring(0, 10) + '...');
+        console.log('\n✅ EmailService: Usando API HTTP do Brevo (recomendado para Render)');
+        console.log('   - API Key configurada:', brevoApiKey.substring(0, 20) + '...');
+        console.log('   - Brevo Client inicializado:', !!this.brevoClient);
+        console.log('   - Método: API HTTP (sem timeout no Render)\n');
       } catch (e) {
-        console.error('❌ EmailService: Erro ao inicializar Brevo API:', e.message);
-        console.warn('⚠️ EmailService: Usando SMTP como fallback');
+        console.error('\n❌ EmailService: Erro ao inicializar Brevo API:', e.message);
+        console.error('   - Stack:', e.stack);
+        console.warn('⚠️ EmailService: Usando SMTP como fallback\n');
+        this.useBrevoAPI = false;
+        this.brevoClient = null;
       }
     } else {
+      console.log('\n⚠️ EmailService: Configuração para usar SMTP (não recomendado para Render)');
       if (!BrevoApi) {
-        console.warn('⚠️ EmailService: Pacote "@getbrevo/brevo" não instalado. Instale com: npm install @getbrevo/brevo');
+        console.warn('   - Pacote "@getbrevo/brevo" não instalado.');
+        console.warn('     💡 Será instalado automaticamente no próximo deploy do Render');
       }
-      if (!process.env.BREVO_API_KEY) {
-        console.warn('⚠️ EmailService: BREVO_API_KEY não configurado. Configure no Render para evitar timeout SMTP.');
+      if (!brevoApiKey) {
+        console.warn('   - BREVO_API_KEY não configurado.');
+        console.warn('     💡 Configure no Render: Environment > BREVO_API_KEY');
+        console.warn('     💡 Valor: xsmtpsib-b0a992ef6d6e0916f8c557e9bb689ccb26eb07b7bb2124bd3f53488b6908c25f-iwllVP06b47AgrAc');
       }
-      console.log('📧 EmailService: Usando SMTP tradicional (pode ter timeout no Render)');
+      console.log('   - Método: SMTP (pode ter timeout no Render gratuito)\n');
     }
   }
 
@@ -820,7 +844,8 @@ Esta é uma notificação automática do sistema Suporte DP.
       const nome = data.nome || 'Cliente';
       const validationUrl = `${appUrl}/validar-pagamento?token=${data.token}&email=${encodeURIComponent(data.email)}`;
 
-      const sendSmtpEmail = new BrevoApi.SendSmtpEmail();
+      const SendSmtpEmail = BrevoApi.SendSmtpEmail;
+      const sendSmtpEmail = new SendSmtpEmail();
       sendSmtpEmail.subject = 'Token de Validação de Pagamento - Suporte DP';
       sendSmtpEmail.htmlContent = `
         <!DOCTYPE html>
@@ -944,7 +969,8 @@ Se você não realizou este pagamento, ignore este email.
       const subscriptionStatus = data.subscription_status || 'pendente';
       const dataCadastro = data.data_cadastro || new Date().toLocaleString('pt-BR');
 
-      const sendSmtpEmail = new BrevoApi.SendSmtpEmail();
+      const SendSmtpEmail = BrevoApi.SendSmtpEmail;
+      const sendSmtpEmail = new SendSmtpEmail();
       sendSmtpEmail.subject = `🆕 Novo Usuário Cadastrado - ${nome}`;
       sendSmtpEmail.htmlContent = `
         <!DOCTYPE html>
