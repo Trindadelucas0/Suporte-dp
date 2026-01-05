@@ -7,6 +7,7 @@ const User = require('../models/User');
 const Payment = require('../models/Payment');
 const Order = require('../models/Order');
 const PaymentToken = require('../models/PaymentToken');
+const emailService = require('../services/emailService');
 const db = require('../config/database');
 const { validationResult } = require('express-validator');
 
@@ -403,6 +404,22 @@ class AuthController {
         email: user.email,
         subscription_status: user.subscription_status,
         has_token_validated: hasTokenValidated
+      });
+      
+      // Envia email de notificação para admin (assíncrono, não bloqueia)
+      setImmediate(async () => {
+        try {
+          await emailService.sendNewUserNotification({
+            nome: user.nome,
+            email: user.email,
+            whatsapp: user.whatsapp || null,
+            subscription_status: user.subscription_status,
+            data_cadastro: new Date(user.created_at).toLocaleString('pt-BR')
+          });
+        } catch (emailError) {
+          // Não bloqueia o registro se houver erro no email
+          console.error('⚠️ Erro ao enviar notificação de novo usuário (não crítico):', emailError);
+        }
       });
       
       // Login automático após cadastro
