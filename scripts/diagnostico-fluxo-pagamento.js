@@ -33,6 +33,11 @@ async function diagnosticarFluxo(emailFiltro = null) {
     const resendApiKey = process.env.RESEND_API_KEY;
     const smtpFrom = process.env.SMTP_FROM;
     
+    // Define variáveis SMTP no escopo da função para uso posterior
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS ? '***configurado***' : '❌ NÃO CONFIGURADO';
+    
     console.log(`RESEND_API_KEY: ${resendApiKey ? '✅ CONFIGURADO' : '❌ NÃO CONFIGURADO'}`);
     console.log(`SMTP_FROM: ${smtpFrom ? '✅ CONFIGURADO (' + smtpFrom + ')' : '❌ NÃO CONFIGURADO'}`);
     
@@ -50,9 +55,6 @@ async function diagnosticarFluxo(emailFiltro = null) {
       console.log('   💡 Sem RESEND_API_KEY, o sistema tentará usar SMTP (pode dar timeout no Render)');
       
       // Verifica SMTP como fallback
-      const smtpHost = process.env.SMTP_HOST;
-      const smtpUser = process.env.SMTP_USER;
-      const smtpPass = process.env.SMTP_PASS ? '***configurado***' : '❌ NÃO CONFIGURADO';
       
       console.log(`\n   SMTP (fallback):`);
       console.log(`   SMTP_HOST: ${smtpHost || '❌ NÃO CONFIGURADO'}`);

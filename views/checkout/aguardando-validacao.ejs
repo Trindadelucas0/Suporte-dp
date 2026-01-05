@@ -3,9 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aguardando Validação - Suporte DP</title>
+    <title>Pagamento Confirmado - Suporte DP</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
@@ -13,127 +20,393 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+        
+        .container-card {
+            max-width: 700px;
+            width: 100%;
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         .card {
             border: none;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            max-width: 600px;
-            width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            background: white;
         }
+        
         .card-header {
             background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
             color: white;
-            border-radius: 15px 15px 0 0 !important;
-            padding: 30px;
+            padding: 40px 30px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
-        .card-body {
-            padding: 40px;
+        
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
         }
-        .icon-success {
-            font-size: 64px;
-            color: #10B981;
-            margin-bottom: 20px;
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
         }
-        .steps {
-            margin-top: 30px;
-        }
-        .step {
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #F3F4F6;
-            border-radius: 10px;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            animation: scaleIn 0.5s ease-out 0.3s both;
         }
+        
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+        
+        .card-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card-body {
+            padding: 50px 40px;
+        }
+        
+        .success-message {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .success-message h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 15px;
+        }
+        
+        .email-box {
+            background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+            border: 2px dashed #3B82F6;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .email-box i {
+            font-size: 32px;
+            color: #3B82F6;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .email-box strong {
+            color: #1E40AF;
+            font-size: 18px;
+            word-break: break-all;
+        }
+        
+        .steps-container {
+            margin: 40px 0;
+        }
+        
+        .step-card {
+            background: white;
+            border: 2px solid #E5E7EB;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .step-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #DC2626 0%, #991B1B 100%);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .step-card:hover {
+            border-color: #DC2626;
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.15);
+            transform: translateX(5px);
+        }
+        
+        .step-card:hover::before {
+            transform: scaleY(1);
+        }
+        
         .step-number {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            background: #DC2626;
+            background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            margin-right: 15px;
+            font-weight: 700;
+            font-size: 20px;
+            margin-right: 20px;
             flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
         }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-content strong {
+            display: block;
+            font-size: 18px;
+            color: #1F2937;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .step-content p {
+            color: #6B7280;
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .step-icon {
+            font-size: 24px;
+            color: #DC2626;
+            margin-left: 15px;
+            opacity: 0.6;
+        }
+        
         .btn-primary {
             background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
             border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
+            padding: 16px 40px;
+            border-radius: 12px;
             font-weight: 600;
-            transition: transform 0.2s;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            display: block;
         }
+        
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(220, 38, 38, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+        
+        .help-links {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #E5E7EB;
+        }
+        
+        .help-links p {
+            color: #6B7280;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .help-links a {
+            color: #DC2626;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        
+        .help-links a:hover {
+            color: #991B1B;
+            text-decoration: underline;
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            border: 2px solid #F59E0B;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .alert-info strong {
+            color: #92400E;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .alert-info small {
+            color: #78350F;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .alert-info i {
+            color: #F59E0B;
+            margin-right: 8px;
+        }
+        
+        @media (max-width: 576px) {
+            .card-body {
+                padding: 30px 20px;
+            }
+            
+            .card-header {
+                padding: 30px 20px;
+            }
+            
+            .card-header h2 {
+                font-size: 22px;
+            }
+            
+            .success-message h3 {
+                font-size: 20px;
+            }
+            
+            .step-card {
+                padding: 20px;
+            }
+            
+            .step-number {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+                margin-right: 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <div class="card-header">
-            <h2 class="mb-0">✅ Pagamento Confirmado!</h2>
-        </div>
-        <div class="card-body text-center">
-            <div class="icon-success">✓</div>
-            <h3 class="mb-3">Seu pagamento foi processado com sucesso!</h3>
-            <p class="text-muted mb-4">
-                Um email com o token de validação foi enviado para:<br>
-                <strong><%= email || 'seu email' %></strong>
-            </p>
-
-            <div class="steps text-start">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div>
-                        <strong>Verifique seu email</strong>
-                        <p class="mb-0 text-muted small">Procure na caixa de entrada ou spam</p>
-                    </div>
+    <div class="container-card">
+        <div class="card">
+            <div class="card-header">
+                <div class="success-icon">
+                    <i class="fas fa-check"></i>
                 </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div>
-                        <strong>Copie o token recebido</strong>
-                        <p class="mb-0 text-muted small">O token está no email que enviamos</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div>
-                        <strong>Valide o token e faça login</strong>
-                        <p class="mb-0 text-muted small">Use o token para ativar sua conta</p>
-                    </div>
-                </div>
+                <h2>Pagamento Confirmado!</h2>
             </div>
+            
+            <div class="card-body">
+                <div class="success-message">
+                    <h3>Seu pagamento foi processado com sucesso!</h3>
+                    <p class="text-muted">Estamos quase lá! Siga os passos abaixo para ativar sua conta.</p>
+                </div>
 
-            <div class="mt-4">
+                <div class="email-box">
+                    <i class="fas fa-envelope"></i>
+                    <p class="mb-2" style="color: #6B7280; font-size: 14px;">Token enviado para:</p>
+                    <strong><%= email || 'seu email' %></strong>
+                </div>
+
+                <div class="steps-container">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <strong><i class="fas fa-envelope-open me-2"></i>Verifique seu email</strong>
+                            <p>Procure na caixa de entrada ou na pasta de spam</p>
+                        </div>
+                        <i class="fas fa-arrow-right step-icon"></i>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <strong><i class="fas fa-copy me-2"></i>Copie o token recebido</strong>
+                            <p>O token está no email que enviamos para você</p>
+                        </div>
+                        <i class="fas fa-arrow-right step-icon"></i>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <strong><i class="fas fa-key me-2"></i>Valide o token e faça login</strong>
+                            <p>Use o token para ativar sua conta e acessar o sistema</p>
+                        </div>
+                        <i class="fas fa-check step-icon"></i>
+                    </div>
+                </div>
+
                 <a href="/validar-pagamento<%= email ? '?email=' + encodeURIComponent(email) : '' %>" class="btn btn-primary btn-lg">
+                    <i class="fas fa-rocket me-2"></i>
                     Validar Token e Entrar no Sistema
                 </a>
-            </div>
 
-            <div class="mt-4">
-                <p class="text-muted small mb-2">
-                    Não recebeu o email? Verifique sua caixa de spam ou
-                </p>
-                <a href="/login" class="text-decoration-none">Fazer login para receber novo token</a>
-            </div>
+                <div class="help-links">
+                    <p>
+                        <i class="fas fa-question-circle"></i>
+                        Não recebeu o email? Verifique sua caixa de spam ou
+                    </p>
+                    <a href="/login">
+                        <i class="fas fa-sign-in-alt me-1"></i>
+                        Fazer login para receber novo token
+                    </a>
+                </div>
 
-            <div class="alert alert-info mt-4" role="alert">
-                <small>
-                    <strong>⚠️ Importante:</strong> O token expira em 24 horas e só pode ser usado uma vez.
-                    Você só terá acesso ao sistema após validar o token e fazer login.
-                </small>
+                <div class="alert alert-info" role="alert">
+                    <strong>
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Importante
+                    </strong>
+                    <small>
+                        <br>• O token expira em 24 horas e só pode ser usado uma vez
+                        <br>• Você só terá acesso ao sistema após validar o token e fazer login
+                        <br>• Após validar, você terá acesso por 30 dias
+                    </small>
+                </div>
             </div>
         </div>
     </div>
 </body>
 </html>
-
-
-

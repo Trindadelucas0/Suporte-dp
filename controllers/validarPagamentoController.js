@@ -211,25 +211,41 @@ class ValidarPagamentoController {
         delete req.session.requireTokenValidation;
       }
       
-      // Garantir que a sessão está salva antes de redirecionar
-      // Redireciona para login com mensagem de sucesso (usuário pode fazer login normalmente agora)
-      req.session.save((err) => {
-        if (err) {
-          console.error('Erro ao salvar sessão:', err);
-          return res.render('auth/validar-pagamento', {
-            title: 'Validar Pagamento - Suporte DP',
-            token: token,
-            email: email,
-            error: 'Erro ao processar validação. Tente fazer login.',
-            success: null
-          });
-        }
-        
-        // Redireciona para login com mensagem de sucesso
-        // O usuário pode fazer login normalmente agora que o token foi validado e a assinatura está ativa
+      // Verifica se usuário já está logado na sessão (foi criado na linha 173-179)
+      // Se sim, redireciona direto para dashboard
+      // Se não, redireciona para login com mensagem de sucesso
+      if (req.session.user && req.session.user.id) {
+        console.log('✅ Token validado e assinatura ativada. Usuário já está logado. Redirecionando para dashboard.');
+        req.session.save((err) => {
+          if (err) {
+            console.error('Erro ao salvar sessão:', err);
+            return res.render('auth/validar-pagamento', {
+              title: 'Validar Pagamento - Suporte DP',
+              token: token,
+              email: email,
+              error: 'Erro ao processar validação. Tente fazer login.',
+              success: null
+            });
+          }
+          return res.redirect('/dashboard');
+        });
+      } else {
+        // Usuário não está logado - redireciona para login com mensagem de sucesso
         console.log('✅ Token validado e assinatura ativada. Redirecionando para login.');
-        return res.redirect('/login?token_validado=true&email=' + encodeURIComponent(normalizedEmail));
-      });
+        req.session.save((err) => {
+          if (err) {
+            console.error('Erro ao salvar sessão:', err);
+            return res.render('auth/validar-pagamento', {
+              title: 'Validar Pagamento - Suporte DP',
+              token: token,
+              email: email,
+              error: 'Erro ao processar validação. Tente fazer login.',
+              success: null
+            });
+          }
+          return res.redirect('/login?token_validado=true&email=' + encodeURIComponent(normalizedEmail));
+        });
+      }
 
     } catch (error) {
       console.error('❌ Erro ao validar token:', error);

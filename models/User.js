@@ -119,18 +119,26 @@ class User {
         SELECT column_name 
         FROM information_schema.columns 
         WHERE table_name = 'users' 
-        AND column_name IN ('ativo', 'bloqueado', 'last_login')
+        AND column_name IN ('ativo', 'bloqueado', 'last_login', 'subscription_status', 'subscription_expires_at', 'status', 'order_nsu')
       `);
       
       const existingColumns = columnsCheck.rows.map(r => r.column_name);
       const hasAtivo = existingColumns.includes('ativo');
       const hasBloqueado = existingColumns.includes('bloqueado');
       const hasLastLogin = existingColumns.includes('last_login');
+      const hasSubscriptionStatus = existingColumns.includes('subscription_status');
+      const hasSubscriptionExpiresAt = existingColumns.includes('subscription_expires_at');
+      const hasStatus = existingColumns.includes('status');
+      const hasOrderNsu = existingColumns.includes('order_nsu');
 
       let selectFields = 'id, nome, email, is_admin, created_at';
       if (hasAtivo) selectFields += ', ativo';
       if (hasBloqueado) selectFields += ', bloqueado';
       if (hasLastLogin) selectFields += ', last_login';
+      if (hasSubscriptionStatus) selectFields += ', subscription_status';
+      if (hasSubscriptionExpiresAt) selectFields += ', subscription_expires_at';
+      if (hasStatus) selectFields += ', status';
+      if (hasOrderNsu) selectFields += ', order_nsu';
 
       const result = await db.query(
         `SELECT ${selectFields} FROM users WHERE id = $1`,
@@ -145,21 +153,30 @@ class User {
         ...user,
         ativo: hasAtivo ? (user.ativo !== undefined ? user.ativo : true) : true,
         bloqueado: hasBloqueado ? (user.bloqueado !== undefined ? user.bloqueado : false) : false,
-        last_login: hasLastLogin ? user.last_login : null
+        last_login: hasLastLogin ? user.last_login : null,
+        subscription_status: hasSubscriptionStatus ? (user.subscription_status || null) : null,
+        subscription_expires_at: hasSubscriptionExpiresAt ? (user.subscription_expires_at || null) : null,
+        status: hasStatus ? (user.status || 'ativo') : 'ativo',
+        order_nsu: hasOrderNsu ? (user.order_nsu || null) : null
       };
     } catch (error) {
       console.error('Erro ao buscar usuário por ID:', error);
       // Fallback
       const result = await db.query(
-        'SELECT id, nome, email, is_admin, created_at FROM users WHERE id = $1',
+        'SELECT id, nome, email, is_admin, created_at, subscription_status, subscription_expires_at, status, order_nsu FROM users WHERE id = $1',
         [id]
       );
       if (!result.rows[0]) return null;
+      const user = result.rows[0];
       return {
-        ...result.rows[0],
+        ...user,
         ativo: true,
         bloqueado: false,
-        last_login: null
+        last_login: null,
+        subscription_status: user.subscription_status || null,
+        subscription_expires_at: user.subscription_expires_at || null,
+        status: user.status || 'ativo',
+        order_nsu: user.order_nsu || null
       };
     }
   }
