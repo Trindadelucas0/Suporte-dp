@@ -5,6 +5,7 @@
 
 const db = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
+const { normalizeEmail } = require('../utils/emailValidator');
 
 class PaymentToken {
   /**
@@ -16,6 +17,12 @@ class PaymentToken {
    * @throws {Error} Se não houver pagamento confirmado para o order_nsu
    */
   static async create(orderNsu, email, userId = null) {
+    // Normaliza email antes de salvar (garante consistência)
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail) {
+      throw new Error(`Email inválido: ${email}. Não é possível gerar token com email inválido.`);
+    }
+
     // Validação: Verifica se há pagamento confirmado para este order_nsu
     const paymentCheck = await db.query(
       `SELECT id, status, paid_at 
@@ -38,7 +45,7 @@ class PaymentToken {
       `INSERT INTO payment_tokens (token, order_nsu, user_id, email, expires_at)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, token, order_nsu, user_id, email, used, expires_at, created_at`,
-      [token, orderNsu, userId, email, expiresAt]
+      [token, orderNsu, userId, normalizedEmail, expiresAt]
     );
 
     return result.rows[0];
@@ -83,6 +90,12 @@ class PaymentToken {
    * @returns {Object|null} Token válido
    */
   static async findValidToken(email, orderNsu) {
+    // Normaliza email antes de buscar (garante consistência com tokens criados)
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail) {
+      return null; // Email inválido, não há token
+    }
+
     const now = new Date();
     const result = await db.query(
       `SELECT id, token, order_nsu, user_id, email, used, expires_at, used_at, created_at
@@ -93,7 +106,7 @@ class PaymentToken {
          AND expires_at > $3
        ORDER BY created_at DESC
        LIMIT 1`,
-      [email, orderNsu, now]
+      [normalizedEmail, orderNsu, now]
     );
 
     return result.rows[0] || null;
@@ -139,6 +152,12 @@ class PaymentToken {
    * @returns {Object|null} Token pendente encontrado
    */
   static async findPendingTokenByEmail(email) {
+    // Normaliza email antes de buscar (garante consistência com tokens criados)
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail) {
+      return null; // Email inválido, não há token
+    }
+
     const now = new Date();
     const result = await db.query(
       `SELECT id, token, order_nsu, user_id, email, used, expires_at, used_at, created_at
@@ -148,7 +167,7 @@ class PaymentToken {
          AND expires_at > $2
        ORDER BY created_at DESC
        LIMIT 1`,
-      [email.toLowerCase(), now]
+      [normalizedEmail, now]
     );
 
     return result.rows[0] || null;
@@ -161,6 +180,12 @@ class PaymentToken {
    * @returns {Object|null} Token gerado nos últimos 30 dias
    */
   static async findRecentToken(email, userId = null) {
+    // Normaliza email antes de buscar (garante consistência com tokens criados)
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail) {
+      return null; // Email inválido, não há token
+    }
+
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
@@ -172,7 +197,7 @@ class PaymentToken {
       ORDER BY created_at DESC
       LIMIT 1
     `;
-    let params = [email.toLowerCase(), thirtyDaysAgo];
+    let params = [normalizedEmail, thirtyDaysAgo];
     
     // Se userId foi fornecido, também busca por user_id
     if (userId) {
@@ -184,7 +209,7 @@ class PaymentToken {
         ORDER BY created_at DESC
         LIMIT 1
       `;
-      params = [email.toLowerCase(), userId, thirtyDaysAgo];
+      params = [normalizedEmail, userId, thirtyDaysAgo];
     }
     
     const result = await db.query(query, params);
@@ -202,6 +227,12 @@ class PaymentToken {
    */
   static async createWithClient(orderNsu, email, userId = null, client = null) {
     const dbClient = client || db;
+    
+    // Normaliza email antes de salvar (garante consistência)
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail) {
+      throw new Error(`Email inválido: ${email}. Não é possível gerar token com email inválido.`);
+    }
     
     // Validação: Verifica se há pagamento confirmado para este order_nsu
     const paymentCheck = await dbClient.query(
@@ -225,7 +256,7 @@ class PaymentToken {
       `INSERT INTO payment_tokens (token, order_nsu, user_id, email, expires_at)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, token, order_nsu, user_id, email, used, expires_at, created_at`,
-      [token, orderNsu, userId, email, expiresAt]
+      [token, orderNsu, userId, normalizedEmail, expiresAt]
     );
 
     return result.rows[0];
@@ -243,6 +274,12 @@ class PaymentToken {
       return 0;
     }
 
+    // Normaliza email antes de atualizar (garante consistência)
+    const normalizedEmail = normalizeEmail(novoEmail);
+    if (!normalizedEmail) {
+      return 0; // Email inválido, não atualiza
+    }
+
     const result = await db.query(
       `UPDATE payment_tokens
        SET email = $1
@@ -250,7 +287,7 @@ class PaymentToken {
          AND used = false
          AND expires_at > CURRENT_TIMESTAMP
        RETURNING id, token, order_nsu, email`,
-      [novoEmail.toLowerCase(), userId]
+      [normalizedEmail, userId]
     );
 
     return result.rowCount || 0;
