@@ -163,7 +163,35 @@ class AuthController {
             const tokenPendente = await PaymentToken.findPendingTokenByEmail(user.email);
             
             if (tokenPendente) {
-              // Há token pendente - cria sessão mas redireciona para validação de token
+              // Há token pendente - reenvia email com token e redireciona para validação
+              console.log('🔐 [LOGIN] Token pendente encontrado. Reenviando email com token:', {
+                user_id: user.id,
+                email: user.email,
+                token: tokenPendente.token,
+                order_nsu: tokenPendente.order_nsu
+              });
+              
+              // Busca o pagamento relacionado para obter o valor
+              const paymentRelacionado = await Payment.findByOrderNsu(tokenPendente.order_nsu);
+              const valorReais = paymentRelacionado ? parseFloat(paymentRelacionado.paid_amount || 1990) / 100 : 19.90;
+              
+              // Reenvia email com token (assíncrono, não bloqueia)
+              setImmediate(async () => {
+                try {
+                  await emailService.sendPaymentToken({
+                    email: user.email,
+                    token: tokenPendente.token,
+                    nome: user.nome,
+                    orderNsu: tokenPendente.order_nsu,
+                    valor: valorReais
+                  });
+                  console.log('✅ [LOGIN] Email com token reenviado com sucesso:', user.email);
+                } catch (emailError) {
+                  console.error('⚠️ [LOGIN] Erro ao reenviar email com token (não crítico):', emailError);
+                }
+              });
+              
+              // Cria sessão mas redireciona para validação de token
               req.session.user = {
                 id: user.id,
                 nome: user.nome,
@@ -174,11 +202,6 @@ class AuthController {
               req.session.requireTokenValidation = true;
               
               await User.updateLastLogin(user.id);
-              
-              console.log('🔐 [LOGIN] Pagamento confirmado encontrado, mas token não validado. Redirecionando para validação:', {
-                user_id: user.id,
-                email: user.email
-              });
               
               req.session.save((err) => {
                 if (err) {
@@ -317,7 +340,35 @@ class AuthController {
         const tokenPendente = await PaymentToken.findPendingTokenByEmail(user.email);
         
         if (tokenPendente) {
-          // Há token pendente - cria sessão mas redireciona para validação de token
+          // Há token pendente - reenvia email com token e redireciona para validação
+          console.log('🔐 [LOGIN] Token pendente encontrado (renovação). Reenviando email com token:', {
+            user_id: user.id,
+            email: user.email,
+            token: tokenPendente.token,
+            order_nsu: tokenPendente.order_nsu
+          });
+          
+          // Busca o pagamento relacionado para obter o valor
+          const paymentRelacionado = await Payment.findByOrderNsu(tokenPendente.order_nsu);
+          const valorReais = paymentRelacionado ? parseFloat(paymentRelacionado.paid_amount || 1990) / 100 : 19.90;
+          
+          // Reenvia email com token (assíncrono, não bloqueia)
+          setImmediate(async () => {
+            try {
+              await emailService.sendPaymentToken({
+                email: user.email,
+                token: tokenPendente.token,
+                nome: user.nome,
+                orderNsu: tokenPendente.order_nsu,
+                valor: valorReais
+              });
+              console.log('✅ [LOGIN] Email com token reenviado com sucesso:', user.email);
+            } catch (emailError) {
+              console.error('⚠️ [LOGIN] Erro ao reenviar email com token (não crítico):', emailError);
+            }
+          });
+          
+          // Cria sessão mas redireciona para validação de token
           req.session.user = {
             id: user.id,
             nome: user.nome,
@@ -328,11 +379,6 @@ class AuthController {
           req.session.requireTokenValidation = true;
           
           await User.updateLastLogin(user.id);
-          
-          console.log('🔐 [LOGIN] Token pendente encontrado (renovação), redirecionando para validação:', {
-            user_id: user.id,
-            email: user.email
-          });
           
           req.session.save((err) => {
             if (err) {

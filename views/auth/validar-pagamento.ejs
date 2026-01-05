@@ -24,7 +24,8 @@
             </h2>
             <p class="mt-2 text-sm text-gray-600">
                 <% if (typeof from !== 'undefined' && from === 'login') { %>
-                    Digite o token recebido por email para completar o login
+                    Digite o token recebido por email para completar o login.<br>
+                    <span class="text-green-600 font-semibold">✓ Um novo email com o token foi enviado para você!</span>
                 <% } else { %>
                     Insira o token recebido por email para liberar o acesso
                 <% } %>

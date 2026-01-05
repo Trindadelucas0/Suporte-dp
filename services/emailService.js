@@ -30,14 +30,28 @@ class EmailService {
     this.useResendAPI = false;
     
     // Verifica se deve usar API do Resend
+    console.log('🔍 EmailService: Verificando configuração de email...');
+    console.log('   - Resend instalado:', Resend ? '✅ SIM' : '❌ NÃO');
+    console.log('   - RESEND_API_KEY configurado:', process.env.RESEND_API_KEY ? '✅ SIM' : '❌ NÃO');
+    console.log('   - SMTP_HOST configurado:', process.env.SMTP_HOST ? '✅ SIM' : '❌ NÃO');
+    
     if (Resend && process.env.RESEND_API_KEY) {
       try {
         this.resendClient = new Resend(process.env.RESEND_API_KEY);
         this.useResendAPI = true;
         console.log('✅ EmailService: Usando API do Resend (recomendado para Render)');
+        console.log('   - API Key:', process.env.RESEND_API_KEY.substring(0, 10) + '...');
       } catch (e) {
         console.warn('⚠️ EmailService: Erro ao inicializar Resend, usando SMTP:', e.message);
       }
+    } else {
+      if (!Resend) {
+        console.warn('⚠️ EmailService: Pacote "resend" não instalado. Instale com: npm install resend');
+      }
+      if (!process.env.RESEND_API_KEY) {
+        console.warn('⚠️ EmailService: RESEND_API_KEY não configurado. Configure no Render para evitar timeout SMTP.');
+      }
+      console.log('📧 EmailService: Usando SMTP tradicional (pode ter timeout no Render)');
     }
   }
 
@@ -221,12 +235,27 @@ Se você não realizou este pagamento, ignore este email.
    * @returns {Promise<Object>} Resultado do envio
    */
   async sendPaymentToken(data) {
+    // Verifica novamente se RESEND_API_KEY está disponível (pode ter sido configurado depois)
+    // Isso garante que mesmo se a variável foi adicionada após o servidor iniciar, ainda funciona
+    if (!this.useResendAPI && Resend && process.env.RESEND_API_KEY) {
+      try {
+        this.resendClient = new Resend(process.env.RESEND_API_KEY);
+        this.useResendAPI = true;
+        console.log('✅ EmailService: API do Resend detectada e inicializada (configurada após startup)');
+      } catch (e) {
+        console.warn('⚠️ EmailService: Erro ao inicializar Resend:', e.message);
+      }
+    }
+    
     // Se Resend API está disponível, usa ela (melhor para Render)
     if (this.useResendAPI && this.resendClient) {
+      console.log('📧 EmailService: Usando API do Resend para enviar email');
       return await this.sendPaymentTokenViaResendAPI(data);
     }
 
     // Caso contrário, usa SMTP tradicional
+    console.log('📧 EmailService: Usando SMTP tradicional (RESEND_API_KEY não configurado)');
+    console.log('💡 Para usar API do Resend no Render, configure RESEND_API_KEY no Render');
     const transporter = this.getTransporter();
 
     if (!transporter) {
