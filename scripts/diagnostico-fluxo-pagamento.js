@@ -104,7 +104,11 @@ async function diagnosticarFluxo(emailFiltro = null) {
       if (emailFiltro) {
         console.log(`💡 Verifique se o email ${emailFiltro} tem pagamentos confirmados.`);
       }
-      process.exit(0);
+      // Só encerra o processo se executado diretamente (não quando importado como módulo)
+      if (require.main === module) {
+        process.exit(0);
+      }
+      return; // Retorna sem encerrar se chamado como módulo
     }
     
     console.log('\n📋 Lista de pagamentos confirmados:');
@@ -274,11 +278,20 @@ async function diagnosticarFluxo(emailFiltro = null) {
     console.log('\n' + '='.repeat(80));
     console.log('✅ DIAGNÓSTICO CONCLUÍDO\n');
     
-    process.exit(0);
+    // Só encerra o processo se executado diretamente (não quando importado como módulo)
+    if (require.main === module) {
+      process.exit(0);
+    }
   } catch (error) {
     console.error('❌ Erro no diagnóstico:', error);
     console.error('Stack:', error.stack);
-    process.exit(1);
+    
+    // Só encerra o processo se executado diretamente (não quando importado como módulo)
+    if (require.main === module) {
+      process.exit(1);
+    }
+    // Se chamado como módulo, relança o erro para ser tratado pelo chamador
+    throw error;
   }
 }
 
