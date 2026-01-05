@@ -12,6 +12,38 @@ const db = require('../config/database');
 const { validationResult } = require('express-validator');
 
 class AuthController {
+  /**
+   * Verifica se a assinatura do usuário está ativa
+   * @param {Object} user - Objeto do usuário com subscription_status e subscription_expires_at
+   * @returns {Boolean} True se assinatura está ativa (status 'ativa' e não expirada)
+   * @private
+   */
+  static _isSubscriptionActive(user) {
+    // Validações básicas
+    if (!user || !user.subscription_status) {
+      return false;
+    }
+    
+    // Verifica se status é 'ativa'
+    if (user.subscription_status !== 'ativa') {
+      return false;
+    }
+    
+    // Verifica se tem data de expiração
+    if (!user.subscription_expires_at) {
+      return false;
+    }
+    
+    // Verifica se não expirou
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    const dataExpiracao = new Date(user.subscription_expires_at);
+    dataExpiracao.setHours(0, 0, 0, 0);
+    
+    return dataExpiracao >= hoje;
+  }
+
   static async login(req, res) {
     if (req.method === 'GET') {
       let error = null;
@@ -105,7 +137,7 @@ class AuthController {
         const assinaturaInadimplente = user.subscription_status === 'inadimplente';
         const assinaturaPendente = user.subscription_status === 'pendente';
         const semAssinatura = !user.subscription_expires_at || !user.subscription_status || user.subscription_status === null;
-        const assinaturaAtiva = user.subscription_status === 'ativa' && dataExpiracao && dataExpiracao >= hoje;
+        const assinaturaAtiva = AuthController._isSubscriptionActive(user);
 
         // REGRA PRINCIPAL: Se assinatura está ATIVA, permite login direto SEM verificar tokens
         // Tokens pendentes só importam se a assinatura NÃO está ativa
@@ -326,13 +358,7 @@ class AuthController {
                     });
                     
                     // Se assinatura está ativa, permite login normalmente
-                    if (user.subscription_status === 'ativa' && user.subscription_expires_at) {
-                      const hoje = new Date();
-                      hoje.setHours(0, 0, 0, 0);
-                      const dataExpiracao = new Date(user.subscription_expires_at);
-                      dataExpiracao.setHours(0, 0, 0, 0);
-                      
-                      if (dataExpiracao >= hoje) {
+                    if (AuthController._isSubscriptionActive(user)) {
                         // Assinatura ativa - permite login
                         req.session.user = {
                           id: user.id,
@@ -356,7 +382,6 @@ class AuthController {
                           return res.redirect('/dashboard');
                         });
                         return;
-                      }
                     }
                     
                     // Assinatura não está ativa - informa que precisa aguardar email ou fazer novo pagamento
