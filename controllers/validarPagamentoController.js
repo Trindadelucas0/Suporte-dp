@@ -211,7 +211,8 @@ class ValidarPagamentoController {
         delete req.session.requireTokenValidation;
       }
       
-      // Redireciona automaticamente para dashboard (usuário já está logado na sessão)
+      // Garantir que a sessão está salva antes de redirecionar
+      // Redireciona para login com mensagem de sucesso (usuário pode fazer login normalmente agora)
       req.session.save((err) => {
         if (err) {
           console.error('Erro ao salvar sessão:', err);
@@ -224,9 +225,10 @@ class ValidarPagamentoController {
           });
         }
         
-        // Redireciona para dashboard (usuário já está logado)
-        console.log('✅ Token validado e assinatura ativada. Redirecionando para dashboard.');
-        return res.redirect('/dashboard');
+        // Redireciona para login com mensagem de sucesso
+        // O usuário pode fazer login normalmente agora que o token foi validado e a assinatura está ativa
+        console.log('✅ Token validado e assinatura ativada. Redirecionando para login.');
+        return res.redirect('/login?token_validado=true&email=' + encodeURIComponent(normalizedEmail));
       });
 
     } catch (error) {

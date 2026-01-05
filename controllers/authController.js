@@ -25,6 +25,8 @@ class AuthController {
         error = 'Usuário não encontrado. Por favor, faça login novamente.';
       } else if (req.query.renovado === 'true') {
         success = 'Assinatura renovada com sucesso! Faça login para continuar usando o sistema.';
+      } else if (req.query.token_validado === 'true') {
+        success = 'Token validado com sucesso! Sua assinatura está ativa por 30 dias. Faça login para acessar o sistema.';
       } else if (req.query.msg === 'ja_cadastrado') {
         error = 'Você já possui uma conta cadastrada. Faça login com suas credenciais.';
       }
@@ -296,7 +298,7 @@ class AuthController {
                 })[0];
                 
                 if (paymentMaisRecente && paymentMaisRecente.order_nsu) {
-                  // Verifica se já existe token válido para este pagamento
+                  // Verifica se já existe token válido (não usado, não expirado) para este pagamento
                   const tokensExistentes = await PaymentToken.findByOrderNsu(paymentMaisRecente.order_nsu);
                   const tokenValidoExistente = tokensExistentes.find(t => {
                     const now = new Date();
@@ -304,51 +306,15 @@ class AuthController {
                     return !t.used && expiresAt > now;
                   });
                   
-                  // Verifica se há token gerado nos últimos 30 dias para este usuário
-                  const tokenRecente = await PaymentToken.findRecentToken(user.email, user.id);
-                  
                   if (tokenValidoExistente) {
-                    console.log('ℹ️ [LOGIN] Já existe token válido para este pagamento, não gerando novo:', {
+                    // Há token válido pendente - redireciona para validação
+                    console.log('🔐 [LOGIN] Token pendente encontrado, redirecionando para validação:', {
                       order_nsu: paymentMaisRecente.order_nsu,
-                      token_existente: tokenValidoExistente.token
-                    });
-                    // Não gera novo token - redireciona informando que precisa fazer novo pagamento
-                    return res.render('auth/login', {
-                      title: 'Login - Suporte DP',
-                      error: 'Seu token de validação já foi usado ou expirou. Para receber um novo token, é necessário fazer um novo pagamento.',
-                      success: null
-                    });
-                  } else if (tokenRecente) {
-                    console.log('ℹ️ [LOGIN] Já existe token gerado nos últimos 30 dias para este usuário, não gerando novo:', {
-                      order_nsu: paymentMaisRecente.order_nsu,
-                      token_recente: tokenRecente.token,
-                      created_at: tokenRecente.created_at,
-                      user_id: user.id
-                    });
-                    // Não gera novo token - já existe um gerado nos últimos 30 dias
-                    // Redireciona informando que precisa aguardar 30 dias ou fazer novo pagamento
-                    return res.render('auth/login', {
-                      title: 'Login - Suporte DP',
-                      error: 'Você já recebeu um token de validação nos últimos 30 dias. Para receber um novo token, é necessário aguardar 30 dias ou fazer um novo pagamento.',
-                      success: null
-                    });
-                  } else {
-                    // Não há token válido nem token recente - NÃO gera novo token no login
-                    // Tokens só devem ser gerados no webhook quando o pagamento é confirmado
-                    console.log('ℹ️ [LOGIN] Não há token válido, mas não gerando novo no login:', {
-                      order_nsu: paymentMaisRecente.order_nsu,
-                      email: user.email,
-                      motivo: 'Tokens só são gerados no webhook quando pagamento é confirmado'
+                      token_existente: tokenValidoExistente.token,
+                      email: user.email
                     });
                     
-                    // Informa ao usuário que precisa aguardar o email ou fazer novo pagamento
-                    return res.render('auth/login', {
-                      title: 'Login - Suporte DP',
-                      error: 'Seu pagamento foi confirmado, mas não há token de validação disponível. Verifique seu email ou entre em contato com o suporte.',
-                      success: null
-                    });
-                    
-                    // Redireciona para validação
+                    // Cria sessão e redireciona para validação de token
                     req.session.user = {
                       id: user.id,
                       nome: user.nome,
@@ -372,6 +338,57 @@ class AuthController {
                       return res.redirect(`/validar-pagamento?email=${encodeURIComponent(user.email)}&from=login`);
                     });
                     return;
+                  } else {
+                    // Não há token válido pendente - verifica se assinatura está ativa
+                    // Se assinatura está ativa, permite login normalmente
+                    // Se não está ativa, informa que precisa aguardar email ou fazer novo pagamento
+                    console.log('ℹ️ [LOGIN] Não há token válido pendente para este pagamento:', {
+                      order_nsu: paymentMaisRecente.order_nsu,
+                      email: user.email,
+                      subscription_status: user.subscription_status,
+                      subscription_expires_at: user.subscription_expires_at
+                    });
+                    
+                    // Se assinatura está ativa, permite login normalmente
+                    if (user.subscription_status === 'ativa' && user.subscription_expires_at) {
+                      const hoje = new Date();
+                      hoje.setHours(0, 0, 0, 0);
+                      const dataExpiracao = new Date(user.subscription_expires_at);
+                      dataExpiracao.setHours(0, 0, 0, 0);
+                      
+                      if (dataExpiracao >= hoje) {
+                        // Assinatura ativa - permite login
+                        req.session.user = {
+                          id: user.id,
+                          nome: user.nome,
+                          email: user.email,
+                          is_admin: user.is_admin
+                        };
+                        req.session.lastActivity = Date.now();
+                        
+                        await User.updateLastLogin(user.id);
+                        
+                        req.session.save((err) => {
+                          if (err) {
+                            console.error('Erro ao salvar sessão:', err);
+                            return res.render('auth/login', {
+                              title: 'Login - Suporte DP',
+                              error: 'Erro ao fazer login. Tente novamente.',
+                              success: null
+                            });
+                          }
+                          return res.redirect('/dashboard');
+                        });
+                        return;
+                      }
+                    }
+                    
+                    // Assinatura não está ativa - informa que precisa aguardar email ou fazer novo pagamento
+                    return res.render('auth/login', {
+                      title: 'Login - Suporte DP',
+                      error: 'Seu pagamento foi confirmado, mas não há token de validação disponível. Verifique seu email ou entre em contato com o suporte.',
+                      success: null
+                    });
                   }
                 } else {
                   throw new Error('Order NSU não encontrado');
