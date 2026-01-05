@@ -694,6 +694,140 @@ Esta é uma notificação automática do sistema Suporte DP.
       };
     }
   }
+
+  /**
+   * Envia notificação de novo usuário via API do Resend
+   * @param {Object} data - Dados do novo usuário
+   * @returns {Promise<Object>} Resultado do envio
+   */
+  async sendNewUserNotificationViaResendAPI(data) {
+    try {
+      const smtpFrom = process.env.SMTP_FROM || 'noreply@pixsile.resend.app';
+      const adminEmail = 'lucasrodrigues4@live.com';
+      const appUrl = process.env.APP_URL || 'http://localhost:3000';
+      const nome = data.nome || 'Não informado';
+      const email = data.email || 'Não informado';
+      const whatsapp = data.whatsapp || 'Não informado';
+      const subscriptionStatus = data.subscription_status || 'pendente';
+      const dataCadastro = data.data_cadastro || new Date().toLocaleString('pt-BR');
+
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Novo Usuário Cadastrado</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%); padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0;">🆕 Novo Usuário Cadastrado</h1>
+          </div>
+          
+          <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #ddd;">
+            <h2 style="color: #DC2626; margin-top: 0;">Um novo usuário se cadastrou no sistema!</h2>
+            
+            <div style="background: white; border: 2px solid #DC2626; border-radius: 8px; padding: 20px; margin: 30px 0;">
+              <h3 style="color: #DC2626; margin-top: 0; border-bottom: 2px solid #DC2626; padding-bottom: 10px;">Dados do Usuário</h3>
+              
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #666; width: 40%;">Nome:</td>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; color: #333;">${nome}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #666;">Email:</td>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; color: #333;">${email}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #666;">WhatsApp:</td>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; color: #333;">${whatsapp}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #666;">Status Assinatura:</td>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; color: #333;">
+                    <span style="background: ${subscriptionStatus === 'ativa' ? '#10b981' : '#f59e0b'}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                      ${subscriptionStatus === 'ativa' ? '✅ Ativa' : '⏳ Pendente'}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; font-weight: bold; color: #666;">Data do Cadastro:</td>
+                  <td style="padding: 10px; color: #333;">${dataCadastro}</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div style="margin: 30px 0; text-align: center;">
+              <a href="${appUrl}/admin/usuarios" 
+                 style="background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%); 
+                        color: white; 
+                        padding: 15px 30px; 
+                        text-decoration: none; 
+                        border-radius: 5px; 
+                        font-weight: bold;
+                        display: inline-block;">
+                Ver Usuários no Sistema
+              </a>
+            </div>
+            
+            <p style="font-size: 12px; color: #999; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
+              Esta é uma notificação automática do sistema Suporte DP.
+            </p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const textContent = `
+🆕 Novo Usuário Cadastrado - Suporte DP
+
+Um novo usuário se cadastrou no sistema!
+
+Dados do Usuário:
+- Nome: ${nome}
+- Email: ${email}
+- WhatsApp: ${whatsapp}
+- Status Assinatura: ${subscriptionStatus}
+- Data do Cadastro: ${dataCadastro}
+
+Acesse o painel administrativo: ${appUrl}/admin/usuarios
+
+Esta é uma notificação automática do sistema Suporte DP.
+      `;
+
+      const result = await this.resendClient.emails.send({
+        from: `Suporte DP - Sistema <${smtpFrom}>`,
+        to: adminEmail,
+        subject: `🆕 Novo Usuário Cadastrado - ${nome}`,
+        html: htmlContent,
+        text: textContent
+      });
+
+      // Resend API retorna { data: { id: ... }, error: null } ou { data: null, error: ... }
+      const messageId = result.data?.id || result.id || 'N/A';
+      
+      if (result.error) {
+        throw new Error(result.error.message || 'Erro ao enviar email via Resend API');
+      }
+
+      console.log('✅ EmailService (Resend API): Notificação de novo usuário enviada');
+      console.log('📬 EmailService (Resend API): Message ID:', messageId);
+
+      return {
+        success: true,
+        messageId: messageId
+      };
+    } catch (error) {
+      console.error('❌ EmailService (Resend API): Erro ao enviar notificação de novo usuário:', error.message);
+      console.error('❌ EmailService (Resend API): Stack:', error.stack);
+      return {
+        success: false,
+        error: error.message,
+        code: error.code || 'UNKNOWN'
+      };
+    }
+  }
 }
 
 // Exporta uma instância singleton
