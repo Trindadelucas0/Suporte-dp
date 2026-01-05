@@ -78,22 +78,31 @@
             background-clip: text;
         }
 
-        .gradient-bg {
-            background: linear-gradient(135deg, #DC2626 0%, #FBBF24 50%, #DC2626 100%);
-            background-size: 200% 200%;
-            animation: gradient 15s ease infinite;
+        .dark-gradient-bg {
+            background: linear-gradient(135deg, 
+                #000000 0%, 
+                #050505 25%, 
+                #000000 50%, 
+                #050505 75%, 
+                #000000 100%
+            );
         }
 
-        .pattern-dots {
-            background-image: radial-gradient(circle, rgba(220, 38, 38, 0.1) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-
-        .pattern-grid {
-            background-image:
-                linear-gradient(rgba(220, 38, 38, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(220, 38, 38, 0.05) 1px, transparent 1px);
-            background-size: 30px 30px;
+        .light-effects {
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(
+                    circle at 20% 30%, 
+                    rgba(220, 38, 38, 0.08) 0%, 
+                    transparent 50%
+                ),
+                radial-gradient(
+                    circle at 80% 70%, 
+                    rgba(251, 191, 36, 0.08) 0%, 
+                    transparent 50%
+                );
+            pointer-events: none;
         }
 
         .icon-glow {
@@ -110,19 +119,21 @@
     </style>
 </head>
 
-<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-    <div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden pattern-dots">
-        <!-- Animated Background Elements -->
-        <div class="absolute inset-0 gradient-bg opacity-20"></div>
-        <div class="absolute top-10 left-10 w-72 h-72 bg-primary-red/20 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div class="absolute bottom-10 right-10 w-96 h-96 bg-primary-yellow/20 rounded-full blur-3xl animate-pulse-slow"
+<body class="dark-gradient-bg min-h-screen">
+    <div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden dark-gradient-bg">
+        <!-- Efeitos de Luz com Cores do Sistema -->
+        <div class="light-effects"></div>
+
+        <!-- Círculos de Luz Pulsantes -->
+        <div class="absolute top-10 left-10 w-96 h-96 bg-primary-red/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div class="absolute bottom-10 right-10 w-96 h-96 bg-primary-yellow/10 rounded-full blur-3xl animate-pulse-slow"
             style="animation-delay: 2s;"></div>
 
-        <!-- Floating Icons -->
-        <div class="absolute top-20 left-20 text-primary-red/20 text-6xl animate-float icon-glow">
+        <!-- Ícones Flutuantes -->
+        <div class="absolute top-20 left-20 text-primary-red/5 text-6xl animate-float">
             <i class="fas fa-calculator"></i>
         </div>
-        <div class="absolute bottom-20 right-20 text-primary-yellow/20 text-5xl animate-float icon-glow-yellow"
+        <div class="absolute bottom-20 right-20 text-primary-yellow/5 text-5xl animate-float"
             style="animation-delay: 1s;">
             <i class="fas fa-chart-line"></i>
         </div>
@@ -170,7 +181,8 @@
                                             <i class="fas fa-envelope text-primary-yellow mr-2"></i>Email
                                         </label>
                                         <input type="email" id="email" name="email" required
-                                            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-primary-red focus:border-primary-red transition-all input-glow backdrop-blur-sm">
+                                            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-primary-red focus:border-primary-red transition-all input-glow backdrop-blur-sm"
+                                            placeholder="seu@email.com">
                                     </div>
 
                                     <div>
@@ -178,7 +190,8 @@
                                             <i class="fas fa-lock text-primary-yellow mr-2"></i>Senha
                                         </label>
                                         <input type="password" id="senha" name="senha" required
-                                            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-primary-red focus:border-primary-red transition-all input-glow backdrop-blur-sm">
+                                            class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-primary-red focus:border-primary-red transition-all input-glow backdrop-blur-sm"
+                                            placeholder="Digite sua senha">
                                     </div>
 
                                     <button type="submit"
@@ -202,7 +215,7 @@
                                             Cadastre-se aqui
                                         </a>
                                     </p>
-                                    <p class="text-white/50 text-xs">
+                                    <p class="text-white/60 text-xs">
                                         <i class="fas fa-info-circle mr-1"></i>
                                         Após se cadastrar, você será direcionado para finalizar o pagamento
                                     </p>
