@@ -133,6 +133,15 @@ class AuthController {
           
           await User.updateLastLogin(user.id);
           
+          // Verifica e cria notificações de assinatura prestes a vencer
+          try {
+            const AssinaturaNotificacaoService = require('../services/assinaturaNotificacaoService');
+            await AssinaturaNotificacaoService.verificarEVincularNotificacoes(user.id);
+          } catch (notifError) {
+            console.warn('⚠️ Aviso ao verificar notificações de assinatura:', notifError.message);
+            // Não bloqueia o login se houver erro na notificação
+          }
+          
           req.session.save((err) => {
             if (err) {
               console.error('Erro ao salvar sessão:', err);

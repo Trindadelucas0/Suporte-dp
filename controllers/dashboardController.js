@@ -8,6 +8,7 @@
  */
 
 const CalendarioService = require('../services/calendarioService');
+const AssinaturaNotificacaoService = require('../services/assinaturaNotificacaoService');
 
 class DashboardController {
   /**
@@ -40,6 +41,14 @@ class DashboardController {
       } catch (gerarError) {
         // Se der erro ao gerar, continua mesmo assim (não quebra o dashboard)
         console.warn('⚠️ Aviso ao gerar obrigações automáticas:', gerarError.message);
+      }
+
+      // Verifica e cria notificações de assinatura prestes a vencer
+      try {
+        await AssinaturaNotificacaoService.verificarEVincularNotificacoes(userId);
+      } catch (notifError) {
+        console.warn('⚠️ Aviso ao verificar notificações de assinatura:', notifError.message);
+        // Não bloqueia o dashboard se houver erro na notificação
       }
 
       // REUTILIZA: Busca o calendário mensal usando o mesmo service do calendário
