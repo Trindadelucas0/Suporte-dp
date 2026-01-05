@@ -17,6 +17,9 @@ const Order = require('../models/Order');
 const User = require('../models/User');
 const emailService = require('../services/emailService');
 
+// Importa função de gerar tokens
+const gerarTokensScript = require('./gerar-tokens-para-usuarios');
+
 async function diagnosticarFluxo(emailFiltro = null) {
   try {
     console.log('🔍 INICIANDO DIAGNÓSTICO DO FLUXO DE PAGAMENTO\n');

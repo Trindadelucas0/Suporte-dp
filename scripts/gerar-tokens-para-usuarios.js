@@ -137,5 +137,8 @@ if (require.main === module) {
   gerarTokensParaUsuarios();
 }
 
+// Exporta função para uso em outros scripts
+module.exports = gerarTokensParaUsuarios;
+
 module.exports = { gerarTokensParaUsuarios };
 
