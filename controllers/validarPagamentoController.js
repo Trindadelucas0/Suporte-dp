@@ -182,8 +182,7 @@ class ValidarPagamentoController {
         delete req.session.requireTokenValidation;
       }
       
-      // NÃO redireciona automaticamente para dashboard
-      // Usuário precisa fazer login manualmente após validar token
+      // Redireciona automaticamente para dashboard (usuário já está logado na sessão)
       req.session.save((err) => {
         if (err) {
           console.error('Erro ao salvar sessão:', err);
@@ -196,15 +195,9 @@ class ValidarPagamentoController {
           });
         }
         
-        // Mostra mensagem de sucesso e redireciona para login
-        return res.render('auth/validar-pagamento', {
-          title: 'Validar Pagamento - Suporte DP',
-          token: null,
-          email: email,
-          error: null,
-          success: 'Token validado com sucesso! Faça login para acessar o sistema.',
-          from: 'validacao'
-        });
+        // Redireciona para dashboard (usuário já está logado)
+        console.log('✅ Token validado e assinatura ativada. Redirecionando para dashboard.');
+        return res.redirect('/dashboard');
       });
 
     } catch (error) {

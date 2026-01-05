@@ -94,6 +94,39 @@ class AuthController {
         const assinaturaInadimplente = user.subscription_status === 'inadimplente';
         const assinaturaPendente = user.subscription_status === 'pendente';
         const semAssinatura = !user.subscription_expires_at || !user.subscription_status || user.subscription_status === null;
+        const assinaturaAtiva = user.subscription_status === 'ativa' && dataExpiracao && dataExpiracao >= hoje;
+
+        // Se assinatura está ATIVA, permite login normalmente (não precisa validar token novamente)
+        if (assinaturaAtiva) {
+          // Cria sessão e permite acesso
+          req.session.user = {
+            id: user.id,
+            nome: user.nome,
+            email: user.email,
+            is_admin: user.is_admin
+          };
+          req.session.lastActivity = Date.now();
+          
+          // Remove flag de validação de token se existir
+          if (req.session.requireTokenValidation) {
+            delete req.session.requireTokenValidation;
+          }
+          
+          await User.updateLastLogin(user.id);
+          
+          req.session.save((err) => {
+            if (err) {
+              console.error('Erro ao salvar sessão:', err);
+              return res.render('auth/login', {
+                title: 'Login - Suporte DP',
+                error: 'Erro ao fazer login. Tente novamente.',
+                success: null
+              });
+            }
+            return res.redirect('/dashboard');
+          });
+          return;
+        }
 
         // Se assinatura está pendente, permite login mas redireciona para checkout
         if (assinaturaPendente) {

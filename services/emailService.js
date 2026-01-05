@@ -210,13 +210,21 @@ Se você não realizou este pagamento, ignore este email.
         text: textContent
       });
 
+      // Resend API retorna { data: { id: ... }, error: null } ou { data: null, error: ... }
+      const messageId = result.data?.id || result.id || 'N/A';
+      
+      if (result.error) {
+        throw new Error(result.error.message || 'Erro ao enviar email via Resend API');
+      }
+
       console.log('✅ EmailService (Resend API): Token de pagamento enviado para:', data.email);
-      console.log('📬 EmailService (Resend API): Message ID:', result.id);
+      console.log('📬 EmailService (Resend API): Message ID:', messageId);
       console.log('📋 EmailService (Resend API): Token enviado:', data.token);
+      console.log('📋 EmailService (Resend API): Resposta completa:', JSON.stringify(result, null, 2));
 
       return {
         success: true,
-        messageId: result.id
+        messageId: messageId
       };
     } catch (error) {
       console.error('❌ EmailService (Resend API): Erro ao enviar email de token:', error.message);
@@ -538,6 +546,30 @@ Se você não realizou este pagamento, entre em contato conosco.
    * @returns {Promise<Object>} Resultado do envio
    */
   async sendNewUserNotification(data) {
+    // Verifica novamente se RESEND_API_KEY está disponível
+    if (!this.useResendAPI && Resend && process.env.RESEND_API_KEY) {
+      try {
+        if (typeof Resend !== 'function') {
+          console.error('❌ EmailService: Resend não é um construtor. Tipo:', typeof Resend);
+          throw new Error('Resend não é um construtor válido');
+        }
+        this.resendClient = new Resend(process.env.RESEND_API_KEY);
+        this.useResendAPI = true;
+        console.log('✅ EmailService: API do Resend detectada e inicializada (configurada após startup)');
+      } catch (e) {
+        console.error('❌ EmailService: Erro ao inicializar Resend:', e.message);
+        console.error('   - Stack:', e.stack);
+      }
+    }
+    
+    // Se Resend API está disponível, usa ela (melhor para Render)
+    if (this.useResendAPI && this.resendClient) {
+      console.log('📧 EmailService: Usando API do Resend para enviar notificação de novo usuário');
+      return await this.sendNewUserNotificationViaResendAPI(data);
+    }
+
+    // Caso contrário, usa SMTP tradicional
+    console.log('📧 EmailService: Usando SMTP tradicional para notificação (RESEND_API_KEY não configurado)');
     const transporter = this.getTransporter();
 
     if (!transporter) {
