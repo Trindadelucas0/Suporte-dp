@@ -50,55 +50,68 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <!-- Favicon com as letras "DP" nas cores do sistema (Vermelho #DC2626 e Amarelo #FBBF24) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
     <style>
         * {
             font-family: 'Inter', sans-serif;
         }
+
         .glass {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+
         .glass-dark {
             background: rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
         }
+
         .gradient-text {
             background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
+
         .gradient-bg {
             background: linear-gradient(135deg, #DC2626 0%, #FBBF24 50%, #DC2626 100%);
             background-size: 200% 200%;
             animation: gradient 15s ease infinite;
         }
+
         .card-hover {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .card-hover:hover {
             transform: translateY(-8px) scale(1.02);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
+
         .icon-glow {
             filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5));
         }
+
         .icon-glow-yellow {
             filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));
         }
+
         .pattern-dots {
             background-image: radial-gradient(circle, rgba(220, 38, 38, 0.1) 1px, transparent 1px);
             background-size: 20px 20px;
         }
+
         .pattern-grid {
-            background-image: 
+            background-image:
                 linear-gradient(rgba(220, 38, 38, 0.05) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(220, 38, 38, 0.05) 1px, transparent 1px);
             background-size: 30px 30px;
@@ -113,7 +126,9 @@
             <div class="flex justify-between items-center h-20">
                 <div class="flex items-center space-x-3">
                     <div class="relative">
-                        <div class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-lg blur opacity-75"></div>
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-lg blur opacity-75">
+                        </div>
                         <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-2 rounded-lg">
                             <i class="fas fa-calculator text-white text-2xl"></i>
                         </div>
@@ -121,7 +136,8 @@
                     <span class="text-2xl font-bold text-white">Suporte DP</span>
                 </div>
                 <div class="flex items-center space-x-6">
-                    <a href="/login" class="px-5 py-2.5 text-white/90 hover:text-white font-medium transition-all hover:scale-105">
+                    <a href="/login"
+                        class="px-5 py-2.5 text-white/90 hover:text-white font-medium transition-all hover:scale-105">
                         Login
                     </a>
                     <a href="/register"
@@ -138,20 +154,24 @@
         <!-- Animated Background Elements -->
         <div class="absolute inset-0 gradient-bg opacity-20"></div>
         <div class="absolute top-20 left-10 w-72 h-72 bg-primary-red/20 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div class="absolute bottom-20 right-10 w-96 h-96 bg-primary-yellow/20 rounded-full blur-3xl animate-pulse-slow" style="animation-delay: 2s;"></div>
-        
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-primary-yellow/20 rounded-full blur-3xl animate-pulse-slow"
+            style="animation-delay: 2s;"></div>
+
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center z-10">
             <!-- Floating Icons -->
             <div class="absolute top-10 left-10 text-primary-red/30 text-6xl animate-float icon-glow">
                 <i class="fas fa-file-invoice-dollar"></i>
             </div>
-            <div class="absolute top-20 right-20 text-primary-yellow/30 text-5xl animate-float icon-glow-yellow" style="animation-delay: 1s;">
+            <div class="absolute top-20 right-20 text-primary-yellow/30 text-5xl animate-float icon-glow-yellow"
+                style="animation-delay: 1s;">
                 <i class="fas fa-chart-line"></i>
             </div>
-            <div class="absolute bottom-20 left-20 text-primary-red/30 text-4xl animate-float icon-glow" style="animation-delay: 2s;">
+            <div class="absolute bottom-20 left-20 text-primary-red/30 text-4xl animate-float icon-glow"
+                style="animation-delay: 2s;">
                 <i class="fas fa-users"></i>
             </div>
-            <div class="absolute bottom-10 right-10 text-primary-yellow/30 text-5xl animate-float icon-glow-yellow" style="animation-delay: 3s;">
+            <div class="absolute bottom-10 right-10 text-primary-yellow/30 text-5xl animate-float icon-glow-yellow"
+                style="animation-delay: 3s;">
                 <i class="fas fa-shield-alt"></i>
             </div>
 
@@ -173,7 +193,9 @@
                         <span class="relative z-10 flex items-center">
                             <i class="fas fa-rocket mr-2"></i>Começar Agora
                         </span>
-                        <div class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity">
+                        </div>
                     </a>
                     <a href="/login"
                         class="px-10 py-4 glass text-white rounded-xl font-semibold text-lg hover:bg-white/20 transition-all transform hover:scale-105 border border-white/20">
@@ -196,8 +218,11 @@
                 <!-- Feature 1 -->
                 <div class="group glass-dark rounded-2xl p-8 card-hover border border-white/10">
                     <div class="relative mb-6">
-                        <div class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity"></div>
-                        <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-4 rounded-xl w-16 h-16 flex items-center justify-center">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity">
+                        </div>
+                        <div
+                            class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-4 rounded-xl w-16 h-16 flex items-center justify-center">
                             <i class="fas fa-calculator text-white text-2xl icon-glow"></i>
                         </div>
                     </div>
@@ -207,8 +232,11 @@
                 <!-- Feature 2 -->
                 <div class="group glass-dark rounded-2xl p-8 card-hover border border-white/10">
                     <div class="relative mb-6">
-                        <div class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity"></div>
-                        <div class="relative bg-gradient-to-r from-primary-yellow to-primary-red p-4 rounded-xl w-16 h-16 flex items-center justify-center">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity">
+                        </div>
+                        <div
+                            class="relative bg-gradient-to-r from-primary-yellow to-primary-red p-4 rounded-xl w-16 h-16 flex items-center justify-center">
                             <i class="fas fa-dollar-sign text-white text-2xl icon-glow-yellow"></i>
                         </div>
                     </div>
@@ -218,8 +246,11 @@
                 <!-- Feature 3 -->
                 <div class="group glass-dark rounded-2xl p-8 card-hover border border-white/10">
                     <div class="relative mb-6">
-                        <div class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity"></div>
-                        <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-4 rounded-xl w-16 h-16 flex items-center justify-center">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity">
+                        </div>
+                        <div
+                            class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-4 rounded-xl w-16 h-16 flex items-center justify-center">
                             <i class="fas fa-exclamation-triangle text-white text-2xl icon-glow"></i>
                         </div>
                     </div>
@@ -229,8 +260,11 @@
                 <!-- Feature 4 -->
                 <div class="group glass-dark rounded-2xl p-8 card-hover border border-white/10">
                     <div class="relative mb-6">
-                        <div class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity"></div>
-                        <div class="relative bg-gradient-to-r from-primary-yellow to-primary-red p-4 rounded-xl w-16 h-16 flex items-center justify-center">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity">
+                        </div>
+                        <div
+                            class="relative bg-gradient-to-r from-primary-yellow to-primary-red p-4 rounded-xl w-16 h-16 flex items-center justify-center">
                             <i class="fas fa-calendar-alt text-white text-2xl icon-glow-yellow"></i>
                         </div>
                     </div>
@@ -240,8 +274,11 @@
                 <!-- Feature 5 -->
                 <div class="group glass-dark rounded-2xl p-8 card-hover border border-white/10">
                     <div class="relative mb-6">
-                        <div class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity"></div>
-                        <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-4 rounded-xl w-16 h-16 flex items-center justify-center">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity">
+                        </div>
+                        <div
+                            class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-4 rounded-xl w-16 h-16 flex items-center justify-center">
                             <i class="fas fa-check-square text-white text-2xl icon-glow"></i>
                         </div>
                     </div>
@@ -251,8 +288,11 @@
                 <!-- Feature 6 -->
                 <div class="group glass-dark rounded-2xl p-8 card-hover border border-white/10">
                     <div class="relative mb-6">
-                        <div class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity"></div>
-                        <div class="relative bg-gradient-to-r from-primary-yellow to-primary-red p-4 rounded-xl w-16 h-16 flex items-center justify-center">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity">
+                        </div>
+                        <div
+                            class="relative bg-gradient-to-r from-primary-yellow to-primary-red p-4 rounded-xl w-16 h-16 flex items-center justify-center">
                             <i class="fas fa-database text-white text-2xl icon-glow-yellow"></i>
                         </div>
                     </div>
@@ -306,11 +346,12 @@
         <div class="absolute inset-0 pattern-grid opacity-10"></div>
         <div class="absolute top-0 left-1/4 w-96 h-96 bg-primary-red/10 rounded-full blur-3xl"></div>
         <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-primary-yellow/10 rounded-full blur-3xl"></div>
-        
+
         <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
             <div class="glass-dark rounded-3xl p-12 md:p-16 border border-white/20">
                 <div class="mb-8">
-                    <div class="inline-block px-4 py-2 bg-gradient-to-r from-primary-red to-primary-yellow rounded-full mb-6">
+                    <div
+                        class="inline-block px-4 py-2 bg-gradient-to-r from-primary-red to-primary-yellow rounded-full mb-6">
                         <i class="fas fa-sparkles text-white"></i>
                     </div>
                     <h2 class="text-4xl md:text-5xl font-black text-white mb-4">
@@ -323,7 +364,9 @@
                         <i class="fas fa-rocket mr-3"></i>Começar Agora
                         <i class="fas fa-arrow-right ml-3 group-hover:translate-x-2 transition-transform"></i>
                     </span>
-                    <div class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity">
+                    </div>
                 </a>
             </div>
         </div>
@@ -337,7 +380,9 @@
                 <div>
                     <div class="flex items-center mb-6">
                         <div class="relative">
-                            <div class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-lg blur opacity-50"></div>
+                            <div
+                                class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-lg blur opacity-50">
+                            </div>
                             <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-2 rounded-lg">
                                 <i class="fas fa-calculator text-white text-xl"></i>
                             </div>
@@ -357,7 +402,8 @@
                             </a>
                         </li>
                         <li>
-                            <a href="/register" class="hover:text-white transition-all hover:translate-x-1 inline-block">
+                            <a href="/register"
+                                class="hover:text-white transition-all hover:translate-x-1 inline-block">
                                 <i class="fas fa-chevron-right text-xs mr-2"></i>Cadastro
                             </a>
                         </li>
