@@ -17,6 +17,17 @@ class WebhookController {
    * POST /webhook/infinitepay
    */
   static async infinitepay(req, res) {
+    // Log inicial para debug
+    console.log('🔔 [WEBHOOK] Requisição recebida:', {
+      method: req.method,
+      url: req.url,
+      headers: {
+        'content-type': req.headers['content-type'],
+        'user-agent': req.headers['user-agent']
+      },
+      body_keys: Object.keys(req.body || {})
+    });
+
     // Responde rápido (antes de processar tudo)
     res.status(200).send('OK');
 
@@ -24,10 +35,13 @@ class WebhookController {
     setImmediate(async () => {
       try {
         const payload = req.body;
-        console.log('Webhook InfinitePay recebido:', {
+        console.log('📥 [WEBHOOK] Webhook InfinitePay recebido:', {
           order_nsu: payload.order_nsu,
           transaction_nsu: payload.transaction_nsu,
-          status: payload.status
+          status: payload.status,
+          customer_email: payload.customer_email || payload.email,
+          paid_amount: payload.paid_amount,
+          timestamp: new Date().toISOString()
         });
 
         // 1. Validar webhook (inclui validação de origem se configurado)
