@@ -364,6 +364,17 @@ if (process.env.NODE_ENV !== 'test') {
           console.warn("⚠️  Aviso: Erro ao executar diagnóstico (não crítico):", diagnosticoError.message);
         }
       });
+
+      // Envia email de teste ao iniciar servidor (assíncrono, não bloqueia servidor)
+      setImmediate(async () => {
+        try {
+          const enviarEmailTesteInicio = require("./scripts/test-email-inicio-servidor");
+          await enviarEmailTesteInicio();
+        } catch (emailTestError) {
+          // Não bloqueia o servidor se houver erro no teste de email
+          console.warn("⚠️  Aviso: Erro ao enviar email de teste (não crítico):", emailTestError.message);
+        }
+      });
     } catch (error) {
       console.error("❌ Erro ao conectar com PostgreSQL:", error.message);
       
