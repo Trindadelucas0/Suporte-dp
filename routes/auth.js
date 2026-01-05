@@ -8,6 +8,7 @@ const AuthController = require('../controllers/authController');
 const ValidarPagamentoController = require('../controllers/validarPagamentoController');
 const { body } = require('express-validator');
 const rateLimit = require('express-rate-limit');
+const { validateAndNormalizeEmail } = require('../utils/emailValidator');
 
 // Função para obter IP real (considera proxy do Render)
 const getRealIp = (req) => {
@@ -42,13 +43,39 @@ const registerLimiter = rateLimit({
 
 // Validações
 const loginValidation = [
-  body('email').trim().isEmail().withMessage('Email inválido'),
+  body('email')
+    .trim()
+    .custom((value) => {
+      const result = validateAndNormalizeEmail(value);
+      if (!result.valid) {
+        throw new Error(result.error || 'Email inválido');
+      }
+      return true;
+    })
+    .customSanitizer((value) => {
+      // Normaliza o email (minúsculas, preserva pontos)
+      const result = validateAndNormalizeEmail(value);
+      return result.normalized || value;
+    }),
   body('senha').notEmpty().withMessage('Senha é obrigatória')
 ];
 
 const registerValidation = [
   body('nome').trim().isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
-  body('email').trim().isEmail().withMessage('Email inválido'),
+  body('email')
+    .trim()
+    .custom((value) => {
+      const result = validateAndNormalizeEmail(value);
+      if (!result.valid) {
+        throw new Error(result.error || 'Email inválido');
+      }
+      return true;
+    })
+    .customSanitizer((value) => {
+      // Normaliza o email (minúsculas, preserva pontos)
+      const result = validateAndNormalizeEmail(value);
+      return result.normalized || value;
+    }),
   body('senha').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
   body('confirmarSenha').custom((value, { req }) => {
     if (value !== req.body.senha) {

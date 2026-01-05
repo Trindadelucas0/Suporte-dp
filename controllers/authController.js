@@ -108,36 +108,17 @@ class AuthController {
             diasDesdeAtivacao = 30 - diasRestantes; // Dias desde que a assinatura foi ativada
           }
           
-          // Se foi ativada há menos de 30 dias, verifica se há token pendente mas não gera novo
+          // Se foi ativada há menos de 30 dias, verifica se há token pendente mas não reenvia email
           if (diasDesdeAtivacao !== null && diasDesdeAtivacao < 30) {
             const tokenPendente = await PaymentToken.findPendingTokenByEmail(user.email);
             if (tokenPendente) {
-              // Há token pendente - reenvia email com token e redireciona para validação
-              console.log('🔐 [LOGIN] Token pendente encontrado (assinatura ativa há menos de 30 dias). Reenviando email:', {
+              // Há token pendente - NÃO reenvia email, apenas redireciona para validação
+              // O email já foi enviado quando o token foi gerado
+              console.log('🔐 [LOGIN] Token pendente encontrado (assinatura ativa há menos de 30 dias):', {
                 user_id: user.id,
                 email: user.email,
                 token: tokenPendente.token,
                 dias_desde_ativacao: diasDesdeAtivacao
-              });
-              
-              // Busca o pagamento relacionado para obter o valor
-              const paymentRelacionado = await Payment.findByOrderNsu(tokenPendente.order_nsu);
-              const valorReais = paymentRelacionado ? parseFloat(paymentRelacionado.paid_amount || 1990) / 100 : 19.90;
-              
-              // Reenvia email com token (assíncrono, não bloqueia)
-              setImmediate(async () => {
-                try {
-                  await emailService.sendPaymentToken({
-                    email: user.email,
-                    token: tokenPendente.token,
-                    nome: user.nome,
-                    orderNsu: tokenPendente.order_nsu,
-                    valor: valorReais
-                  });
-                  console.log('✅ [LOGIN] Email com token reenviado com sucesso:', user.email);
-                } catch (emailError) {
-                  console.error('⚠️ [LOGIN] Erro ao reenviar email com token (não crítico):', emailError);
-                }
               });
               
               // Cria sessão mas redireciona para validação de token
@@ -265,32 +246,13 @@ class AuthController {
             const tokenPendente = await PaymentToken.findPendingTokenByEmail(user.email);
             
             if (tokenPendente) {
-              // Há token pendente - reenvia email com token e redireciona para validação
-              console.log('🔐 [LOGIN] Token pendente encontrado. Reenviando email com token:', {
+              // Há token pendente - NÃO reenvia email, apenas redireciona para validação
+              // O email já foi enviado quando o token foi gerado no webhook
+              console.log('🔐 [LOGIN] Token pendente encontrado, mostrando página de aguardo:', {
                 user_id: user.id,
                 email: user.email,
                 token: tokenPendente.token,
                 order_nsu: tokenPendente.order_nsu
-              });
-              
-              // Busca o pagamento relacionado para obter o valor
-              const paymentRelacionado = await Payment.findByOrderNsu(tokenPendente.order_nsu);
-              const valorReais = paymentRelacionado ? parseFloat(paymentRelacionado.paid_amount || 1990) / 100 : 19.90;
-              
-              // Reenvia email com token (assíncrono, não bloqueia)
-              setImmediate(async () => {
-                try {
-                  await emailService.sendPaymentToken({
-                    email: user.email,
-                    token: tokenPendente.token,
-                    nome: user.nome,
-                    orderNsu: tokenPendente.order_nsu,
-                    valor: valorReais
-                  });
-                  console.log('✅ [LOGIN] Email com token reenviado com sucesso:', user.email);
-                } catch (emailError) {
-                  console.error('⚠️ [LOGIN] Erro ao reenviar email com token (não crítico):', emailError);
-                }
               });
               
               // Cria sessão mas redireciona para validação de token
@@ -639,15 +601,23 @@ class AuthController {
         const bcrypt = require('bcrypt');
         const senhaHash = await bcrypt.hash(senha, 10);
         
-        // Se há token validado, ativa assinatura por 30 dias
+        // Se há token validado, ativa assinatura por 30 dias a partir de AGORA
         let subscriptionStatus = 'pendente';
         let subscriptionExpiresAt = null;
         
         if (hasTokenValidated) {
           subscriptionStatus = 'ativa';
-          const nextBillingDate = new Date();
-          nextBillingDate.setDate(nextBillingDate.getDate() + 30);
-          subscriptionExpiresAt = nextBillingDate.toISOString().split('T')[0];
+          const agora = new Date();
+          const dataExpiracao = new Date(agora);
+          dataExpiracao.setDate(dataExpiracao.getDate() + 30);
+          subscriptionExpiresAt = dataExpiracao.toISOString().split('T')[0];
+          
+          console.log('✅ Token validado - Criando usuário com assinatura ativa por 30 dias:', {
+            email: email,
+            data_ativacao: agora.toISOString(),
+            data_expiracao: subscriptionExpiresAt,
+            dias_acesso: 30
+          });
         }
         
         const userResult = await client.query(

@@ -129,6 +129,21 @@ class EmailService {
         throw new Error('SMTP_FROM não configurado. Configure um email com domínio verificado no Resend.');
       }
       
+      // Valida formato do email remetente
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(smtpFrom)) {
+        throw new Error(`SMTP_FROM inválido: ${smtpFrom}. Use formato: email@dominio.com`);
+      }
+      
+      // Extrai domínio do email remetente
+      const dominioRemetente = smtpFrom.split('@')[1];
+      console.log('📧 EmailService (Resend API): Configuração de envio:', {
+        remetente: smtpFrom,
+        dominio: dominioRemetente,
+        destinatario: data.email,
+        token: data.token.substring(0, 8) + '...'
+      });
+      
       const appUrl = process.env.APP_URL || 'http://localhost:3000';
       const nome = data.nome || 'Cliente';
       const validationUrl = `${appUrl}/validar-pagamento?token=${data.token}&email=${encodeURIComponent(data.email)}`;
@@ -217,28 +232,63 @@ Importante:
 Se você não realizou este pagamento, ignore este email.
       `;
 
-      const result = await this.resendClient.emails.send({
+      // Prepara dados do email
+      const emailData = {
         from: `Suporte DP <${smtpFrom}>`,
         to: data.email,
+        replyTo: smtpFrom, // Adiciona reply-to
         subject: 'Token de Validação de Pagamento - Suporte DP',
         html: htmlContent,
-        text: textContent
+        text: textContent,
+        // Headers adicionais para melhorar entrega
+        headers: {
+          'X-Entity-Ref-ID': data.orderNsu || 'unknown',
+          'List-Unsubscribe': `<${appUrl}/unsubscribe?email=${encodeURIComponent(data.email)}>`,
+        },
+        // Tags para rastreamento no Resend
+        tags: [
+          { name: 'category', value: 'payment-token' },
+          { name: 'order_nsu', value: data.orderNsu || 'unknown' }
+        ]
+      };
+
+      console.log('📤 EmailService (Resend API): Enviando email...', {
+        from: emailData.from,
+        to: emailData.to,
+        subject: emailData.subject
       });
+
+      const result = await this.resendClient.emails.send(emailData);
 
       // Resend API retorna { data: { id: ... }, error: null } ou { data: null, error: ... }
       const messageId = result.data?.id || result.id || 'N/A';
       
       if (result.error) {
-        throw new Error(result.error.message || 'Erro ao enviar email via Resend API');
+        const errorMsg = result.error.message || 'Erro ao enviar email via Resend API';
+        console.error('❌ EmailService (Resend API): Erro na resposta:', {
+          error: result.error,
+          message: errorMsg,
+          code: result.error.code || 'UNKNOWN'
+        });
+        throw new Error(errorMsg);
       }
 
-      console.log('✅ EmailService (Resend API): Token de pagamento enviado para:', data.email);
-      console.log('📬 EmailService (Resend API): Message ID:', messageId);
-      console.log('📋 EmailService (Resend API): Token enviado:', data.token);
+      // Log detalhado do sucesso
+      console.log('✅ EmailService (Resend API): Email enviado com sucesso!');
+      console.log('   📬 Message ID:', messageId);
+      console.log('   📧 Destinatário:', data.email);
+      console.log('   📋 Token:', data.token);
+      console.log('   🏷️  Remetente:', smtpFrom);
+      console.log('   🌐 Domínio remetente:', dominioRemetente);
+      console.log('   💡 Verifique no painel do Resend se o domínio está verificado');
+      console.log('   💡 Se não chegou, verifique a caixa de spam e os logs do Resend');
 
       return {
         success: true,
-        messageId: messageId
+        messageId: messageId,
+        from: smtpFrom,
+        to: data.email,
+        domain: dominioRemetente
       };
     } catch (error) {
       console.error('❌ EmailService (Resend API): Erro ao enviar email de token:', error.message);

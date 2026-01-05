@@ -7,11 +7,25 @@ const router = express.Router();
 const PerfilController = require('../controllers/perfilController');
 const { requireActiveSubscription } = require('../middleware/auth');
 const { body } = require('express-validator');
+const { validateAndNormalizeEmail } = require('../utils/emailValidator');
 
 // Validações
 const updateBasicValidation = [
   body('nome').trim().isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
-  body('email').trim().isEmail().withMessage('Email inválido')
+  body('email')
+    .trim()
+    .custom((value) => {
+      const result = validateAndNormalizeEmail(value);
+      if (!result.valid) {
+        throw new Error(result.error || 'Email inválido');
+      }
+      return true;
+    })
+    .customSanitizer((value) => {
+      // Normaliza o email (minúsculas, preserva pontos)
+      const result = validateAndNormalizeEmail(value);
+      return result.normalized || value;
+    })
 ];
 
 const updatePasswordValidation = [

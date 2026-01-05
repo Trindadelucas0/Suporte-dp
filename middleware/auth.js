@@ -113,6 +113,7 @@ async function requireActiveSubscription(req, res, next) {
     const assinaturaExpirada = dataExpiracao && dataExpiracao < hoje;
     const assinaturaInadimplente = user.subscription_status === 'inadimplente';
     const assinaturaPendente = user.subscription_status === 'pendente';
+    const assinaturaAtiva = user.subscription_status === 'ativa' && dataExpiracao && dataExpiracao >= hoje;
 
     // Se assinatura está pendente, redireciona para checkout
     if (assinaturaPendente) {
@@ -130,13 +131,34 @@ async function requireActiveSubscription(req, res, next) {
         user_id: user.id,
         nome: user.nome,
         expires_at: user.subscription_expires_at,
-        status: user.subscription_status
+        status: user.subscription_status,
+        hoje: hoje.toISOString().split('T')[0],
+        data_expiracao: dataExpiracao ? dataExpiracao.toISOString().split('T')[0] : null
       });
       return res.redirect('/renovar');
     }
 
     // Assinatura ativa - permite acesso
-    return next();
+    if (assinaturaAtiva) {
+      const diasRestantes = dataExpiracao ? Math.ceil((dataExpiracao.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+      console.log('✅ [AUTH] Cliente com assinatura ativa - permitindo acesso:', {
+        user_id: user.id,
+        nome: user.nome,
+        status: user.subscription_status,
+        data_expiracao: dataExpiracao ? dataExpiracao.toISOString().split('T')[0] : null,
+        dias_restantes: diasRestantes
+      });
+      return next();
+    }
+
+    // Caso não se encaixe em nenhuma categoria acima, bloqueia acesso
+    console.log('⚠️ [AUTH] Cliente sem assinatura válida - redirecionando para checkout:', {
+      user_id: user.id,
+      nome: user.nome,
+      status: user.subscription_status,
+      expires_at: user.subscription_expires_at
+    });
+    return res.redirect('/checkout');
   } catch (error) {
     console.error('❌ [AUTH] Erro ao verificar assinatura:', error);
     // Em caso de erro, bloqueia acesso (segurança)

@@ -14,6 +14,7 @@
     "cleanup-pending-orders": "node scripts/cleanup-pending-orders.js",
     "gerar-tokens": "node scripts/gerar-tokens-para-usuarios.js",
     "diagnostico-pagamento": "node scripts/diagnostico-fluxo-pagamento.js",
+    "diagnostico-email": "node scripts/diagnostico-email.js",
     "test-email": "node scripts/test-email-completo.js"
   },
   "keywords": [

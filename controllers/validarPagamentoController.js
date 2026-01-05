@@ -7,6 +7,7 @@ const PaymentToken = require('../models/PaymentToken');
 const Order = require('../models/Order');
 const User = require('../models/User');
 const db = require('../config/database');
+const { validateAndNormalizeEmail } = require('../utils/emailValidator');
 
 class ValidarPagamentoController {
   /**
@@ -50,6 +51,21 @@ class ValidarPagamentoController {
       });
     }
 
+    // Valida e normaliza email
+    const emailValidation = validateAndNormalizeEmail(email);
+    if (!emailValidation.valid) {
+      return res.render('auth/validar-pagamento', {
+        title: 'Validar Pagamento - Suporte DP',
+        token: token || null,
+        email: email || null,
+        error: emailValidation.error || 'Email inválido',
+        success: null
+      });
+    }
+
+    // Usa email normalizado (minúsculas, preserva pontos)
+    const normalizedEmail = emailValidation.normalized;
+
     try {
       // 1. Buscar token no banco
       const paymentToken = await PaymentToken.findByToken(token);
@@ -88,12 +104,12 @@ class ValidarPagamentoController {
         });
       }
 
-      // 4. Verificar se email corresponde ao token
-      if (paymentToken.email.toLowerCase() !== email.toLowerCase()) {
+      // 4. Verificar se email corresponde ao token (ambos já normalizados)
+      if (paymentToken.email.toLowerCase() !== normalizedEmail.toLowerCase()) {
         return res.render('auth/validar-pagamento', {
           title: 'Validar Pagamento - Suporte DP',
           token: token,
-          email: email,
+          email: normalizedEmail,
           error: 'Email não corresponde ao token',
           success: null
         });
@@ -119,14 +135,18 @@ class ValidarPagamentoController {
         // 6.2. Verificar se usuário já existe (por email)
         const existingUserResult = await client.query(
           'SELECT id, nome, email, subscription_status FROM users WHERE email = $1',
-          [email.toLowerCase()]
+          [normalizedEmail]
         );
         const existingUser = existingUserResult.rows[0];
 
         if (existingUser) {
-          // Usuário já existe - atualizar assinatura
-          const nextBillingDate = new Date();
-          nextBillingDate.setDate(nextBillingDate.getDate() + 30);
+          // Usuário já existe - ativar assinatura por 30 dias a partir de AGORA
+          const agora = new Date();
+          const dataExpiracao = new Date(agora);
+          dataExpiracao.setDate(dataExpiracao.getDate() + 30);
+          
+          // Formata data para YYYY-MM-DD (sem hora)
+          const dataExpiracaoFormatada = dataExpiracao.toISOString().split('T')[0];
 
           await client.query(
             `UPDATE users 
@@ -135,10 +155,16 @@ class ValidarPagamentoController {
                  status = $3,
                  updated_at = CURRENT_TIMESTAMP
              WHERE id = $4`,
-            ['ativa', nextBillingDate.toISOString().split('T')[0], 'ativo', existingUser.id]
+            ['ativa', dataExpiracaoFormatada, 'ativo', existingUser.id]
           );
 
-          console.log('✅ Assinatura atualizada para usuário existente:', existingUser.id);
+          console.log('✅ Token usado - Assinatura ativada por 30 dias:', {
+            user_id: existingUser.id,
+            email: existingUser.email,
+            data_ativacao: agora.toISOString(),
+            data_expiracao: dataExpiracaoFormatada,
+            dias_acesso: 30
+          });
           
           // Login automático
           req.session.user = {
@@ -152,7 +178,7 @@ class ValidarPagamentoController {
           // Usuário não existe - redirecionar para cadastro com token válido
           // Salvar token na sessão para usar no cadastro
           req.session.pendingToken = token;
-          req.session.pendingEmail = email;
+          req.session.pendingEmail = normalizedEmail;
           req.session.pendingOrderNsu = paymentToken.order_nsu;
           
           console.log('✅ Token validado - redirecionando para cadastro');
