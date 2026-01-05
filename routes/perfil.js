@@ -11,7 +11,7 @@ const { body } = require('express-validator');
 // Validações
 const updateBasicValidation = [
   body('nome').trim().isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
-  body('email').isEmail().normalizeEmail().withMessage('Email inválido')
+  body('email').trim().isEmail().withMessage('Email inválido')
 ];
 
 const updatePasswordValidation = [

@@ -42,13 +42,13 @@ const registerLimiter = rateLimit({
 
 // Validações
 const loginValidation = [
-  body('email').isEmail().normalizeEmail().withMessage('Email inválido'),
+  body('email').trim().isEmail().withMessage('Email inválido'),
   body('senha').notEmpty().withMessage('Senha é obrigatória')
 ];
 
 const registerValidation = [
   body('nome').trim().isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
-  body('email').isEmail().normalizeEmail().withMessage('Email inválido'),
+  body('email').trim().isEmail().withMessage('Email inválido'),
   body('senha').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
   body('confirmarSenha').custom((value, { req }) => {
     if (value !== req.body.senha) {
