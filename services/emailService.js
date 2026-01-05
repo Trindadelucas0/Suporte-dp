@@ -253,33 +253,8 @@ Se você não realizou este pagamento, ignore este email.
    * @returns {Promise<Object>} Resultado do envio
    */
   async sendPaymentToken(data) {
-    // Verifica novamente se RESEND_API_KEY está disponível (pode ter sido configurado depois)
-    // Isso garante que mesmo se a variável foi adicionada após o servidor iniciar, ainda funciona
-    if (!this.useResendAPI && Resend && process.env.RESEND_API_KEY) {
-      try {
-        // Verifica se Resend é uma função/construtor
-        if (typeof Resend !== 'function') {
-          console.error('❌ EmailService: Resend não é um construtor. Tipo:', typeof Resend);
-          throw new Error('Resend não é um construtor válido');
-        }
-        this.resendClient = new Resend(process.env.RESEND_API_KEY);
-        this.useResendAPI = true;
-        console.log('✅ EmailService: API do Resend detectada e inicializada (configurada após startup)');
-      } catch (e) {
-        console.error('❌ EmailService: Erro ao inicializar Resend:', e.message);
-        console.error('   - Stack:', e.stack);
-      }
-    }
-    
-    // Se Resend API está disponível, usa ela (melhor para Render)
-    if (this.useResendAPI && this.resendClient) {
-      console.log('📧 EmailService: Usando API do Resend para enviar email');
-      return await this.sendPaymentTokenViaResendAPI(data);
-    }
-
-    // Caso contrário, usa SMTP tradicional
-    console.log('📧 EmailService: Usando SMTP tradicional (RESEND_API_KEY não configurado)');
-    console.log('💡 Para usar API do Resend no Render, configure RESEND_API_KEY no Render');
+    // Usa apenas SMTP (Brevo) - Resend API desabilitado
+    console.log('📧 EmailService: Usando SMTP (Brevo) para enviar email');
     const transporter = this.getTransporter();
 
     if (!transporter) {
@@ -812,6 +787,12 @@ Esta é uma notificação automática do sistema Suporte DP.
       const messageId = result.data?.id || result.id || 'N/A';
       
       if (result.error) {
+        // Se a API key for inválida, desabilita uso da API e lança erro para usar SMTP
+        if (result.error.message && result.error.message.includes('API key is invalid')) {
+          console.warn('⚠️ EmailService: API key do Resend inválida. Desabilitando API e usando SMTP.');
+          this.useResendAPI = false;
+          this.resendClient = null;
+        }
         throw new Error(result.error.message || 'Erro ao enviar email via Resend API');
       }
 
