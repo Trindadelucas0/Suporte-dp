@@ -166,83 +166,71 @@ class WebhookController {
             }
           }
           
-          if (existingUser) {
-            // RENOVAÇÃO - usuário já existe
-            console.log('🔄 RENOVAÇÃO: Usuário já existe, atualizando assinatura:', {
-              user_id: existingUser.id,
-              order_nsu: order_nsu
-            });
-            
-            // 5.3.1. Atualizar user_id no pagamento
-            await client.query(
-              'UPDATE payments SET user_id = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
-              [existingUser.id, payment.id]
-            );
-
-            // 5.3.2. Atualizar assinatura do usuário
-            await client.query(
-              `UPDATE users 
-               SET status = $1, subscription_status = $2, subscription_expires_at = $3, updated_at = CURRENT_TIMESTAMP
-               WHERE id = $4`,
-              [
-                'ativo',
-                'ativa',
-                nextBillingDate.toISOString().split('T')[0],
-                existingUser.id
-              ]
-            );
-
-            console.log('✅ RENOVAÇÃO: Assinatura atualizada automaticamente:', {
-              user_id: existingUser.id,
-              subscription_expires_at: nextBillingDate.toISOString().split('T')[0]
-            });
-          } else {
-            // PRIMEIRO PAGAMENTO - gera token de validação
-            console.log('🆕 PRIMEIRO PAGAMENTO: Usuário ainda não existe, gerando token de validação');
-            
-            // 5.3.3. Gerar token de validação e enviar por email
-            const customerEmail = payload.customer_email || payload.email || order.customer_email || null;
-            
-            if (customerEmail) {
-              try {
-                // Gerar token de validação
-                const paymentToken = await PaymentToken.create(
-                  order_nsu,
-                  customerEmail,
-                  null // user_id será null até o cadastro
+          // NOVO FLUXO: SEMPRE gerar token e enviar email quando pagamento for confirmado
+          // O acesso só é liberado após validação do token
+          const customerEmail = payload.customer_email || payload.email || order.customer_email || null;
+          
+          if (customerEmail) {
+            try {
+              // Atualizar user_id no pagamento se usuário já existe (para referência)
+              if (existingUser) {
+                await client.query(
+                  'UPDATE payments SET user_id = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+                  [existingUser.id, payment.id]
                 );
                 
-                console.log('✅ Token de pagamento gerado:', {
-                  token: paymentToken.token,
-                  email: customerEmail,
+                console.log('🔄 PAGAMENTO CONFIRMADO: Usuário já existe, mas acesso aguarda validação do token:', {
+                  user_id: existingUser.id,
                   order_nsu: order_nsu
                 });
-                
-                // Converter valor de centavos para reais (paid_amount vem em centavos)
-                const valorReais = parseFloat(paid_amount) / 100;
-                
-                // Enviar email com token
-                emailService.sendPaymentToken({
-                  email: customerEmail,
-                  token: paymentToken.token,
-                  nome: payload.customer_name || order.customer_email || 'Cliente',
-                  orderNsu: order_nsu,
-                  valor: valorReais
-                }).then(result => {
-                  if (result.success) {
-                    console.log('✅ Email com token enviado com sucesso:', customerEmail);
-                  } else {
-                    console.error('❌ Erro ao enviar email com token:', result.error);
-                  }
-                }).catch(emailError => {
-                  console.error('❌ Erro ao enviar email com token (não crítico):', emailError);
+              } else {
+                console.log('🆕 PAGAMENTO CONFIRMADO: Primeiro pagamento, gerando token de validação:', {
+                  order_nsu: order_nsu
                 });
-              } catch (tokenError) {
-                console.error('❌ Erro ao gerar token de pagamento:', tokenError);
               }
-            } else {
-              console.log('⚠️ Email do cliente não disponível no webhook. Token será gerado após cadastro.');
+              
+              // SEMPRE gerar token de validação (independente se usuário existe ou não)
+              const paymentToken = await PaymentToken.create(
+                order_nsu,
+                customerEmail,
+                existingUser ? existingUser.id : null // user_id se usuário já existe
+              );
+              
+              console.log('✅ Token de pagamento gerado:', {
+                token: paymentToken.token,
+                email: customerEmail,
+                order_nsu: order_nsu,
+                user_id: existingUser ? existingUser.id : null
+              });
+              
+              // Converter valor de centavos para reais (paid_amount vem em centavos)
+              const valorReais = parseFloat(paid_amount) / 100;
+              
+              // SEMPRE enviar email com token
+              emailService.sendPaymentToken({
+                email: customerEmail,
+                token: paymentToken.token,
+                nome: payload.customer_name || order.customer_email || existingUser?.nome || 'Cliente',
+                orderNsu: order_nsu,
+                valor: valorReais
+              }).then(result => {
+                if (result.success) {
+                  console.log('✅ Email com token enviado com sucesso:', customerEmail);
+                } else {
+                  console.error('❌ Erro ao enviar email com token:', result.error);
+                }
+              }).catch(emailError => {
+                console.error('❌ Erro ao enviar email com token (não crítico):', emailError);
+              });
+              
+              // IMPORTANTE: NÃO atualizar assinatura aqui - aguarda validação do token
+              // A validação do token é que vai liberar o acesso por 30 dias
+              
+            } catch (tokenError) {
+              console.error('❌ Erro ao gerar token de pagamento:', tokenError);
             }
+          } else {
+            console.log('⚠️ Email do cliente não disponível no webhook. Não foi possível gerar token.');
           }
         });
 

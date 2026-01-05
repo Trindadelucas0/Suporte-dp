@@ -244,13 +244,36 @@ class AuthController {
         });
       }
 
-      // NOVO FLUXO: Cria usuário SEM pagamento (status pendente)
+      // Verifica se há token validado na sessão (após validação de pagamento)
+      const hasTokenValidated = req.session.pendingToken && req.session.pendingEmail;
+      const tokenEmail = req.session.pendingEmail;
+      
+      // Se há token validado, verifica se o email corresponde
+      if (hasTokenValidated && tokenEmail.toLowerCase() !== email.toLowerCase()) {
+        return res.render('auth/register', {
+          title: 'Cadastro - Suporte DP',
+          error: 'O email informado deve ser o mesmo usado no pagamento.',
+          order_nsu: null,
+          payment: null
+        });
+      }
+      
+      // NOVO FLUXO: Cria usuário - se há token validado, ativa assinatura imediatamente
       const user = await db.transaction(async (client) => {
         const bcrypt = require('bcrypt');
         const senhaHash = await bcrypt.hash(senha, 10);
         
-        // Cria usuário com subscription_status = 'pendente' (aguardando pagamento)
-        // Status = 'ativo' mas subscription_status = 'pendente' (não pode acessar até pagar)
+        // Se há token validado, ativa assinatura por 30 dias
+        let subscriptionStatus = 'pendente';
+        let subscriptionExpiresAt = null;
+        
+        if (hasTokenValidated) {
+          subscriptionStatus = 'ativa';
+          const nextBillingDate = new Date();
+          nextBillingDate.setDate(nextBillingDate.getDate() + 30);
+          subscriptionExpiresAt = nextBillingDate.toISOString().split('T')[0];
+        }
+        
         const userResult = await client.query(
           `INSERT INTO users (nome, email, senha_hash, is_admin, whatsapp, status, subscription_status, subscription_expires_at, created_at, updated_at)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
@@ -262,18 +285,26 @@ class AuthController {
             false,
             whatsapp || null,
             'ativo', // Status ativo (pode fazer login)
-            'pendente', // Subscription pendente (aguardando pagamento)
-            null // Sem data de expiração ainda (será definida após pagamento)
+            subscriptionStatus, // 'ativa' se há token, 'pendente' caso contrário
+            subscriptionExpiresAt // 30 dias se há token, null caso contrário
           ]
         );
         
         return userResult.rows[0];
       });
+      
+      // Limpa dados do token da sessão após criar usuário
+      if (hasTokenValidated) {
+        delete req.session.pendingToken;
+        delete req.session.pendingEmail;
+        delete req.session.pendingOrderNsu;
+      }
 
-      console.log('✅ Usuário criado com sucesso (aguardando pagamento):', {
+      console.log('✅ Usuário criado com sucesso:', {
         id: user.id,
         email: user.email,
-        subscription_status: user.subscription_status
+        subscription_status: user.subscription_status,
+        has_token_validated: hasTokenValidated
       });
       
       // Login automático após cadastro
@@ -299,12 +330,19 @@ class AuthController {
           });
         }
 
-        // NOVO FLUXO: Redireciona para /checkout (página de pagamento)
-        // Adiciona mensagem de sucesso na sessão
-        req.session.successMessage = 'Conta criada com sucesso! Agora finalize o pagamento para liberar o acesso.';
-        req.session.save(() => {
-          res.redirect('/checkout');
-        });
+        // Se há token validado, acesso já está liberado - redireciona para dashboard
+        // Caso contrário, redireciona para /checkout (página de pagamento)
+        if (hasTokenValidated) {
+          req.session.successMessage = 'Cadastro realizado com sucesso! Seu acesso está liberado por 30 dias.';
+          req.session.save(() => {
+            res.redirect('/dashboard');
+          });
+        } else {
+          req.session.successMessage = 'Conta criada com sucesso! Agora finalize o pagamento para liberar o acesso.';
+          req.session.save(() => {
+            res.redirect('/checkout');
+          });
+        }
       });
     } catch (error) {
       console.error('Erro no cadastro:', error);
