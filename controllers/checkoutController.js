@@ -12,31 +12,39 @@ const db = require('../config/database');
 class CheckoutController {
   /**
    * Rota de sucesso após pagamento
-   * GET /checkout/sucesso - verifica token pendente e redireciona para validação
+   * GET /checkout/sucesso - mostra página informando que precisa validar token
    */
   static async sucesso(req, res) {
-    // Se não está logado, redireciona para login
-    if (!req.session || !req.session.user) {
-      return res.redirect('/login');
+    // Pega email da sessão (se logado) ou da query string
+    let userEmail = null;
+    
+    if (req.session && req.session.user) {
+      userEmail = req.session.user.email;
+    } else if (req.query.email) {
+      userEmail = req.query.email;
     }
-
-    const userEmail = req.session.user.email;
 
     // Verifica se há token pendente (o webhook já deve ter gerado)
-    const tokenPendente = await PaymentToken.findPendingTokenByEmail(userEmail);
-
-    if (tokenPendente) {
-      // Há token pendente - redireciona para validação
-      console.log('🔐 [CHECKOUT/SUCESSO] Token pendente encontrado, redirecionando para validação:', {
-        email: userEmail
-      });
-      return res.redirect(`/validar-pagamento?email=${encodeURIComponent(userEmail)}&from=checkout`);
+    if (userEmail) {
+      const tokenPendente = await PaymentToken.findPendingTokenByEmail(userEmail);
+      
+      if (tokenPendente) {
+        console.log('🔐 [CHECKOUT/SUCESSO] Token pendente encontrado, mostrando página de aguardo:', {
+          email: userEmail
+        });
+      } else {
+        console.log('⚠️ [CHECKOUT/SUCESSO] Nenhum token pendente encontrado ainda. Aguardando webhook...', {
+          email: userEmail
+        });
+      }
     }
 
-    // Se não há token pendente, aguarda processamento do webhook (pode levar alguns segundos)
-    // Redireciona para dashboard - se precisar de token, o login vai redirecionar
-    console.log('⚠️ [CHECKOUT/SUCESSO] Nenhum token pendente encontrado ainda. Aguardando webhook...');
-    return res.redirect('/dashboard');
+    // Mostra página informando que precisa validar token
+    // NÃO redireciona para dashboard - usuário precisa validar token primeiro
+    return res.render('checkout/aguardando-validacao', {
+      title: 'Aguardando Validação - Suporte DP',
+      email: userEmail
+    });
   }
 
   /**

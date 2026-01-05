@@ -2,23 +2,43 @@
  * SERVIÇO: EmailService
  * Gerencia envio de emails do sistema
  * 
- * ⚠️ IMPORTANTE: Configure as variáveis de ambiente para SMTP
- * Exemplo no .env:
- * SMTP_HOST=smtp.gmail.com
- * SMTP_PORT=587
- * SMTP_USER=seu-email@gmail.com
- * SMTP_PASS=sua-senha-de-app (não use senha normal, use senha de app)
- * SMTP_FROM=noreply@seudominio.com
+ * Suporta dois modos:
+ * 1. API do Resend (recomendado para Render) - usa RESEND_API_KEY
+ * 2. SMTP tradicional - usa SMTP_HOST, SMTP_USER, SMTP_PASS
+ * 
+ * ⚠️ IMPORTANTE: Para Render, use API do Resend (não SMTP)
+ * Configure RESEND_API_KEY no Render
  */
 
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+
+// Tenta carregar Resend (opcional)
+let Resend = null;
+try {
+  Resend = require('resend');
+} catch (e) {
+  // Resend não instalado - usará SMTP
+}
 
 class EmailService {
   constructor() {
     // Configuração do transporter (será inicializado na primeira chamada)
     this.transporter = null;
     this.isConfigured = false;
+    this.resendClient = null;
+    this.useResendAPI = false;
+    
+    // Verifica se deve usar API do Resend
+    if (Resend && process.env.RESEND_API_KEY) {
+      try {
+        this.resendClient = new Resend(process.env.RESEND_API_KEY);
+        this.useResendAPI = true;
+        console.log('✅ EmailService: Usando API do Resend (recomendado para Render)');
+      } catch (e) {
+        console.warn('⚠️ EmailService: Erro ao inicializar Resend, usando SMTP:', e.message);
+      }
+    }
   }
 
   /**
@@ -65,6 +85,132 @@ class EmailService {
   }
 
   /**
+   * Envia email com token usando API do Resend (recomendado para Render)
+   * @param {Object} data - Dados do email
+   * @returns {Promise<Object>} Resultado do envio
+   */
+  async sendPaymentTokenViaResendAPI(data) {
+    try {
+      const smtpFrom = process.env.SMTP_FROM || 'noreply@pixsile.resend.app';
+      const appUrl = process.env.APP_URL || 'http://localhost:3000';
+      const nome = data.nome || 'Cliente';
+      const validationUrl = `${appUrl}/validar-pagamento?token=${data.token}&email=${encodeURIComponent(data.email)}`;
+
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Token de Validação</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%); padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0;">Suporte DP</h1>
+          </div>
+          
+          <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #ddd;">
+            <h2 style="color: #DC2626; margin-top: 0;">Token de Validação de Pagamento</h2>
+            
+            <p>Olá ${nome},</p>
+            
+            <p>Seu pagamento foi processado com sucesso! Para liberar o acesso ao sistema, você precisa validar seu pagamento usando o token abaixo:</p>
+            
+            <div style="background: white; border: 2px solid #DC2626; border-radius: 8px; padding: 20px; text-align: center; margin: 30px 0;">
+              <p style="margin: 0; font-size: 14px; color: #666; margin-bottom: 10px;">Seu token de validação:</p>
+              <p style="margin: 0; font-size: 24px; font-weight: bold; color: #DC2626; letter-spacing: 3px; font-family: monospace;">${data.token}</p>
+            </div>
+            
+            <div style="margin: 30px 0; text-align: center;">
+              <a href="${validationUrl}" 
+                 style="background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%); 
+                        color: white; 
+                        padding: 15px 30px; 
+                        text-decoration: none; 
+                        border-radius: 5px; 
+                        font-weight: bold;
+                        display: inline-block;">
+                Validar Pagamento
+              </a>
+            </div>
+            
+            <p style="font-size: 14px; color: #666;">
+              Ou acesse: <a href="${appUrl}/validar-pagamento">${appUrl}/validar-pagamento</a> e insira o token acima.
+            </p>
+            
+            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;">
+              <p style="margin: 0; font-size: 14px; color: #856404;">
+                <strong>⚠️ Importante:</strong>
+                <br>• Este token expira em 24 horas
+                <br>• O token só pode ser usado uma vez
+                <br>• Use o email: <strong>${data.email}</strong> junto com o token
+                <br>• Valor pago: R$ ${data.valor.toFixed(2).replace('.', ',')}
+                <br>• Pedido: ${data.orderNsu}
+              </p>
+            </div>
+            
+            <p style="font-size: 12px; color: #999; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
+              Se você não realizou este pagamento, ignore este email.
+            </p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const textContent = `
+Suporte DP - Token de Validação de Pagamento
+
+Olá ${nome},
+
+Seu pagamento foi processado com sucesso! Para liberar o acesso ao sistema, você precisa validar seu pagamento usando o token abaixo:
+
+TOKEN: ${data.token}
+
+Acesse: ${validationUrl}
+
+OU acesse ${appUrl}/validar-pagamento e insira o email e token.
+
+Importante:
+- Este token expira em 24 horas
+- O token só pode ser usado uma vez
+- Use o email: ${data.email} junto com o token
+- Valor pago: R$ ${data.valor.toFixed(2).replace('.', ',')}
+- Pedido: ${data.orderNsu}
+
+Se você não realizou este pagamento, ignore este email.
+      `;
+
+      const result = await this.resendClient.emails.send({
+        from: `Suporte DP <${smtpFrom}>`,
+        to: data.email,
+        subject: 'Token de Validação de Pagamento - Suporte DP',
+        html: htmlContent,
+        text: textContent
+      });
+
+      console.log('✅ EmailService (Resend API): Token de pagamento enviado para:', data.email);
+      console.log('📬 EmailService (Resend API): Message ID:', result.id);
+      console.log('📋 EmailService (Resend API): Token enviado:', data.token);
+
+      return {
+        success: true,
+        messageId: result.id
+      };
+    } catch (error) {
+      console.error('❌ EmailService (Resend API): Erro ao enviar email de token:', error.message);
+      console.error('❌ EmailService (Resend API): Email destinatário:', data.email);
+      console.error('❌ EmailService (Resend API): Token:', data.token);
+      console.error('❌ EmailService (Resend API): Stack:', error.stack);
+
+      return {
+        success: false,
+        error: error.message,
+        code: error.code || 'UNKNOWN'
+      };
+    }
+  }
+
+  /**
    * Envia email com token de validação de pagamento
    * @param {Object} data - Dados do email
    * @param {string} data.email - Email do destinatário
@@ -75,6 +221,12 @@ class EmailService {
    * @returns {Promise<Object>} Resultado do envio
    */
   async sendPaymentToken(data) {
+    // Se Resend API está disponível, usa ela (melhor para Render)
+    if (this.useResendAPI && this.resendClient) {
+      return await this.sendPaymentTokenViaResendAPI(data);
+    }
+
+    // Caso contrário, usa SMTP tradicional
     const transporter = this.getTransporter();
 
     if (!transporter) {

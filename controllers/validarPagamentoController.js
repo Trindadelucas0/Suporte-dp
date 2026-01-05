@@ -176,12 +176,14 @@ class ValidarPagamentoController {
         }
       });
 
-      // Se chegou aqui, usuário existe e foi atualizado - redirecionar para dashboard
+      // Se chegou aqui, usuário existe e foi atualizado
       // Remove flag de validação de token se existir (caso tenha vindo do login)
       if (req.session.requireTokenValidation) {
         delete req.session.requireTokenValidation;
       }
       
+      // NÃO redireciona automaticamente para dashboard
+      // Usuário precisa fazer login manualmente após validar token
       req.session.save((err) => {
         if (err) {
           console.error('Erro ao salvar sessão:', err);
@@ -189,12 +191,20 @@ class ValidarPagamentoController {
             title: 'Validar Pagamento - Suporte DP',
             token: token,
             email: email,
-            error: 'Erro ao fazer login. Tente fazer login manualmente.',
+            error: 'Erro ao processar validação. Tente fazer login.',
             success: null
           });
         }
         
-        return res.redirect('/dashboard');
+        // Mostra mensagem de sucesso e redireciona para login
+        return res.render('auth/validar-pagamento', {
+          title: 'Validar Pagamento - Suporte DP',
+          token: null,
+          email: email,
+          error: null,
+          success: 'Token validado com sucesso! Faça login para acessar o sistema.',
+          from: 'validacao'
+        });
       });
 
     } catch (error) {
