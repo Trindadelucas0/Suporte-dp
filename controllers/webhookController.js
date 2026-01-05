@@ -189,42 +189,59 @@ class WebhookController {
                 });
               }
               
-              // SEMPRE gerar token de validação (independente se usuário existe ou não)
-              const paymentToken = await PaymentToken.create(
-                order_nsu,
-                customerEmail,
-                existingUser ? existingUser.id : null // user_id se usuário já existe
-              );
-              
-              console.log('✅ Token de pagamento gerado:', {
-                token: paymentToken.token,
-                email: customerEmail,
-                order_nsu: order_nsu,
-                user_id: existingUser ? existingUser.id : null
+              // Verifica se já existe token válido (não usado, não expirado) para este pagamento
+              const tokensExistentes = await PaymentToken.findByOrderNsu(order_nsu);
+              const tokenValidoExistente = tokensExistentes.find(t => {
+                const now = new Date();
+                const expiresAt = new Date(t.expires_at);
+                return !t.used && expiresAt > now;
               });
               
-              // Converter valor de centavos para reais (paid_amount vem em centavos)
-              const valorReais = parseFloat(paid_amount) / 100;
-              
-              // SEMPRE enviar email com token
-              console.log('📧 [WEBHOOK] Iniciando envio de email com token para:', customerEmail);
-              emailService.sendPaymentToken({
-                email: customerEmail,
-                token: paymentToken.token,
-                nome: payload.customer_name || order.customer_email || existingUser?.nome || 'Cliente',
-                orderNsu: order_nsu,
-                valor: valorReais
-              }).then(result => {
-                if (result.success) {
-                  console.log('✅ [WEBHOOK] Email com token enviado com sucesso:', customerEmail);
-                  console.log('📬 [WEBHOOK] Message ID:', result.messageId);
-                } else {
-                  console.error('❌ [WEBHOOK] Erro ao enviar email com token:', result.error);
-                }
-              }).catch(emailError => {
-                console.error('❌ [WEBHOOK] Erro ao enviar email com token (não crítico):', emailError);
-                console.error('❌ [WEBHOOK] Stack do erro:', emailError.stack);
-              });
+              if (tokenValidoExistente) {
+                console.log('ℹ️ [WEBHOOK] Já existe token válido para este pagamento, não gerando novo:', {
+                  order_nsu: order_nsu,
+                  token_existente: tokenValidoExistente.token,
+                  email: customerEmail
+                });
+                // Não gera novo token - já existe um válido
+              } else {
+                // Só gera token se não houver token válido para este pagamento
+                const paymentToken = await PaymentToken.create(
+                  order_nsu,
+                  customerEmail,
+                  existingUser ? existingUser.id : null // user_id se usuário já existe
+                );
+                
+                console.log('✅ Token de pagamento gerado:', {
+                  token: paymentToken.token,
+                  email: customerEmail,
+                  order_nsu: order_nsu,
+                  user_id: existingUser ? existingUser.id : null
+                });
+                
+                // Converter valor de centavos para reais (paid_amount vem em centavos)
+                const valorReais = parseFloat(paid_amount) / 100;
+                
+                // Envia email com token
+                console.log('📧 [WEBHOOK] Iniciando envio de email com token para:', customerEmail);
+                emailService.sendPaymentToken({
+                  email: customerEmail,
+                  token: paymentToken.token,
+                  nome: payload.customer_name || order.customer_email || existingUser?.nome || 'Cliente',
+                  orderNsu: order_nsu,
+                  valor: valorReais
+                }).then(result => {
+                  if (result.success) {
+                    console.log('✅ [WEBHOOK] Email com token enviado com sucesso:', customerEmail);
+                    console.log('📬 [WEBHOOK] Message ID:', result.messageId);
+                  } else {
+                    console.error('❌ [WEBHOOK] Erro ao enviar email com token:', result.error);
+                  }
+                }).catch(emailError => {
+                  console.error('❌ [WEBHOOK] Erro ao enviar email com token (não crítico):', emailError);
+                  console.error('❌ [WEBHOOK] Stack do erro:', emailError.stack);
+                });
+              }
               
               // IMPORTANTE: NÃO atualizar assinatura aqui - aguarda validação do token
               // A validação do token é que vai liberar o acesso por 30 dias

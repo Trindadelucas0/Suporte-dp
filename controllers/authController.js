@@ -174,8 +174,9 @@ class AuthController {
               });
               return;
             } else {
-              // Há pagamento confirmado mas não há token pendente - tenta gerar token automaticamente
-              console.log('🔄 [LOGIN] Pagamento confirmado mas sem token pendente. Tentando gerar token automaticamente...', {
+              // Há pagamento confirmado mas não há token pendente
+              // Verifica se há algum pagamento que ainda não tem token gerado
+              console.log('🔄 [LOGIN] Pagamento confirmado mas sem token pendente. Verificando se precisa gerar token...', {
                 user_id: user.id,
                 email: user.email
               });
@@ -189,59 +190,80 @@ class AuthController {
                 })[0];
                 
                 if (paymentMaisRecente && paymentMaisRecente.order_nsu) {
-                  // Tenta gerar token automaticamente
-                  const paymentToken = await PaymentToken.create(
-                    paymentMaisRecente.order_nsu,
-                    user.email,
-                    user.id
-                  );
-                  
-                  console.log('✅ [LOGIN] Token gerado automaticamente:', {
-                    token: paymentToken.token,
-                    email: user.email,
-                    order_nsu: paymentMaisRecente.order_nsu
+                  // Verifica se já existe token válido para este pagamento
+                  const tokensExistentes = await PaymentToken.findByOrderNsu(paymentMaisRecente.order_nsu);
+                  const tokenValidoExistente = tokensExistentes.find(t => {
+                    const now = new Date();
+                    const expiresAt = new Date(t.expires_at);
+                    return !t.used && expiresAt > now;
                   });
                   
-                  // Envia email com token (assíncrono, não bloqueia)
-                  setImmediate(async () => {
-                    try {
-                      const valorReais = parseFloat(paymentMaisRecente.paid_amount || 1990) / 100;
-                      await emailService.sendPaymentToken({
-                        email: user.email,
-                        token: paymentToken.token,
-                        nome: user.nome,
-                        orderNsu: paymentMaisRecente.order_nsu,
-                        valor: valorReais
-                      });
-                    } catch (emailError) {
-                      console.error('⚠️ [LOGIN] Erro ao enviar email com token (não crítico):', emailError);
-                    }
-                  });
-                  
-                  // Redireciona para validação
-                  req.session.user = {
-                    id: user.id,
-                    nome: user.nome,
-                    email: user.email,
-                    is_admin: user.is_admin
-                  };
-                  req.session.lastActivity = Date.now();
-                  req.session.requireTokenValidation = true;
-                  
-                  await User.updateLastLogin(user.id);
-                  
-                  req.session.save((err) => {
-                    if (err) {
-                      console.error('Erro ao salvar sessão:', err);
-                      return res.render('auth/login', {
-                        title: 'Login - Suporte DP',
-                        error: 'Erro ao fazer login. Tente novamente.',
-                        success: null
-                      });
-                    }
-                    return res.redirect(`/validar-pagamento?email=${encodeURIComponent(user.email)}&from=login`);
-                  });
-                  return;
+                  if (tokenValidoExistente) {
+                    console.log('ℹ️ [LOGIN] Já existe token válido para este pagamento, não gerando novo:', {
+                      order_nsu: paymentMaisRecente.order_nsu,
+                      token_existente: tokenValidoExistente.token
+                    });
+                    // Não gera novo token - redireciona informando que precisa fazer novo pagamento
+                    return res.render('auth/login', {
+                      title: 'Login - Suporte DP',
+                      error: 'Seu token de validação já foi usado ou expirou. Para receber um novo token, é necessário fazer um novo pagamento.',
+                      success: null
+                    });
+                  } else {
+                    // Não há token válido - tenta gerar (pode ser que o token foi usado/expirado)
+                    const paymentToken = await PaymentToken.create(
+                      paymentMaisRecente.order_nsu,
+                      user.email,
+                      user.id
+                    );
+                    
+                    console.log('✅ [LOGIN] Token gerado automaticamente:', {
+                      token: paymentToken.token,
+                      email: user.email,
+                      order_nsu: paymentMaisRecente.order_nsu
+                    });
+                    
+                    // Envia email com token (assíncrono, não bloqueia)
+                    setImmediate(async () => {
+                      try {
+                        const valorReais = parseFloat(paymentMaisRecente.paid_amount || 1990) / 100;
+                        await emailService.sendPaymentToken({
+                          email: user.email,
+                          token: paymentToken.token,
+                          nome: user.nome,
+                          orderNsu: paymentMaisRecente.order_nsu,
+                          valor: valorReais
+                        });
+                      } catch (emailError) {
+                        console.error('⚠️ [LOGIN] Erro ao enviar email com token (não crítico):', emailError);
+                      }
+                    });
+                    
+                    // Redireciona para validação
+                    req.session.user = {
+                      id: user.id,
+                      nome: user.nome,
+                      email: user.email,
+                      is_admin: user.is_admin
+                    };
+                    req.session.lastActivity = Date.now();
+                    req.session.requireTokenValidation = true;
+                    
+                    await User.updateLastLogin(user.id);
+                    
+                    req.session.save((err) => {
+                      if (err) {
+                        console.error('Erro ao salvar sessão:', err);
+                        return res.render('auth/login', {
+                          title: 'Login - Suporte DP',
+                          error: 'Erro ao fazer login. Tente novamente.',
+                          success: null
+                        });
+                      }
+                      return res.redirect(`/validar-pagamento?email=${encodeURIComponent(user.email)}&from=login`);
+                    });
+                    return;
+                  }
                 } else {
                   throw new Error('Order NSU não encontrado');
                 }
