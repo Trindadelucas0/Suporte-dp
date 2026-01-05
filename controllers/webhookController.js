@@ -195,38 +195,74 @@ class WebhookController {
             }
           }
           
-          // 5.4. Enviar notificação de pagamento confirmado para o administrador
-          const customerEmail = payload.customer_email || payload.email || order.customer_email || null;
-          const customerName = payload.customer_name || existingUser?.nome || customerEmail?.split('@')[0] || 'Cliente';
-          const valorReais = parseFloat(paid_amount) / 100;
-          const dataPagamento = paid_at ? new Date(paid_at).toLocaleString('pt-BR') : new Date().toLocaleString('pt-BR');
+          // 5.4. Verificar se é renovação (order tem user_id) ou novo pagamento
+          const isRenovacao = order.user_id !== null && order.user_id !== undefined;
           
-          // Envia notificação para admin (assíncrono, não bloqueia)
-          if (customerEmail || existingUser) {
-            setImmediate(async () => {
-              try {
-                await emailService.sendPaymentNotificationToAdmin({
-                  nome: customerName,
-                  email: customerEmail || existingUser?.email || 'Não informado',
-                  orderNsu: order_nsu,
-                  transactionNsu: transaction_nsu,
-                  valor: valorReais,
-                  dataPagamento: dataPagamento
-                });
-                console.log('✅ [WEBHOOK] Notificação de pagamento enviada para admin:', {
-                  admin_email: process.env.ADMIN_EMAIL || 'lucasrodrigues4@live.com',
-                  cliente_nome: customerName,
-                  cliente_email: customerEmail || existingUser?.email
-                });
-              } catch (notifError) {
-                console.error('⚠️ [WEBHOOK] Erro ao enviar notificação de pagamento para admin (não crítico):', notifError);
-              }
+          // 5.5. Enviar notificação de pagamento confirmado para o administrador
+          // IMPORTANTE: Só envia notificação para admin se NÃO for renovação
+          // Renovações são feitas por usuários já cadastrados, não precisa notificar admin
+          if (!isRenovacao) {
+            const customerEmail = payload.customer_email || payload.email || order.customer_email || null;
+            const customerName = payload.customer_name || existingUser?.nome || customerEmail?.split('@')[0] || 'Cliente';
+            const valorReais = parseFloat(paid_amount) / 100;
+            const dataPagamento = paid_at ? new Date(paid_at).toLocaleString('pt-BR') : new Date().toLocaleString('pt-BR');
+            
+            // Envia notificação para admin apenas para novos pagamentos (não renovações)
+            if (customerEmail || existingUser) {
+              setImmediate(async () => {
+                try {
+                  await emailService.sendPaymentNotificationToAdmin({
+                    nome: customerName,
+                    email: customerEmail || existingUser?.email || 'Não informado',
+                    orderNsu: order_nsu,
+                    transactionNsu: transaction_nsu,
+                    valor: valorReais,
+                    dataPagamento: dataPagamento
+                  });
+                  console.log('✅ [WEBHOOK] Notificação de pagamento enviada para admin (NOVO PAGAMENTO):', {
+                    admin_email: process.env.ADMIN_EMAIL || 'lucasrodrigues4@live.com',
+                    cliente_nome: customerName,
+                    cliente_email: customerEmail || existingUser?.email
+                  });
+                } catch (notifError) {
+                  console.error('⚠️ [WEBHOOK] Erro ao enviar notificação de pagamento para admin (não crítico):', notifError);
+                }
+              });
+            }
+          } else {
+            console.log('ℹ️ [WEBHOOK] Renovação detectada - não enviando notificação para admin:', {
+              user_id: order.user_id,
+              order_nsu: order_nsu,
+              nota: 'Renovações não geram notificação para admin'
             });
           }
 
-          // 5.5. NOVO FLUXO: SEMPRE gerar token e enviar email quando pagamento for confirmado
+          // 5.6. NOVO FLUXO: SEMPRE gerar token e enviar email quando pagamento for confirmado
           // O acesso só é liberado após validação do token
-          if (customerEmail) {
+          
+          // IMPORTANTE: Para renovações, usa o email do usuário logado (order.user_id)
+          // Para novos pagamentos, usa o email do payload ou order
+          let emailParaToken = null;
+          
+          if (isRenovacao && existingUser) {
+            // RENOVAÇÃO: Usa email do usuário logado
+            emailParaToken = existingUser.email;
+            console.log('🔄 [WEBHOOK] RENOVAÇÃO detectada - usando email do usuário logado:', {
+              user_id: existingUser.id,
+              email: emailParaToken,
+              order_nsu: order_nsu,
+              nota: 'Token será vinculado ao email do usuário logado'
+            });
+          } else {
+            // NOVO PAGAMENTO: Usa email do payload ou order
+            emailParaToken = payload.customer_email || payload.email || order.customer_email || null;
+            console.log('🆕 [WEBHOOK] NOVO PAGAMENTO - usando email do payload/order:', {
+              email: emailParaToken,
+              order_nsu: order_nsu
+            });
+          }
+          
+          if (emailParaToken) {
             try {
               // Atualizar user_id no pagamento se usuário já existe (para referência)
               if (existingUser) {
@@ -235,94 +271,121 @@ class WebhookController {
                   [existingUser.id, payment.id]
                 );
                 
-                console.log('🔄 PAGAMENTO CONFIRMADO: Usuário já existe, mas acesso aguarda validação do token:', {
-                  user_id: existingUser.id,
-                  order_nsu: order_nsu
-                });
+                if (isRenovacao) {
+                  console.log('🔄 PAGAMENTO CONFIRMADO (RENOVAÇÃO): Usuário logado, token será vinculado ao email do login:', {
+                    user_id: existingUser.id,
+                    email: existingUser.email,
+                    order_nsu: order_nsu
+                  });
+                } else {
+                  console.log('🔄 PAGAMENTO CONFIRMADO: Usuário já existe, mas acesso aguarda validação do token:', {
+                    user_id: existingUser.id,
+                    order_nsu: order_nsu
+                  });
+                }
               } else {
                 console.log('🆕 PAGAMENTO CONFIRMADO: Primeiro pagamento, gerando token de validação:', {
                   order_nsu: order_nsu
                 });
               }
               
-              // IMPORTANTE: Cada pagamento (order_nsu) deve ter seu próprio token
-              // Verifica se já existe token válido (não usado, não expirado) para ESTE pagamento específico
-              const tokensExistentes = await PaymentToken.findByOrderNsu(order_nsu);
-              const now = new Date();
-              const tokenValidoExistente = tokensExistentes.find(t => {
-                if (t.used) return false; // Token já foi usado
-                const expiresAt = new Date(t.expires_at);
-                return expiresAt > now; // Token não expirou
-              });
-              
-              if (tokenValidoExistente) {
-                // Já existe token válido para ESTE pagamento específico - não gera novo
-                console.log('ℹ️ [WEBHOOK] Já existe token válido para este pagamento, não gerando novo token:', {
-                  order_nsu: order_nsu,
-                  token_existente: tokenValidoExistente.token,
-                  email: customerEmail,
-                  created_at: tokenValidoExistente.created_at,
-                  expires_at: tokenValidoExistente.expires_at,
-                  nota: 'Cada pagamento tem seu próprio token - este pagamento já tem token válido'
+                // IMPORTANTE: Cada pagamento (order_nsu) deve ter seu próprio token
+                // Verifica se já existe token válido (não usado, não expirado) para ESTE pagamento específico
+                const tokensExistentes = await PaymentToken.findByOrderNsu(order_nsu);
+                const now = new Date();
+                const tokenValidoExistente = tokensExistentes.find(t => {
+                  if (t.used) return false; // Token já foi usado
+                  const expiresAt = new Date(t.expires_at);
+                  return expiresAt > now; // Token não expirou
                 });
-                // Não gera novo token - já existe um válido para este pagamento específico
-                // Não faz return aqui para não sair da transação - apenas não gera token
-              } else {
-                // Não há token válido para ESTE pagamento - gera novo token e envia email
-                // Isso permite que cada novo pagamento (renovação) gere seu próprio token
+                
+                if (tokenValidoExistente) {
+                  // Já existe token válido para ESTE pagamento específico - não gera novo
+                  console.log('ℹ️ [WEBHOOK] Já existe token válido para este pagamento, não gerando novo token:', {
+                    order_nsu: order_nsu,
+                    token_existente: tokenValidoExistente.token,
+                    email: emailParaToken,
+                    created_at: tokenValidoExistente.created_at,
+                    expires_at: tokenValidoExistente.expires_at,
+                    nota: 'Cada pagamento tem seu próprio token - este pagamento já tem token válido'
+                  });
+                  // Não gera novo token - já existe um válido para este pagamento específico
+                  // Não faz return aqui para não sair da transação - apenas não gera token
+                } else {
+                  // Não há token válido para ESTE pagamento - gera novo token e envia email
+                  // Para renovações: token vinculado ao email do usuário logado
+                  // Para novos pagamentos: token vinculado ao email do payload/order
                 console.log('🔄 [WEBHOOK] Gerando novo token para este pagamento:', {
                   order_nsu: order_nsu,
-                  email: customerEmail,
-                  tipo: existingUser ? 'RENOVAÇÃO' : 'NOVO PAGAMENTO',
+                  email: emailParaToken,
+                  tipo: isRenovacao ? 'RENOVAÇÃO' : 'NOVO PAGAMENTO',
                   user_id: existingUser ? existingUser.id : null,
                   tokens_existentes_total: tokensExistentes.length,
                   tokens_existentes_usados: tokensExistentes.filter(t => t.used).length,
-                  nota: 'Cada pagamento gera seu próprio token e envia email'
+                  nota: isRenovacao 
+                    ? 'Renovação: token vinculado ao email do usuário logado' 
+                    : 'Novo pagamento: token vinculado ao email do payload/order'
                 });
+                
                 // Gera novo token para este pagamento específico
+                // IMPORTANTE: Para renovações, usa email do usuário logado
                 // Usa createWithClient para garantir que a verificação de pagamento seja feita dentro da transação
                 const paymentToken = await PaymentToken.createWithClient(
                   order_nsu,
-                  customerEmail,
+                  emailParaToken, // Email do usuário logado (renovação) ou do payload (novo pagamento)
                   existingUser ? existingUser.id : null, // user_id se usuário já existe
                   client // client da transação
                 );
                 
                 console.log('✅ Token de pagamento gerado:', {
                   token: paymentToken.token,
-                  email: customerEmail,
+                  email: emailParaToken,
                   order_nsu: order_nsu,
                   user_id: existingUser ? existingUser.id : null,
-                  tipo: existingUser ? 'RENOVAÇÃO' : 'NOVO PAGAMENTO'
+                  tipo: isRenovacao ? 'RENOVAÇÃO' : 'NOVO PAGAMENTO',
+                  nota: isRenovacao 
+                    ? 'Token vinculado ao email do usuário logado - usuário valida e acessa por 30 dias' 
+                    : 'Token vinculado ao email do pagamento - aguarda validação'
                 });
                 
                 // Converter valor de centavos para reais (paid_amount vem em centavos)
                 const valorReais = parseFloat(paid_amount) / 100;
                 
                 // IMPORTANTE: Sempre envia email quando gera novo token
-                // Cada pagamento gera seu próprio token e envia seu próprio email
-                console.log('📧 [WEBHOOK] Enviando email com token para:', customerEmail);
-                console.log('📧 [WEBHOOK] Token vinculado ao email:', {
-                  email: customerEmail,
-                  token: paymentToken.token,
-                  order_nsu: order_nsu,
-                  valor: valorReais
+                // Para renovações: envia para o email do usuário logado
+                // Para novos pagamentos: envia para o email do payload/order
+                const nomeCliente = isRenovacao 
+                  ? (existingUser?.nome || 'Cliente')
+                  : (payload.customer_name || order.customer_email?.split('@')[0] || 'Cliente');
+                
+                console.log('📧 [WEBHOOK] Enviando email com token:', {
+                  email: emailParaToken,
+                  nome: nomeCliente,
+                  tipo: isRenovacao ? 'RENOVAÇÃO' : 'NOVO PAGAMENTO',
+                  token: paymentToken.token.substring(0, 8) + '...',
+                  order_nsu: order_nsu
                 });
                 
                 emailService.sendPaymentToken({
-                  email: customerEmail,
+                  email: emailParaToken,
                   token: paymentToken.token,
-                  nome: payload.customer_name || order.customer_email || existingUser?.nome || 'Cliente',
+                  nome: nomeCliente,
                   orderNsu: order_nsu,
                   valor: valorReais
                 }).then(result => {
                   if (result.success) {
-                    console.log('✅ [WEBHOOK] Email com token enviado com sucesso:', customerEmail);
-                    console.log('📬 [WEBHOOK] Message ID:', result.messageId);
+                    console.log('✅ [WEBHOOK] Email com token enviado com sucesso:', {
+                      email: emailParaToken,
+                      tipo: isRenovacao ? 'RENOVAÇÃO' : 'NOVO PAGAMENTO',
+                      message_id: result.messageId
+                    });
                     console.log('🔗 [WEBHOOK] Token vinculado ao email:', {
-                      email: customerEmail,
+                      email: emailParaToken,
                       token: paymentToken.token,
-                      order_nsu: order_nsu
+                      order_nsu: order_nsu,
+                      nota: isRenovacao 
+                        ? 'Renovação: usuário valida token e acessa por 30 dias' 
+                        : 'Novo pagamento: aguarda validação do token'
                     });
                   } else {
                     console.error('❌ [WEBHOOK] Erro ao enviar email com token:', result.error);

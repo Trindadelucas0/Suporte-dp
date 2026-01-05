@@ -115,14 +115,16 @@ class RenovarController {
       // Se chegou aqui, pode renovar (assinatura expirada OU já se passaram 30 dias)
 
       // 1. Criar pedido interno no banco (novo order_nsu para renovação)
-      // IMPORTANTE: Passa user_id para identificar o usuário no webhook
-      const order = await Order.create(valor, userId);
+      // IMPORTANTE: Passa user_id E email do usuário para vincular corretamente
+      const order = await Order.create(valor, userId, user.email);
       console.log('Pedido de renovação criado:', {
         id: order.id,
         order_nsu: order.order_nsu,
         status: order.status,
         valor: order.valor,
-        user_id: order.user_id
+        user_id: order.user_id,
+        customer_email: order.customer_email,
+        nota: 'Renovação: order vinculado ao email do usuário logado'
       });
 
       // 2. Chamar API InfinitePay para criar link de checkout
