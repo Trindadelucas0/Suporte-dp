@@ -13,3 +13,5 @@ router.post('/calcular', requireActiveSubscription, AvosController.calcular);
 module.exports = router;
 
 
+
+

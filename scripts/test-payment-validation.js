@@ -273,3 +273,5 @@ async function testPaymentValidation(orderNsu) {
 const orderNsu = process.argv[2];
 testPaymentValidation(orderNsu);
 
+
+

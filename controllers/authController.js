@@ -96,9 +96,78 @@ class AuthController {
         const semAssinatura = !user.subscription_expires_at || !user.subscription_status || user.subscription_status === null;
         const assinaturaAtiva = user.subscription_status === 'ativa' && dataExpiracao && dataExpiracao >= hoje;
 
-        // Se assinatura está ATIVA, permite login normalmente (não precisa validar token novamente)
+        // Se assinatura está ATIVA, verifica se foi ativada há menos de 30 dias
+        // Se sim, verifica se há token pendente (novo pagamento) mas não gera novo token
         if (assinaturaAtiva) {
-          // Cria sessão e permite acesso
+          // Calcula dias desde ativação
+          let diasDesdeAtivacao = null;
+          if (dataExpiracao) {
+            const hojeTimestamp = hoje.getTime();
+            const expiracaoTimestamp = dataExpiracao.getTime();
+            const diasRestantes = Math.ceil((expiracaoTimestamp - hojeTimestamp) / (1000 * 60 * 60 * 24));
+            diasDesdeAtivacao = 30 - diasRestantes; // Dias desde que a assinatura foi ativada
+          }
+          
+          // Se foi ativada há menos de 30 dias, verifica se há token pendente mas não gera novo
+          if (diasDesdeAtivacao !== null && diasDesdeAtivacao < 30) {
+            const tokenPendente = await PaymentToken.findPendingTokenByEmail(user.email);
+            if (tokenPendente) {
+              // Há token pendente - reenvia email com token e redireciona para validação
+              console.log('🔐 [LOGIN] Token pendente encontrado (assinatura ativa há menos de 30 dias). Reenviando email:', {
+                user_id: user.id,
+                email: user.email,
+                token: tokenPendente.token,
+                dias_desde_ativacao: diasDesdeAtivacao
+              });
+              
+              // Busca o pagamento relacionado para obter o valor
+              const paymentRelacionado = await Payment.findByOrderNsu(tokenPendente.order_nsu);
+              const valorReais = paymentRelacionado ? parseFloat(paymentRelacionado.paid_amount || 1990) / 100 : 19.90;
+              
+              // Reenvia email com token (assíncrono, não bloqueia)
+              setImmediate(async () => {
+                try {
+                  await emailService.sendPaymentToken({
+                    email: user.email,
+                    token: tokenPendente.token,
+                    nome: user.nome,
+                    orderNsu: tokenPendente.order_nsu,
+                    valor: valorReais
+                  });
+                  console.log('✅ [LOGIN] Email com token reenviado com sucesso:', user.email);
+                } catch (emailError) {
+                  console.error('⚠️ [LOGIN] Erro ao reenviar email com token (não crítico):', emailError);
+                }
+              });
+              
+              // Cria sessão mas redireciona para validação de token
+              req.session.user = {
+                id: user.id,
+                nome: user.nome,
+                email: user.email,
+                is_admin: user.is_admin
+              };
+              req.session.lastActivity = Date.now();
+              req.session.requireTokenValidation = true;
+              
+              await User.updateLastLogin(user.id);
+              
+              req.session.save((err) => {
+                if (err) {
+                  console.error('Erro ao salvar sessão:', err);
+                  return res.render('auth/login', {
+                    title: 'Login - Suporte DP',
+                    error: 'Erro ao fazer login. Tente novamente.',
+                    success: null
+                  });
+                }
+                return res.redirect(`/validar-pagamento?email=${encodeURIComponent(user.email)}&from=login`);
+              });
+              return;
+            }
+          }
+          
+          // Cria sessão e permite acesso normalmente
           req.session.user = {
             id: user.id,
             nome: user.nome,
@@ -273,6 +342,9 @@ class AuthController {
                     return !t.used && expiresAt > now;
                   });
                   
+                  // Verifica se há token gerado nos últimos 30 dias para este usuário
+                  const tokenRecente = await PaymentToken.findRecentToken(user.email, user.id);
+                  
                   if (tokenValidoExistente) {
                     console.log('ℹ️ [LOGIN] Já existe token válido para este pagamento, não gerando novo:', {
                       order_nsu: paymentMaisRecente.order_nsu,
@@ -284,8 +356,22 @@ class AuthController {
                       error: 'Seu token de validação já foi usado ou expirou. Para receber um novo token, é necessário fazer um novo pagamento.',
                       success: null
                     });
+                  } else if (tokenRecente) {
+                    console.log('ℹ️ [LOGIN] Já existe token gerado nos últimos 30 dias para este usuário, não gerando novo:', {
+                      order_nsu: paymentMaisRecente.order_nsu,
+                      token_recente: tokenRecente.token,
+                      created_at: tokenRecente.created_at,
+                      user_id: user.id
+                    });
+                    // Não gera novo token - já existe um gerado nos últimos 30 dias
+                    // Redireciona informando que precisa aguardar 30 dias ou fazer novo pagamento
+                    return res.render('auth/login', {
+                      title: 'Login - Suporte DP',
+                      error: 'Você já recebeu um token de validação nos últimos 30 dias. Para receber um novo token, é necessário aguardar 30 dias ou fazer um novo pagamento.',
+                      success: null
+                    });
                   } else {
-                    // Não há token válido - tenta gerar (pode ser que o token foi usado/expirado)
+                    // Não há token válido nem token recente - tenta gerar (pode ser que o token foi usado/expirado)
                     const paymentToken = await PaymentToken.create(
                       paymentMaisRecente.order_nsu,
                       user.email,

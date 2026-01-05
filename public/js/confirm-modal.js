@@ -79,3 +79,5 @@ function mostrarConfirmacao(mensagem, onConfirm, onCancel = null) {
     document.addEventListener('keydown', handleEsc);
 }
 
+
+

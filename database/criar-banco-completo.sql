@@ -33,3 +33,5 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- npm start (as tabelas serão criadas automaticamente)
 
 
+
+

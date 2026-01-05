@@ -13,3 +13,5 @@ router.post('/calcular', requireActiveSubscription, INSSController.calcular);
 module.exports = router;
 
 
+
+

@@ -92,3 +92,5 @@ COMMENT ON COLUMN calculos_risco_multa.aviso_previo_gera_multa IS 'Indica se o a
 COMMENT ON COLUMN calculos_risco_multa.gera_multa IS 'Resultado final: se gera multa ou não';
 
 
+
+

@@ -53,3 +53,5 @@ UPDATE users SET ativo = TRUE WHERE ativo IS NULL;
 UPDATE users SET bloqueado = FALSE WHERE bloqueado IS NULL;
 
 
+
+

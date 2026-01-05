@@ -45,11 +45,27 @@ class PaymentToken {
   }
 
   /**
+   * Valida se uma string é um UUID válido
+   * @param {String} str - String para validar
+   * @returns {Boolean} True se é UUID válido
+   */
+  static isValidUUID(str) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  }
+
+  /**
    * Busca token por valor (token string)
    * @param {String} tokenValue - Valor do token (UUID)
    * @returns {Object|null} Token encontrado
    */
   static async findByToken(tokenValue) {
+    // Valida formato UUID antes de buscar no banco
+    if (!tokenValue || !this.isValidUUID(tokenValue)) {
+      console.warn('⚠️ [PaymentToken] Token inválido (não é UUID):', tokenValue);
+      return null;
+    }
+
     const result = await db.query(
       `SELECT id, token, order_nsu, user_id, email, used, expires_at, used_at, created_at
        FROM payment_tokens
@@ -136,6 +152,83 @@ class PaymentToken {
     );
 
     return result.rows[0] || null;
+  }
+
+  /**
+   * Verifica se há token gerado nos últimos 30 dias para um usuário
+   * @param {String} email - Email do usuário
+   * @param {String} userId - ID do usuário (opcional)
+   * @returns {Object|null} Token gerado nos últimos 30 dias
+   */
+  static async findRecentToken(email, userId = null) {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    let query = `
+      SELECT id, token, order_nsu, user_id, email, used, expires_at, used_at, created_at
+      FROM payment_tokens
+      WHERE email = $1 
+        AND created_at >= $2
+      ORDER BY created_at DESC
+      LIMIT 1
+    `;
+    let params = [email.toLowerCase(), thirtyDaysAgo];
+    
+    // Se userId foi fornecido, também busca por user_id
+    if (userId) {
+      query = `
+        SELECT id, token, order_nsu, user_id, email, used, expires_at, used_at, created_at
+        FROM payment_tokens
+        WHERE (email = $1 OR user_id = $2)
+          AND created_at >= $3
+        ORDER BY created_at DESC
+        LIMIT 1
+      `;
+      params = [email.toLowerCase(), userId, thirtyDaysAgo];
+    }
+    
+    const result = await db.query(query, params);
+    return result.rows[0] || null;
+  }
+
+  /**
+   * Cria um novo token de pagamento (versão com client de transação)
+   * @param {String} orderNsu - UUID do pedido
+   * @param {String} email - Email onde o token será enviado
+   * @param {String} userId - ID do usuário (opcional)
+   * @param {Object} client - Client da transação (opcional)
+   * @returns {Object} Token criado
+   * @throws {Error} Se não houver pagamento confirmado para o order_nsu
+   */
+  static async createWithClient(orderNsu, email, userId = null, client = null) {
+    const dbClient = client || db;
+    
+    // Validação: Verifica se há pagamento confirmado para este order_nsu
+    const paymentCheck = await dbClient.query(
+      `SELECT id, status, paid_at 
+       FROM payments 
+       WHERE order_nsu = $1 AND status = 'paid'
+       LIMIT 1`,
+      [orderNsu]
+    );
+
+    if (!paymentCheck.rows || paymentCheck.rows.length === 0) {
+      throw new Error(`Não é possível gerar token: Não há pagamento confirmado para o pedido ${orderNsu}. Tokens só podem ser gerados para pagamentos confirmados.`);
+    }
+
+    const token = uuidv4();
+    // Token expira em 24 horas
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24);
+
+    const result = await dbClient.query(
+      `INSERT INTO payment_tokens (token, order_nsu, user_id, email, expires_at)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, token, order_nsu, user_id, email, used, expires_at, created_at`,
+      [token, orderNsu, userId, email, expiresAt]
+    );
+
+    return result.rows[0];
   }
 }
 

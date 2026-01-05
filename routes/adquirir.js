@@ -13,3 +13,5 @@ router.post('/', AdquirirController.index);
 
 module.exports = router;
 
+
+

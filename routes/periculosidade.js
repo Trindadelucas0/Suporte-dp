@@ -13,3 +13,5 @@ router.post('/calcular', requireActiveSubscription, PericulosidadeController.cal
 module.exports = router;
 
 
+
+

@@ -79,3 +79,5 @@ psql -U postgres -d suporte_dp -c "\dt"
 Isso listará todas as tabelas criadas.
 
 
+
+

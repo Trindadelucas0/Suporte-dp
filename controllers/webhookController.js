@@ -228,6 +228,11 @@ class WebhookController {
                 return expiresAt > now; // Token não expirou
               });
               
+              // Verifica se há token gerado nos últimos 30 dias para este usuário
+              const tokenRecente = existingUser 
+                ? await PaymentToken.findRecentToken(customerEmail, existingUser.id)
+                : await PaymentToken.findRecentToken(customerEmail);
+              
               if (tokenValidoExistente) {
                 console.log('ℹ️ [WEBHOOK] Já existe token válido para este pagamento, não gerando novo token:', {
                   order_nsu: order_nsu,
@@ -238,6 +243,15 @@ class WebhookController {
                 });
                 // Não gera novo token - já existe um válido para este pagamento
                 // Não faz return aqui para não sair da transação - apenas não gera token
+              } else if (tokenRecente) {
+                console.log('ℹ️ [WEBHOOK] Já existe token gerado nos últimos 30 dias para este usuário, não gerando novo token:', {
+                  order_nsu: order_nsu,
+                  email: customerEmail,
+                  token_recente: tokenRecente.token,
+                  created_at: tokenRecente.created_at,
+                  user_id: existingUser ? existingUser.id : null
+                });
+                // Não gera novo token - já existe um gerado nos últimos 30 dias
               } else {
                 console.log('🔄 [WEBHOOK] Não há token válido para este pagamento, gerando novo token:', {
                   order_nsu: order_nsu,
@@ -245,11 +259,13 @@ class WebhookController {
                   tokens_existentes_total: tokensExistentes.length,
                   tokens_existentes_usados: tokensExistentes.filter(t => t.used).length
                 });
-                // Só gera token se não houver token válido para este pagamento
-                const paymentToken = await PaymentToken.create(
+                // Só gera token se não houver token válido para este pagamento E não houver token gerado nos últimos 30 dias
+                // Usa createWithClient para garantir que a verificação de pagamento seja feita dentro da transação
+                const paymentToken = await PaymentToken.createWithClient(
                   order_nsu,
                   customerEmail,
-                  existingUser ? existingUser.id : null // user_id se usuário já existe
+                  existingUser ? existingUser.id : null, // user_id se usuário já existe
+                  client // client da transação
                 );
                 
                 console.log('✅ Token de pagamento gerado:', {

@@ -13,3 +13,5 @@
 -- Comentário explicativo (se PostgreSQL suportar)
 -- COMMENT ON COLUMN users.subscription_status IS 'Status da assinatura: ativa, pendente, inadimplente, cancelada';
 
+
+

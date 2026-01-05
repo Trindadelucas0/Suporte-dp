@@ -28,3 +28,5 @@ CREATE INDEX IF NOT EXISTS idx_users_subscription_expires_at ON users(subscripti
 UPDATE users SET status = 'ativo' WHERE status IS NULL;
 UPDATE users SET subscription_status = 'ativa' WHERE subscription_status IS NULL;
 
+
+

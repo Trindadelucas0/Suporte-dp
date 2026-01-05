@@ -56,3 +56,5 @@ COMMENT ON TABLE calculos_risco_multa IS 'Histórico de análises de risco de mu
 COMMENT ON COLUMN calculos_risco_multa.data_rescisao IS 'Data da rescisão (opcional - não é mais usada no cálculo)';
 
 
+
+

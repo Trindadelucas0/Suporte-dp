@@ -52,3 +52,5 @@ END $$;
 CREATE INDEX IF NOT EXISTS idx_users_ultima_atividade ON users(ultima_atividade DESC);
 
 
+
+

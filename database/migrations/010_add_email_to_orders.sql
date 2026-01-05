@@ -12,3 +12,5 @@ CREATE INDEX IF NOT EXISTS idx_orders_customer_email ON orders(customer_email);
 -- Comentário explicativo
 COMMENT ON COLUMN orders.customer_email IS 'Email do cliente (para vincular pagamento ao usuário)';
 
+
+
