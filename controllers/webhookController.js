@@ -218,8 +218,8 @@ class WebhookController {
                 });
               }
               
-              // Verifica se já existe token válido (não usado, não expirado) para este pagamento
-              // IMPORTANTE: Esta verificação deve ser feita ANTES de tentar gerar token
+              // IMPORTANTE: Cada pagamento (order_nsu) deve ter seu próprio token
+              // Verifica se já existe token válido (não usado, não expirado) para ESTE pagamento específico
               const tokensExistentes = await PaymentToken.findByOrderNsu(order_nsu);
               const now = new Date();
               const tokenValidoExistente = tokensExistentes.find(t => {
@@ -228,38 +228,31 @@ class WebhookController {
                 return expiresAt > now; // Token não expirou
               });
               
-              // Verifica se há token gerado nos últimos 30 dias para este usuário
-              const tokenRecente = existingUser 
-                ? await PaymentToken.findRecentToken(customerEmail, existingUser.id)
-                : await PaymentToken.findRecentToken(customerEmail);
-              
               if (tokenValidoExistente) {
+                // Já existe token válido para ESTE pagamento específico - não gera novo
                 console.log('ℹ️ [WEBHOOK] Já existe token válido para este pagamento, não gerando novo token:', {
                   order_nsu: order_nsu,
                   token_existente: tokenValidoExistente.token,
                   email: customerEmail,
                   created_at: tokenValidoExistente.created_at,
-                  expires_at: tokenValidoExistente.expires_at
+                  expires_at: tokenValidoExistente.expires_at,
+                  nota: 'Cada pagamento tem seu próprio token - este pagamento já tem token válido'
                 });
-                // Não gera novo token - já existe um válido para este pagamento
+                // Não gera novo token - já existe um válido para este pagamento específico
                 // Não faz return aqui para não sair da transação - apenas não gera token
-              } else if (tokenRecente) {
-                console.log('ℹ️ [WEBHOOK] Já existe token gerado nos últimos 30 dias para este usuário, não gerando novo token:', {
-                  order_nsu: order_nsu,
-                  email: customerEmail,
-                  token_recente: tokenRecente.token,
-                  created_at: tokenRecente.created_at,
-                  user_id: existingUser ? existingUser.id : null
-                });
-                // Não gera novo token - já existe um gerado nos últimos 30 dias
               } else {
-                console.log('🔄 [WEBHOOK] Não há token válido para este pagamento, gerando novo token:', {
+                // Não há token válido para ESTE pagamento - gera novo token e envia email
+                // Isso permite que cada novo pagamento (renovação) gere seu próprio token
+                console.log('🔄 [WEBHOOK] Gerando novo token para este pagamento:', {
                   order_nsu: order_nsu,
                   email: customerEmail,
+                  tipo: existingUser ? 'RENOVAÇÃO' : 'NOVO PAGAMENTO',
+                  user_id: existingUser ? existingUser.id : null,
                   tokens_existentes_total: tokensExistentes.length,
-                  tokens_existentes_usados: tokensExistentes.filter(t => t.used).length
+                  tokens_existentes_usados: tokensExistentes.filter(t => t.used).length,
+                  nota: 'Cada pagamento gera seu próprio token e envia email'
                 });
-                // Só gera token se não houver token válido para este pagamento E não houver token gerado nos últimos 30 dias
+                // Gera novo token para este pagamento específico
                 // Usa createWithClient para garantir que a verificação de pagamento seja feita dentro da transação
                 const paymentToken = await PaymentToken.createWithClient(
                   order_nsu,
@@ -272,14 +265,23 @@ class WebhookController {
                   token: paymentToken.token,
                   email: customerEmail,
                   order_nsu: order_nsu,
-                  user_id: existingUser ? existingUser.id : null
+                  user_id: existingUser ? existingUser.id : null,
+                  tipo: existingUser ? 'RENOVAÇÃO' : 'NOVO PAGAMENTO'
                 });
                 
                 // Converter valor de centavos para reais (paid_amount vem em centavos)
                 const valorReais = parseFloat(paid_amount) / 100;
                 
-                // Envia email com token
-                console.log('📧 [WEBHOOK] Iniciando envio de email com token para:', customerEmail);
+                // IMPORTANTE: Sempre envia email quando gera novo token
+                // Cada pagamento gera seu próprio token e envia seu próprio email
+                console.log('📧 [WEBHOOK] Enviando email com token para:', customerEmail);
+                console.log('📧 [WEBHOOK] Token vinculado ao email:', {
+                  email: customerEmail,
+                  token: paymentToken.token,
+                  order_nsu: order_nsu,
+                  valor: valorReais
+                });
+                
                 emailService.sendPaymentToken({
                   email: customerEmail,
                   token: paymentToken.token,
@@ -290,6 +292,11 @@ class WebhookController {
                   if (result.success) {
                     console.log('✅ [WEBHOOK] Email com token enviado com sucesso:', customerEmail);
                     console.log('📬 [WEBHOOK] Message ID:', result.messageId);
+                    console.log('🔗 [WEBHOOK] Token vinculado ao email:', {
+                      email: customerEmail,
+                      token: paymentToken.token,
+                      order_nsu: order_nsu
+                    });
                   } else {
                     console.error('❌ [WEBHOOK] Erro ao enviar email com token:', result.error);
                   }

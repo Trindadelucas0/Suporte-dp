@@ -333,33 +333,19 @@ class AuthController {
                       success: null
                     });
                   } else {
-                    // Não há token válido nem token recente - tenta gerar (pode ser que o token foi usado/expirado)
-                    const paymentToken = await PaymentToken.create(
-                      paymentMaisRecente.order_nsu,
-                      user.email,
-                      user.id
-                    );
-                    
-                    console.log('✅ [LOGIN] Token gerado automaticamente:', {
-                      token: paymentToken.token,
+                    // Não há token válido nem token recente - NÃO gera novo token no login
+                    // Tokens só devem ser gerados no webhook quando o pagamento é confirmado
+                    console.log('ℹ️ [LOGIN] Não há token válido, mas não gerando novo no login:', {
+                      order_nsu: paymentMaisRecente.order_nsu,
                       email: user.email,
-                      order_nsu: paymentMaisRecente.order_nsu
+                      motivo: 'Tokens só são gerados no webhook quando pagamento é confirmado'
                     });
                     
-                    // Envia email com token (assíncrono, não bloqueia)
-                    setImmediate(async () => {
-                      try {
-                        const valorReais = parseFloat(paymentMaisRecente.paid_amount || 1990) / 100;
-                        await emailService.sendPaymentToken({
-                          email: user.email,
-                          token: paymentToken.token,
-                          nome: user.nome,
-                          orderNsu: paymentMaisRecente.order_nsu,
-                          valor: valorReais
-                        });
-                      } catch (emailError) {
-                        console.error('⚠️ [LOGIN] Erro ao enviar email com token (não crítico):', emailError);
-                      }
+                    // Informa ao usuário que precisa aguardar o email ou fazer novo pagamento
+                    return res.render('auth/login', {
+                      title: 'Login - Suporte DP',
+                      error: 'Seu pagamento foi confirmado, mas não há token de validação disponível. Verifique seu email ou entre em contato com o suporte.',
+                      success: null
                     });
                     
                     // Redireciona para validação
@@ -418,35 +404,17 @@ class AuthController {
         }
 
         // NOVO: Verifica se há token pendente mesmo com assinatura ativa (para novos pagamentos)
+        // Mas NÃO reenvia email - o email já foi enviado quando o token foi gerado
         const tokenPendente = await PaymentToken.findPendingTokenByEmail(user.email);
         
         if (tokenPendente) {
-          // Há token pendente - reenvia email com token e redireciona para validação
-          console.log('🔐 [LOGIN] Token pendente encontrado (renovação). Reenviando email com token:', {
+          // Há token pendente - NÃO reenvia email, apenas redireciona para validação
+          console.log('🔐 [LOGIN] Token pendente encontrado (renovação):', {
             user_id: user.id,
             email: user.email,
             token: tokenPendente.token,
-            order_nsu: tokenPendente.order_nsu
-          });
-          
-          // Busca o pagamento relacionado para obter o valor
-          const paymentRelacionado = await Payment.findByOrderNsu(tokenPendente.order_nsu);
-          const valorReais = paymentRelacionado ? parseFloat(paymentRelacionado.paid_amount || 1990) / 100 : 19.90;
-          
-          // Reenvia email com token (assíncrono, não bloqueia)
-          setImmediate(async () => {
-            try {
-              await emailService.sendPaymentToken({
-                email: user.email,
-                token: tokenPendente.token,
-                nome: user.nome,
-                orderNsu: tokenPendente.order_nsu,
-                valor: valorReais
-              });
-              console.log('✅ [LOGIN] Email com token reenviado com sucesso:', user.email);
-            } catch (emailError) {
-              console.error('⚠️ [LOGIN] Erro ao reenviar email com token (não crítico):', emailError);
-            }
+            order_nsu: tokenPendente.order_nsu,
+            nota: 'Email já foi enviado quando token foi gerado - não reenviando'
           });
           
           // Cria sessão mas redireciona para validação de token

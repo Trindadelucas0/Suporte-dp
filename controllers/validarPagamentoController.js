@@ -158,12 +158,15 @@ class ValidarPagamentoController {
             ['ativa', dataExpiracaoFormatada, 'ativo', existingUser.id]
           );
 
-          console.log('✅ Token usado - Assinatura ativada por 30 dias:', {
+          console.log('✅ Token validado - Assinatura ativada por 30 dias:', {
             user_id: existingUser.id,
             email: existingUser.email,
+            token_usado: token,
+            order_nsu: paymentToken.order_nsu,
             data_ativacao: agora.toISOString(),
             data_expiracao: dataExpiracaoFormatada,
-            dias_acesso: 30
+            dias_acesso: 30,
+            nota: 'Token trocado por 30 dias de acesso - email vinculado ao token'
           });
           
           // Login automático
