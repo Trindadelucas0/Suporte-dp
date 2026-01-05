@@ -5,13 +5,14 @@
 
 const Order = require('../models/Order');
 const User = require('../models/User');
+const PaymentToken = require('../models/PaymentToken');
 const InfinitePayService = require('../services/infinitepayService');
 const db = require('../config/database');
 
 class CheckoutController {
   /**
    * Rota de sucesso após pagamento
-   * GET /checkout/sucesso - redireciona para dashboard
+   * GET /checkout/sucesso - verifica token pendente e redireciona para validação
    */
   static async sucesso(req, res) {
     // Se não está logado, redireciona para login
@@ -19,7 +20,22 @@ class CheckoutController {
       return res.redirect('/login');
     }
 
-    // Redireciona para dashboard (pagamento será processado pelo webhook)
+    const userEmail = req.session.user.email;
+
+    // Verifica se há token pendente (o webhook já deve ter gerado)
+    const tokenPendente = await PaymentToken.findPendingTokenByEmail(userEmail);
+
+    if (tokenPendente) {
+      // Há token pendente - redireciona para validação
+      console.log('🔐 [CHECKOUT/SUCESSO] Token pendente encontrado, redirecionando para validação:', {
+        email: userEmail
+      });
+      return res.redirect(`/validar-pagamento?email=${encodeURIComponent(userEmail)}&from=checkout`);
+    }
+
+    // Se não há token pendente, aguarda processamento do webhook (pode levar alguns segundos)
+    // Redireciona para dashboard - se precisar de token, o login vai redirecionar
+    console.log('⚠️ [CHECKOUT/SUCESSO] Nenhum token pendente encontrado ainda. Aguardando webhook...');
     return res.redirect('/dashboard');
   }
 
