@@ -16,9 +16,12 @@ require('dotenv').config();
 // Tenta carregar Resend (opcional)
 let Resend = null;
 try {
-  Resend = require('resend');
+  const resendModule = require('resend');
+  // Resend pode ser exportado como default ou named export
+  Resend = resendModule.default || resendModule.Resend || resendModule;
 } catch (e) {
   // Resend não instalado - usará SMTP
+  console.warn('⚠️ EmailService: Pacote "resend" não encontrado:', e.message);
 }
 
 class EmailService {
