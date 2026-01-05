@@ -11,7 +11,9 @@
     "create-env": "node scripts/create-env.js",
     "check-subscriptions": "node scripts/check-subscriptions.js",
     "migrate-subscription": "node scripts/run-subscription-migrations.js",
-    "cleanup-pending-orders": "node scripts/cleanup-pending-orders.js"
+    "cleanup-pending-orders": "node scripts/cleanup-pending-orders.js",
+    "gerar-tokens": "node scripts/gerar-tokens-para-usuarios.js",
+    "diagnostico-pagamento": "node scripts/diagnostico-fluxo-pagamento.js"
   },
   "keywords": [
     "trabalhista",
