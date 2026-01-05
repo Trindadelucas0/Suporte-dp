@@ -128,13 +128,18 @@ class ValidarPagamentoController {
       }
 
       // 6. Processar em transação: marcar token como usado e atualizar/criar usuário
+      // Variáveis para armazenar dados após transação bem-sucedida
+      let userData = null;
+      let isNewUser = false;
+      let pendingTokenData = null;
+
       await db.transaction(async (client) => {
         // 6.1. Marcar token como usado
         await PaymentToken.markAsUsed(token);
 
         // 6.2. Verificar se usuário já existe (por email)
         const existingUserResult = await client.query(
-          'SELECT id, nome, email, subscription_status FROM users WHERE email = $1',
+          'SELECT id, nome, email, subscription_status, is_admin FROM users WHERE email = $1',
           [normalizedEmail]
         );
         const existingUser = existingUserResult.rows[0];
@@ -175,41 +180,69 @@ class ValidarPagamentoController {
             nota: 'Token trocado por 30 dias de acesso - email vinculado ao token'
           });
           
-          // Login automático
-          req.session.user = {
+          // Armazena dados do usuário para criar sessão APÓS transação confirmada
+          // NÃO cria sessão aqui para evitar inconsistência se transação falhar
+          userData = {
             id: existingUser.id,
             nome: existingUser.nome,
             email: existingUser.email,
             is_admin: existingUser.is_admin || false
           };
-          req.session.lastActivity = Date.now();
         } else {
-          // Usuário não existe - redirecionar para cadastro com token válido
-          // Salvar token na sessão para usar no cadastro
-          req.session.pendingToken = token;
-          req.session.pendingEmail = normalizedEmail;
-          req.session.pendingOrderNsu = paymentToken.order_nsu;
+          // Usuário não existe - armazena dados para redirecionar para cadastro
+          // NÃO salva na sessão aqui para evitar inconsistência se transação falhar
+          isNewUser = true;
+          pendingTokenData = {
+            token: token,
+            email: normalizedEmail,
+            orderNsu: paymentToken.order_nsu
+          };
           
           console.log('✅ Token validado - redirecionando para cadastro');
-          
-          // Redirecionar para cadastro
-          req.session.save((err) => {
-            if (err) {
-              console.error('Erro ao salvar sessão:', err);
-              return res.render('auth/validar-pagamento', {
-                title: 'Validar Pagamento - Suporte DP',
-                token: token,
-                email: email,
-                error: 'Erro ao processar validação. Tente novamente.',
-                success: null
-              });
-            }
-            
-            return res.redirect('/register?token_validado=true');
-          });
-          return;
         }
       });
+
+      // ✅ Sessão criada APÓS transação confirmada com sucesso
+      // Isso garante que se a transação falhar, a sessão não será criada
+      if (isNewUser && pendingTokenData) {
+        // Usuário não existe - redirecionar para cadastro com token válido
+        req.session.pendingToken = pendingTokenData.token;
+        req.session.pendingEmail = pendingTokenData.email;
+        req.session.pendingOrderNsu = pendingTokenData.orderNsu;
+        
+        req.session.save((err) => {
+          if (err) {
+            console.error('Erro ao salvar sessão:', err);
+            return res.render('auth/validar-pagamento', {
+              title: 'Validar Pagamento - Suporte DP',
+              token: token,
+              email: email,
+              error: 'Erro ao processar validação. Tente novamente.',
+              success: null
+            });
+          }
+          
+          return res.redirect('/register?token_validado=true');
+        });
+        return;
+      }
+
+      // Se chegou aqui, usuário existe e foi atualizado com sucesso
+      // Cria sessão apenas se userData foi definido (transação bem-sucedida)
+      if (userData) {
+        req.session.user = userData;
+        req.session.lastActivity = Date.now();
+      } else {
+        // Proteção: se por algum motivo userData não foi definido, retorna erro
+        console.error('❌ Erro: userData não foi definido após transação bem-sucedida');
+        return res.render('auth/validar-pagamento', {
+          title: 'Validar Pagamento - Suporte DP',
+          token: token,
+          email: email,
+          error: 'Erro ao processar validação. Tente novamente.',
+          success: null
+        });
+      }
 
       // Se chegou aqui, usuário existe e foi atualizado
       // Remove flag de validação de token se existir (caso tenha vindo do login)
@@ -217,7 +250,7 @@ class ValidarPagamentoController {
         delete req.session.requireTokenValidation;
       }
       
-      // Verifica se usuário já está logado na sessão (foi criado na linha 173-179)
+      // Verifica se usuário já está logado na sessão (foi criado após transação confirmada)
       // Se sim, redireciona direto para dashboard
       // Se não, redireciona para login com mensagem de sucesso
       if (req.session.user && req.session.user.id) {

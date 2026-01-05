@@ -230,6 +230,51 @@ class PaymentToken {
 
     return result.rows[0];
   }
+
+  /**
+   * Atualiza email de tokens pendentes (não usados) de um usuário
+   * Usado quando usuário altera seu email no perfil
+   * @param {String} userId - ID do usuário
+   * @param {String} novoEmail - Novo email do usuário
+   * @returns {Number} Número de tokens atualizados
+   */
+  static async updateEmailByUserId(userId, novoEmail) {
+    if (!userId || !novoEmail) {
+      return 0;
+    }
+
+    const result = await db.query(
+      `UPDATE payment_tokens
+       SET email = $1
+       WHERE user_id = $2 
+         AND used = false
+         AND expires_at > CURRENT_TIMESTAMP
+       RETURNING id, token, order_nsu, email`,
+      [novoEmail.toLowerCase(), userId]
+    );
+
+    return result.rowCount || 0;
+  }
+
+  /**
+   * Busca tokens pendentes por user_id
+   * @param {String} userId - ID do usuário
+   * @returns {Array} Tokens pendentes encontrados
+   */
+  static async findPendingTokensByUserId(userId) {
+    const now = new Date();
+    const result = await db.query(
+      `SELECT id, token, order_nsu, user_id, email, used, expires_at, used_at, created_at
+       FROM payment_tokens
+       WHERE user_id = $1 
+         AND used = false
+         AND expires_at > $2
+       ORDER BY created_at DESC`,
+      [userId, now]
+    );
+
+    return result.rows;
+  }
 }
 
 module.exports = PaymentToken;

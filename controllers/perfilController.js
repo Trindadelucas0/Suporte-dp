@@ -4,6 +4,7 @@
  */
 
 const User = require('../models/User');
+const PaymentToken = require('../models/PaymentToken');
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 
@@ -60,6 +61,10 @@ class PerfilController {
     }
 
     try {
+      // Busca usuário atual para comparar email
+      const userAtual = await User.findById(userId);
+      const emailFoiAlterado = userAtual && userAtual.email.toLowerCase() !== email.toLowerCase();
+
       // Verifica se email já existe (exceto para o próprio usuário)
       const emailExistente = await User.findByEmail(email);
       if (emailExistente && emailExistente.id !== userId) {
@@ -75,6 +80,25 @@ class PerfilController {
       const updatedUser = await User.update(userId, { nome, email });
       
       if (updatedUser) {
+        // Se email foi alterado, atualiza tokens pendentes do usuário
+        if (emailFoiAlterado) {
+          try {
+            const tokensAtualizados = await PaymentToken.updateEmailByUserId(userId, email);
+            
+            if (tokensAtualizados > 0) {
+              console.log('✅ Email atualizado - Tokens pendentes atualizados:', {
+                user_id: userId,
+                email_antigo: userAtual.email,
+                email_novo: email,
+                tokens_atualizados: tokensAtualizados
+              });
+            }
+          } catch (tokenError) {
+            // Não bloqueia atualização do perfil se houver erro ao atualizar tokens
+            console.warn('⚠️ Aviso: Erro ao atualizar tokens pendentes após alteração de email:', tokenError.message);
+          }
+        }
+
         // Atualiza sessão
         req.session.user.nome = updatedUser.nome;
         req.session.user.email = updatedUser.email;
