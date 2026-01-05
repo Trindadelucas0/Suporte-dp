@@ -6,6 +6,7 @@
 const User = require('../models/User');
 const Payment = require('../models/Payment');
 const Order = require('../models/Order');
+const PaymentToken = require('../models/PaymentToken');
 const db = require('../config/database');
 const { validationResult } = require('express-validator');
 
@@ -73,6 +74,45 @@ class AuthController {
           error: 'Sua conta está desativada ou bloqueada. Entre em contato com o administrador.',
         success: null
         });
+      }
+
+      // NOVO: Verifica se há token pendente antes de permitir acesso completo
+      // Isso garante que mesmo usuários com assinatura ativa precisam validar token se houver pagamento recente
+      const tokenPendente = await PaymentToken.findPendingTokenByEmail(user.email);
+      
+      if (tokenPendente && !user.is_admin) {
+        // Há token pendente - cria sessão mas redireciona para validação de token
+        req.session.user = {
+          id: user.id,
+          nome: user.nome,
+          email: user.email,
+          is_admin: user.is_admin
+        };
+        req.session.lastActivity = Date.now();
+        req.session.requireTokenValidation = true; // Marca que precisa validar token
+        
+        // Atualiza último login
+        await User.updateLastLogin(user.id);
+        
+        console.log('🔐 [LOGIN] Token pendente encontrado, redirecionando para validação:', {
+          user_id: user.id,
+          email: user.email
+        });
+        
+        // Salva sessão e redireciona para validação de token
+        req.session.save((err) => {
+          if (err) {
+            console.error('Erro ao salvar sessão:', err);
+            return res.render('auth/login', {
+              title: 'Login - Suporte DP',
+              error: 'Erro ao fazer login. Tente novamente.',
+              success: null
+            });
+          }
+          // Redireciona para validação com email pré-preenchido
+          return res.redirect(`/validar-pagamento?email=${encodeURIComponent(user.email)}&from=login`);
+        });
+        return;
       }
 
       // VERIFICAÇÃO DE PAGAMENTO: Se tiver pago, permite login. Se não, bloqueia ou redireciona.

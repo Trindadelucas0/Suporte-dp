@@ -23,7 +23,11 @@
                 Validar Pagamento
             </h2>
             <p class="mt-2 text-sm text-gray-600">
-                Insira o token recebido por email para liberar o acesso
+                <% if (typeof from !== 'undefined' && from === 'login') { %>
+                    Digite o token recebido por email para completar o login
+                <% } else { %>
+                    Insira o token recebido por email para liberar o acesso
+                <% } %>
             </p>
         </div>
 
@@ -74,6 +78,9 @@
                         class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary-red focus:border-primary-red focus:z-10 sm:text-sm" 
                         placeholder="Email usado no pagamento"
                         value="<%= email || '' %>"
+                        <% if (typeof from !== 'undefined' && from === 'login' && email) { %>
+                        readonly
+                        <% } %>
                     >
                 </div>
                 

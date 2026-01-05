@@ -102,6 +102,27 @@ class PaymentToken {
 
     return result.rows;
   }
+
+  /**
+   * Busca token pendente (não usado e não expirado) por email
+   * @param {String} email - Email do usuário
+   * @returns {Object|null} Token pendente encontrado
+   */
+  static async findPendingTokenByEmail(email) {
+    const now = new Date();
+    const result = await db.query(
+      `SELECT id, token, order_nsu, user_id, email, used, expires_at, used_at, created_at
+       FROM payment_tokens
+       WHERE email = $1 
+         AND used = false
+         AND expires_at > $2
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [email.toLowerCase(), now]
+    );
+
+    return result.rows[0] || null;
+  }
 }
 
 module.exports = PaymentToken;

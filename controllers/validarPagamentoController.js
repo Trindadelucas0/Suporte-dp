@@ -14,14 +14,21 @@ class ValidarPagamentoController {
    * GET /validar-pagamento
    */
   static async index(req, res) {
-    const { token, email } = req.query;
+    const { token, email, from } = req.query;
+    
+    // Se vier do login e usuário está logado, usa email da sessão
+    let emailToUse = email;
+    if (from === 'login' && req.session && req.session.user) {
+      emailToUse = req.session.user.email;
+    }
     
     return res.render('auth/validar-pagamento', {
       title: 'Validar Pagamento - Suporte DP',
       token: token || null,
-      email: email || null,
+      email: emailToUse || null,
       error: null,
-      success: null
+      success: from === 'login' ? 'Digite o token recebido por email para completar o login.' : null,
+      from: from || null
     });
   }
 
@@ -170,6 +177,11 @@ class ValidarPagamentoController {
       });
 
       // Se chegou aqui, usuário existe e foi atualizado - redirecionar para dashboard
+      // Remove flag de validação de token se existir (caso tenha vindo do login)
+      if (req.session.requireTokenValidation) {
+        delete req.session.requireTokenValidation;
+      }
+      
       req.session.save((err) => {
         if (err) {
           console.error('Erro ao salvar sessão:', err);
