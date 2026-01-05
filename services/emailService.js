@@ -113,7 +113,9 @@ class EmailService {
    */
   async sendPaymentTokenViaResendAPI(data) {
     try {
-      const smtpFrom = process.env.SMTP_FROM || 'noreply@pixsile.resend.app';
+      // Resend requer domínio verificado. Para testes, use onboarding@resend.dev (mas só funciona para seu próprio email)
+      // Para produção, você precisa verificar um domínio no Resend
+      const smtpFrom = process.env.SMTP_FROM || 'onboarding@resend.dev';
       const appUrl = process.env.APP_URL || 'http://localhost:3000';
       const nome = data.nome || 'Cliente';
       const validationUrl = `${appUrl}/validar-pagamento?token=${data.token}&email=${encodeURIComponent(data.email)}`;
@@ -702,7 +704,9 @@ Esta é uma notificação automática do sistema Suporte DP.
    */
   async sendNewUserNotificationViaResendAPI(data) {
     try {
-      const smtpFrom = process.env.SMTP_FROM || 'noreply@pixsile.resend.app';
+      // Resend requer domínio verificado. Para testes, use onboarding@resend.dev (mas só funciona para seu próprio email)
+      // Para produção, você precisa verificar um domínio no Resend
+      const smtpFrom = process.env.SMTP_FROM || 'onboarding@resend.dev';
       const adminEmail = 'lucasrodrigues4@live.com';
       const appUrl = process.env.APP_URL || 'http://localhost:3000';
       const nome = data.nome || 'Não informado';
