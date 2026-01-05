@@ -523,30 +523,8 @@ Se você não realizou este pagamento, entre em contato conosco.
    * @returns {Promise<Object>} Resultado do envio
    */
   async sendNewUserNotification(data) {
-    // Verifica novamente se RESEND_API_KEY está disponível
-    if (!this.useResendAPI && Resend && process.env.RESEND_API_KEY) {
-      try {
-        if (typeof Resend !== 'function') {
-          console.error('❌ EmailService: Resend não é um construtor. Tipo:', typeof Resend);
-          throw new Error('Resend não é um construtor válido');
-        }
-        this.resendClient = new Resend(process.env.RESEND_API_KEY);
-        this.useResendAPI = true;
-        console.log('✅ EmailService: API do Resend detectada e inicializada (configurada após startup)');
-      } catch (e) {
-        console.error('❌ EmailService: Erro ao inicializar Resend:', e.message);
-        console.error('   - Stack:', e.stack);
-      }
-    }
-    
-    // Se Resend API está disponível, usa ela (melhor para Render)
-    if (this.useResendAPI && this.resendClient) {
-      console.log('📧 EmailService: Usando API do Resend para enviar notificação de novo usuário');
-      return await this.sendNewUserNotificationViaResendAPI(data);
-    }
-
-    // Caso contrário, usa SMTP tradicional
-    console.log('📧 EmailService: Usando SMTP tradicional para notificação (RESEND_API_KEY não configurado)');
+    // Usa apenas SMTP (Brevo) - Resend API desabilitado
+    console.log('📧 EmailService: Usando SMTP (Brevo) para enviar notificação de novo usuário');
     const transporter = this.getTransporter();
 
     if (!transporter) {
