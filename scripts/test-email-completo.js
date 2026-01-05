@@ -103,7 +103,20 @@ async function testarEmailCompleto() {
   console.log('📧 4. TESTANDO ENVIO DE EMAIL SIMPLES');
   console.log('-'.repeat(80));
   
-  const emailTeste = process.argv[2] || smtpUser || 'teste@example.com';
+  // Pega email de teste do argumento ou usa um padrão
+  // Não usa smtpUser porque pode ser "resend" ou "apikey" (não é um email válido)
+  const emailTeste = process.argv[2] || process.env.TEST_EMAIL || 'teste@example.com';
+  
+  if (!emailTeste || !emailTeste.includes('@')) {
+    console.error('❌ ERRO: Email de destino inválido!');
+    console.error('');
+    console.error('💡 Use um dos seguintes métodos:');
+    console.error('   1. Passe o email como argumento: npm run test-email seu-email@exemplo.com');
+    console.error('   2. Configure TEST_EMAIL no .env: TEST_EMAIL=seu-email@exemplo.com');
+    console.error('');
+    process.exit(1);
+  }
+  
   console.log('Email de destino:', emailTeste);
   console.log('');
   
