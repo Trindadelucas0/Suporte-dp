@@ -29,20 +29,25 @@ async function diagnosticarFluxo(emailFiltro = null) {
     console.log('\n📧 1. VERIFICANDO CONFIGURAÇÃO DE EMAIL');
     console.log('-'.repeat(80));
     
-    // Verifica Brevo API (recomendado)
-    const brevoApiKey = process.env.BREVO_API_KEY;
+    // Verifica Resend API (recomendado)
+    const resendApiKey = process.env.RESEND_API_KEY;
     const smtpFrom = process.env.SMTP_FROM;
     
-    console.log(`BREVO_API_KEY: ${brevoApiKey ? '✅ CONFIGURADO' : '❌ NÃO CONFIGURADO'}`);
-    console.log(`SMTP_FROM: ${smtpFrom || '❌ NÃO CONFIGURADO'}`);
+    console.log(`RESEND_API_KEY: ${resendApiKey ? '✅ CONFIGURADO' : '❌ NÃO CONFIGURADO'}`);
+    console.log(`SMTP_FROM: ${smtpFrom ? '✅ CONFIGURADO (' + smtpFrom + ')' : '❌ NÃO CONFIGURADO'}`);
     
-    if (brevoApiKey) {
-      console.log('✅ Brevo API configurado - usando API HTTP (recomendado para Render)');
+    if (resendApiKey) {
+      console.log('✅ Resend API configurado - usando API HTTP (recomendado para Render)');
       console.log('   💡 Emails serão enviados via API HTTP (sem timeout)');
+      if (smtpFrom) {
+        console.log('   💡 IMPORTANTE: Certifique-se de que o domínio está verificado no Resend');
+      } else {
+        console.log('   ⚠️  SMTP_FROM não configurado! Configure um email com domínio verificado no Resend');
+      }
     } else {
-      console.log('⚠️  BREVO_API_KEY não configurado!');
-      console.log('   💡 Configure BREVO_API_KEY no Render para usar API HTTP');
-      console.log('   💡 Sem BREVO_API_KEY, o sistema tentará usar SMTP (pode dar timeout no Render)');
+      console.log('⚠️  RESEND_API_KEY não configurado!');
+      console.log('   💡 Configure RESEND_API_KEY no Render para usar API HTTP');
+      console.log('   💡 Sem RESEND_API_KEY, o sistema tentará usar SMTP (pode dar timeout no Render)');
       
       // Verifica SMTP como fallback
       const smtpHost = process.env.SMTP_HOST;
@@ -71,7 +76,7 @@ async function diagnosticarFluxo(emailFiltro = null) {
               console.log('   ✅ Conexão SMTP verificada com sucesso');
             } catch (verifyError) {
               console.log(`   ⚠️  Erro ao verificar conexão SMTP: ${verifyError.message}`);
-              console.log('      💡 Isso é normal no Render - use BREVO_API_KEY ao invés de SMTP');
+              console.log('      💡 Isso é normal no Render - use RESEND_API_KEY ao invés de SMTP');
             }
           } else {
             console.log('   ❌ Erro ao inicializar transporter de email');
