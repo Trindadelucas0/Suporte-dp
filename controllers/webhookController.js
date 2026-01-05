@@ -136,7 +136,7 @@ class WebhookController {
             ['paid', order_nsu]
           );
 
-          // 5.3. Verificar se já existe usuário para esse order_nsu (dentro da transação)
+          // 5.4. Verificar se já existe usuário para esse order_nsu (dentro da transação)
           // SOLUÇÃO MELHORADA: Busca user_id diretamente do order (se for renovação ou checkout após cadastro)
           let existingUser = null;
           
@@ -195,10 +195,37 @@ class WebhookController {
             }
           }
           
-          // NOVO FLUXO: SEMPRE gerar token e enviar email quando pagamento for confirmado
-          // O acesso só é liberado após validação do token
+          // 5.4. Enviar notificação de pagamento confirmado para o administrador
           const customerEmail = payload.customer_email || payload.email || order.customer_email || null;
+          const customerName = payload.customer_name || existingUser?.nome || customerEmail?.split('@')[0] || 'Cliente';
+          const valorReais = parseFloat(paid_amount) / 100;
+          const dataPagamento = paid_at ? new Date(paid_at).toLocaleString('pt-BR') : new Date().toLocaleString('pt-BR');
           
+          // Envia notificação para admin (assíncrono, não bloqueia)
+          if (customerEmail || existingUser) {
+            setImmediate(async () => {
+              try {
+                await emailService.sendPaymentNotificationToAdmin({
+                  nome: customerName,
+                  email: customerEmail || existingUser?.email || 'Não informado',
+                  orderNsu: order_nsu,
+                  transactionNsu: transaction_nsu,
+                  valor: valorReais,
+                  dataPagamento: dataPagamento
+                });
+                console.log('✅ [WEBHOOK] Notificação de pagamento enviada para admin:', {
+                  admin_email: process.env.ADMIN_EMAIL || 'lucasrodrigues4@live.com',
+                  cliente_nome: customerName,
+                  cliente_email: customerEmail || existingUser?.email
+                });
+              } catch (notifError) {
+                console.error('⚠️ [WEBHOOK] Erro ao enviar notificação de pagamento para admin (não crítico):', notifError);
+              }
+            });
+          }
+
+          // 5.5. NOVO FLUXO: SEMPRE gerar token e enviar email quando pagamento for confirmado
+          // O acesso só é liberado após validação do token
           if (customerEmail) {
             try {
               // Atualizar user_id no pagamento se usuário já existe (para referência)

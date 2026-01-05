@@ -868,6 +868,297 @@ Esta é uma notificação automática do sistema Suporte DP.
       };
     }
   }
+
+  /**
+   * Envia notificação de pagamento confirmado para o administrador
+   * @param {Object} data - Dados do pagamento
+   * @param {string} data.nome - Nome do cliente
+   * @param {string} data.email - Email do cliente
+   * @param {string} data.orderNsu - Order NSU do pagamento
+   * @param {string} data.transactionNsu - Transaction NSU
+   * @param {number} data.valor - Valor pago em reais
+   * @param {string} data.dataPagamento - Data do pagamento
+   * @returns {Promise<Object>} Resultado do envio
+   */
+  async sendPaymentNotificationToAdmin(data) {
+    // Se Resend API está disponível, usa ela (melhor para Render)
+    if (this.useResendAPI && this.resendClient) {
+      console.log('📧 EmailService: Usando API HTTP do Resend para enviar notificação de pagamento');
+      return await this.sendPaymentNotificationToAdminViaResendAPI(data);
+    }
+
+    // Caso contrário, usa SMTP tradicional
+    console.log('📧 EmailService: Usando SMTP tradicional para notificação de pagamento (RESEND_API_KEY não configurado)');
+    const transporter = this.getTransporter();
+
+    if (!transporter) {
+      console.warn('⚠️ SMTP não configurado. Email de notificação de pagamento não será enviado.');
+      return {
+        success: false,
+        error: 'SMTP não configurado'
+      };
+    }
+
+    try {
+      const smtpFrom = process.env.SMTP_FROM || process.env.SMTP_USER;
+      const adminEmail = process.env.ADMIN_EMAIL || 'lucasrodrigues4@live.com';
+      const appUrl = process.env.APP_URL || 'http://localhost:3000';
+      const nome = data.nome || 'Não informado';
+      const email = data.email || 'Não informado';
+      const valor = data.valor || 0;
+      const orderNsu = data.orderNsu || 'N/A';
+      const transactionNsu = data.transactionNsu || 'N/A';
+      const dataPagamento = data.dataPagamento || new Date().toLocaleString('pt-BR');
+
+      const mailOptions = {
+        from: `"Suporte DP - Sistema" <${smtpFrom}>`,
+        to: adminEmail,
+        subject: `💰 Novo Pagamento Confirmado - ${nome}`,
+        html: `
+          <!DOCTYPE html>
+          <html lang="pt-BR">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Novo Pagamento Confirmado</title>
+          </head>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%); padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+              <h1 style="color: white; margin: 0;">💰 Novo Pagamento Confirmado</h1>
+            </div>
+            
+            <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #ddd;">
+              <h2 style="color: #DC2626; margin-top: 0;">Um novo pagamento foi confirmado!</h2>
+              
+              <div style="background: white; border: 2px solid #DC2626; border-radius: 8px; padding: 20px; margin: 30px 0;">
+                <h3 style="color: #DC2626; margin-top: 0; border-bottom: 2px solid #DC2626; padding-bottom: 10px;">Dados do Cliente</h3>
+                
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #666; width: 40%;">Nome:</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; color: #333;">${nome}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #666;">Email:</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; color: #333;">${email}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #666;">Valor Pago:</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; color: #333; font-size: 18px; font-weight: bold; color: #10b981;">R$ ${valor.toFixed(2).replace('.', ',')}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #666;">Order NSU:</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; color: #333; font-family: monospace;">${orderNsu}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #666;">Transaction NSU:</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #eee; color: #333; font-family: monospace;">${transactionNsu}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; font-weight: bold; color: #666;">Data do Pagamento:</td>
+                    <td style="padding: 10px; color: #333;">${dataPagamento}</td>
+                  </tr>
+                </table>
+              </div>
+              
+              <div style="margin: 30px 0; text-align: center;">
+                <a href="${appUrl}/admin" 
+                   style="background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%); 
+                          color: white; 
+                          padding: 15px 30px; 
+                          text-decoration: none; 
+                          border-radius: 5px; 
+                          font-weight: bold;
+                          display: inline-block;">
+                  Ver no Painel Admin
+                </a>
+              </div>
+              
+              <p style="font-size: 12px; color: #999; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
+                Esta é uma notificação automática do sistema Suporte DP.
+              </p>
+            </div>
+          </body>
+          </html>
+        `,
+        text: `
+💰 Novo Pagamento Confirmado - Suporte DP
+
+Um novo pagamento foi confirmado!
+
+Dados do Cliente:
+- Nome: ${nome}
+- Email: ${email}
+- Valor Pago: R$ ${valor.toFixed(2).replace('.', ',')}
+- Order NSU: ${orderNsu}
+- Transaction NSU: ${transactionNsu}
+- Data do Pagamento: ${dataPagamento}
+
+Acesse o painel administrativo: ${appUrl}/admin
+
+Esta é uma notificação automática do sistema Suporte DP.
+        `
+      };
+
+      const info = await transporter.sendMail(mailOptions);
+      console.log('✅ EmailService: Notificação de pagamento enviada:', info.messageId);
+      
+      return {
+        success: true,
+        messageId: info.messageId
+      };
+    } catch (error) {
+      console.error('❌ EmailService: Erro ao enviar notificação de pagamento:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Envia notificação de pagamento confirmado via API do Resend
+   * @param {Object} data - Dados do pagamento
+   * @returns {Promise<Object>} Resultado do envio
+   */
+  async sendPaymentNotificationToAdminViaResendAPI(data) {
+    try {
+      const smtpFrom = process.env.SMTP_FROM;
+      if (!smtpFrom) {
+        throw new Error('SMTP_FROM não configurado. Configure um email com domínio verificado no Resend.');
+      }
+      
+      const adminEmail = process.env.ADMIN_EMAIL || 'lucasrodrigues4@live.com';
+      const appUrl = process.env.APP_URL || 'http://localhost:3000';
+      const nome = data.nome || 'Não informado';
+      const email = data.email || 'Não informado';
+      const valor = data.valor || 0;
+      const orderNsu = data.orderNsu || 'N/A';
+      const transactionNsu = data.transactionNsu || 'N/A';
+      const dataPagamento = data.dataPagamento || new Date().toLocaleString('pt-BR');
+
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Novo Pagamento Confirmado</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%); padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0;">💰 Novo Pagamento Confirmado</h1>
+          </div>
+          
+          <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #ddd;">
+            <h2 style="color: #DC2626; margin-top: 0;">Um novo pagamento foi confirmado!</h2>
+            
+            <div style="background: white; border: 2px solid #DC2626; border-radius: 8px; padding: 20px; margin: 30px 0;">
+              <h3 style="color: #DC2626; margin-top: 0; border-bottom: 2px solid #DC2626; padding-bottom: 10px;">Dados do Cliente</h3>
+              
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #666; width: 40%;">Nome:</td>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; color: #333;">${nome}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #666;">Email:</td>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; color: #333;">${email}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #666;">Valor Pago:</td>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; color: #333; font-size: 18px; font-weight: bold; color: #10b981;">R$ ${valor.toFixed(2).replace('.', ',')}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #666;">Order NSU:</td>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; color: #333; font-family: monospace;">${orderNsu}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #666;">Transaction NSU:</td>
+                  <td style="padding: 10px; border-bottom: 1px solid #eee; color: #333; font-family: monospace;">${transactionNsu}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px; font-weight: bold; color: #666;">Data do Pagamento:</td>
+                  <td style="padding: 10px; color: #333;">${dataPagamento}</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div style="margin: 30px 0; text-align: center;">
+              <a href="${appUrl}/admin" 
+                 style="background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%); 
+                        color: white; 
+                        padding: 15px 30px; 
+                        text-decoration: none; 
+                        border-radius: 5px; 
+                        font-weight: bold;
+                        display: inline-block;">
+                Ver no Painel Admin
+              </a>
+            </div>
+            
+            <p style="font-size: 12px; color: #999; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
+              Esta é uma notificação automática do sistema Suporte DP.
+            </p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const textContent = `
+💰 Novo Pagamento Confirmado - Suporte DP
+
+Um novo pagamento foi confirmado!
+
+Dados do Cliente:
+- Nome: ${nome}
+- Email: ${email}
+- Valor Pago: R$ ${valor.toFixed(2).replace('.', ',')}
+- Order NSU: ${orderNsu}
+- Transaction NSU: ${transactionNsu}
+- Data do Pagamento: ${dataPagamento}
+
+Acesse o painel administrativo: ${appUrl}/admin
+
+Esta é uma notificação automática do sistema Suporte DP.
+      `;
+
+      const result = await this.resendClient.emails.send({
+        from: `Suporte DP - Sistema <${smtpFrom}>`,
+        to: adminEmail,
+        subject: `💰 Novo Pagamento Confirmado - ${nome}`,
+        html: htmlContent,
+        text: textContent,
+        tags: [
+          { name: 'category', value: 'payment-notification' },
+          { name: 'order_nsu', value: orderNsu }
+        ]
+      });
+
+      const messageId = result.data?.id || result.id || 'N/A';
+      
+      if (result.error) {
+        throw new Error(result.error.message || 'Erro ao enviar email via Resend API');
+      }
+
+      console.log('✅ EmailService (Resend API): Notificação de pagamento enviada');
+      console.log('📬 EmailService (Resend API): Message ID:', messageId);
+      console.log('📧 EmailService (Resend API): Destinatário:', adminEmail);
+
+      return {
+        success: true,
+        messageId: messageId
+      };
+    } catch (error) {
+      console.error('❌ EmailService (Resend API): Erro ao enviar notificação de pagamento:', error.message);
+      console.error('❌ EmailService (Resend API): Stack:', error.stack);
+      return {
+        success: false,
+        error: error.message,
+        code: error.code || 'UNKNOWN'
+      };
+    }
+  }
 }
 
 // Exporta uma instância singleton
