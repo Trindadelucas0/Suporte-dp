@@ -545,9 +545,17 @@ class AuthController {
     }
 
     try {
+      console.log('🔍 Iniciando processo de cadastro:', {
+        nome: nomeNormalizado,
+        email: emailNormalizado,
+        temWhatsapp: !!whatsapp
+      });
+      
       // NOVO FLUXO: Verifica se email já está cadastrado (usa email normalizado)
+      console.log('🔍 Verificando se email já existe...');
       const userExistente = await User.findByEmail(emailNormalizado);
       if (userExistente) {
+        console.log('⚠️ Email já cadastrado:', emailNormalizado);
         return res.render('auth/register', {
           title: 'Cadastro - Suporte DP',
           error: 'Este email já está cadastrado. Faça login ou use outro email.',
@@ -555,6 +563,7 @@ class AuthController {
           payment: null
         });
       }
+      console.log('✅ Email disponível para cadastro');
 
       // Verifica se há token validado na sessão (após validação de pagamento)
       const hasTokenValidated = req.session.pendingToken && req.session.pendingEmail;
@@ -582,6 +591,20 @@ class AuthController {
           const bcrypt = require('bcrypt');
           const senhaHash = await bcrypt.hash(senha, 10);
           
+          // Verifica quais campos existem na tabela users
+          const columnsCheck = await client.query(`
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'users'
+            AND column_name IN ('whatsapp', 'status', 'subscription_status', 'subscription_expires_at')
+          `);
+          
+          const existingColumns = columnsCheck.rows.map(r => r.column_name);
+          const hasWhatsapp = existingColumns.includes('whatsapp');
+          const hasStatus = existingColumns.includes('status');
+          const hasSubscriptionStatus = existingColumns.includes('subscription_status');
+          const hasSubscriptionExpiresAt = existingColumns.includes('subscription_expires_at');
+          
           // Se há token validado, ativa assinatura por 30 dias a partir de AGORA
           let subscriptionStatus = 'pendente';
           let subscriptionExpiresAt = null;
@@ -604,29 +627,72 @@ class AuthController {
           // Normaliza whatsapp (remove espaços e caracteres especiais, mantém apenas números)
           const whatsappNormalizado = whatsapp ? whatsapp.trim().replace(/\D/g, '') : null;
           
+          // Monta query dinamicamente baseado nos campos que existem
+          let fields = 'nome, email, senha_hash, is_admin';
+          let values = [nomeNormalizado, emailNormalizado, senhaHash, false];
+          let placeholders = ['$1', '$2', '$3', '$4'];
+          let paramCount = 5;
+          
+          if (hasWhatsapp) {
+            fields += ', whatsapp';
+            values.push(whatsappNormalizado || null);
+            placeholders.push(`$${paramCount++}`);
+          }
+          
+          if (hasStatus) {
+            fields += ', status';
+            values.push('ativo');
+            placeholders.push(`$${paramCount++}`);
+          }
+          
+          if (hasSubscriptionStatus) {
+            fields += ', subscription_status';
+            values.push(subscriptionStatus);
+            placeholders.push(`$${paramCount++}`);
+          }
+          
+          if (hasSubscriptionExpiresAt) {
+            fields += ', subscription_expires_at';
+            values.push(subscriptionExpiresAt);
+            placeholders.push(`$${paramCount++}`);
+          }
+          
+          // Campos de timestamp (sempre existem) - usa função SQL diretamente
+          fields += ', created_at, updated_at';
+          placeholders.push('CURRENT_TIMESTAMP', 'CURRENT_TIMESTAMP');
+          
+          // Monta campos de retorno
+          let returnFields = 'id, nome, email, is_admin, created_at';
+          if (hasWhatsapp) returnFields += ', whatsapp';
+          if (hasStatus) returnFields += ', status';
+          if (hasSubscriptionStatus) returnFields += ', subscription_status';
+          if (hasSubscriptionExpiresAt) returnFields += ', subscription_expires_at';
+          
           const userResult = await client.query(
-            `INSERT INTO users (nome, email, senha_hash, is_admin, whatsapp, status, subscription_status, subscription_expires_at, created_at, updated_at)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-             RETURNING id, nome, email, is_admin, whatsapp, status, subscription_status, subscription_expires_at, created_at`,
-            [
-              nomeNormalizado, // Usa nome normalizado
-              emailNormalizado, // Usa email normalizado
-              senhaHash,
-              false,
-              whatsappNormalizado || null,
-              'ativo', // Status ativo (pode fazer login)
-              subscriptionStatus, // 'ativa' se há token, 'pendente' caso contrário
-              subscriptionExpiresAt // 30 dias se há token, null caso contrário
-            ]
+            `INSERT INTO users (${fields})
+             VALUES (${placeholders.join(', ')})
+             RETURNING ${returnFields}`,
+            values // Apenas os valores, sem CURRENT_TIMESTAMP
           );
           
           if (!userResult.rows || !userResult.rows[0]) {
             throw new Error('Erro ao criar usuário: nenhum registro retornado');
           }
           
-          return userResult.rows[0];
+          // Garante valores padrão para campos que podem não existir
+          const userData = userResult.rows[0];
+          if (!hasStatus) userData.status = 'ativo';
+          if (!hasSubscriptionStatus) userData.subscription_status = subscriptionStatus;
+          if (!hasSubscriptionExpiresAt) userData.subscription_expires_at = subscriptionExpiresAt;
+          
+          return userData;
         } catch (dbError) {
           console.error('❌ Erro na transação de criação de usuário:', dbError);
+          console.error('Código do erro:', dbError.code);
+          console.error('Mensagem:', dbError.message);
+          console.error('Detalhe:', dbError.detail);
+          console.error('Query que falhou:', dbError.query);
+          console.error('Parâmetros:', dbError.parameters);
           throw dbError;
         }
       });
@@ -702,6 +768,9 @@ class AuthController {
       });
     } catch (error) {
       console.error('❌ Erro no cadastro:', error);
+      console.error('Tipo do erro:', error.constructor.name);
+      console.error('Código do erro:', error.code);
+      console.error('Mensagem:', error.message);
       console.error('Stack:', error.stack);
       
       // Mensagem de erro mais específica
@@ -712,6 +781,9 @@ class AuthController {
         errorMessage = 'Este email já está cadastrado. Faça login ou use outro email.';
       } else if (error.code === '23502' || error.message.includes('not null')) {
         errorMessage = 'Por favor, preencha todos os campos obrigatórios.';
+      } else if (error.code === '42703' || error.message.includes('column') && error.message.includes('does not exist')) {
+        errorMessage = 'Erro na estrutura do banco de dados. Entre em contato com o suporte.';
+        console.error('⚠️ COLUNA NÃO EXISTE NO BANCO! Verifique se as migrations foram executadas.');
       } else if (process.env.NODE_ENV === 'development') {
         errorMessage = `Erro ao criar conta: ${error.message}`;
       }
