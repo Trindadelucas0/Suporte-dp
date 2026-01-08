@@ -13,216 +13,369 @@
                         primary: {
                             red: '#DC2626',
                             yellow: '#FBBF24'
-                        }
+                        },
+                        'primary-red': '#DC2626',
+                        'primary-yellow': '#FBBF24'
                     }
                 }
             }
         }
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Favicon com as letras "DP" nas cores do sistema (Vermelho #DC2626 e Amarelo #FBBF24) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dark-gradient-bg {
+            background: linear-gradient(135deg, 
+                #0a0a0a 0%, 
+                #1a0a0a 25%, 
+                #0a0a0a 50%, 
+                #1a0a0a 75%, 
+                #0a0a0a 100%
+            );
+        }
+
+        .light-effects {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(251, 191, 36, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .icon-glow {
+            filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5)) drop-shadow(0 0 20px rgba(251, 191, 36, 0.3));
+        }
+
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse-slow {
+            0%, 100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .animate-slide-up {
+            animation: slide-up 0.6s ease-out;
+        }
+
+        .animate-fade-in {
+            animation: fade-in 0.8s ease-out;
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-slow 4s ease-in-out infinite;
+        }
+
+        .input-glow:focus {
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
+        }
+    </style>
 </head>
-<body class="bg-gray-50">
+<body class="dark-gradient-bg min-h-screen text-white relative overflow-x-hidden">
     <%- include('../partials/navbar') %>
 
-    <main class="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 py-4 sm:py-8">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">
-                <i class="fas fa-bell text-primary-red mr-2"></i>
-                Notificações Administrativas
-            </h1>
-            <p class="text-gray-600">
-                Envie notificações para todos os usuários ou para usuários específicos
-            </p>
-        </div>
+    <main class="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 py-4 sm:py-8 relative min-h-screen">
+        <!-- Background Effects -->
+        <div class="light-effects"></div>
+        <div class="absolute top-10 left-10 w-96 h-96 bg-primary-red/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div class="absolute bottom-10 right-10 w-96 h-96 bg-primary-yellow/10 rounded-full blur-3xl animate-pulse-slow"
+            style="animation-delay: 2s;"></div>
 
-        <!-- Formulário de Nova Notificação -->
-        <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6 sm:mb-8">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Nova Notificação</h2>
-            <form id="formNotificacao" class="space-y-4">
-                <div>
-                    <label for="titulo" class="block text-sm font-medium text-gray-700 mb-2">
-                        Título <span class="text-red-500">*</span>
-                    </label>
-                    <input 
-                        type="text" 
-                        id="titulo" 
-                        name="titulo" 
-                        required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-transparent"
-                        placeholder="Ex: Lembrete: Fechamento de folha"
-                    >
-                </div>
-
-                <div>
-                    <label for="mensagem" class="block text-sm font-medium text-gray-700 mb-2">
-                        Mensagem <span class="text-red-500">*</span>
-                    </label>
-                    <textarea 
-                        id="mensagem" 
-                        name="mensagem" 
-                        required
-                        rows="4"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-transparent"
-                        placeholder="Digite a mensagem da notificação..."
-                    ></textarea>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="relative z-10">
+            <!-- Header -->
+            <div class="mb-8 animate-fade-in">
+                <div class="flex items-center gap-4 mb-2">
+                    <div class="relative">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-2xl blur-xl opacity-50">
+                        </div>
+                        <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow rounded-2xl p-4">
+                            <i class="fas fa-bell text-white text-4xl icon-glow"></i>
+                        </div>
+                    </div>
                     <div>
-                        <label for="tipo" class="block text-sm font-medium text-gray-700 mb-2">
-                            Tipo <span class="text-red-500">*</span>
+                        <h1 class="text-4xl font-bold gradient-text">Notificações Administrativas</h1>
+                        <p class="mt-2 text-white/70 text-lg">
+                            Envie notificações para todos os usuários ou para usuários específicos
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulário de Nova Notificação -->
+            <div class="glass rounded-2xl shadow-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-white/20 backdrop-blur-xl animate-slide-up">
+                <div class="flex items-center mb-6">
+                    <div class="relative mr-4">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl blur-lg opacity-50">
+                        </div>
+                        <div class="relative bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl p-3">
+                            <i class="fas fa-paper-plane text-white text-2xl"></i>
+                        </div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">Nova Notificação</h2>
+                </div>
+                <form id="formNotificacao" class="space-y-5">
+                    <div>
+                        <label for="titulo" class="block text-sm font-semibold text-white/90 mb-2">
+                            <i class="fas fa-heading mr-2 text-primary-yellow"></i>Título <span class="text-red-400">*</span>
                         </label>
-                        <select 
-                            id="tipo" 
-                            name="tipo" 
+                        <input 
+                            type="text" 
+                            id="titulo" 
+                            name="titulo" 
                             required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-transparent"
+                            class="w-full px-4 py-3 glass-dark border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-primary-red focus:border-primary-red transition-all input-glow backdrop-blur-sm"
+                            placeholder="Ex: Lembrete: Fechamento de folha"
                         >
-                            <option value="info">ℹ️ Info</option>
-                            <option value="warning">⚠️ Aviso</option>
-                            <option value="success">✅ Sucesso</option>
-                            <option value="error">❌ Erro</option>
-                        </select>
                     </div>
 
                     <div>
-                        <label for="destinatario" class="block text-sm font-medium text-gray-700 mb-2">
-                            Destinatário <span class="text-red-500">*</span>
+                        <label for="mensagem" class="block text-sm font-semibold text-white/90 mb-2">
+                            <i class="fas fa-comment-alt mr-2 text-primary-yellow"></i>Mensagem <span class="text-red-400">*</span>
                         </label>
-                        <div class="relative">
-                            <input 
-                                type="text" 
-                                id="buscarDestinatario" 
-                                placeholder="🔍 Buscar usuário por nome ou email..."
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-transparent mb-2 text-sm sm:text-base"
-                                autocomplete="off"
-                            >
+                        <textarea 
+                            id="mensagem" 
+                            name="mensagem" 
+                            required
+                            rows="4"
+                            class="w-full px-4 py-3 glass-dark border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-primary-red focus:border-primary-red transition-all input-glow backdrop-blur-sm resize-none"
+                            placeholder="Digite a mensagem da notificação..."
+                        ></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label for="tipo" class="block text-sm font-semibold text-white/90 mb-2">
+                                <i class="fas fa-tag mr-2 text-primary-yellow"></i>Tipo <span class="text-red-400">*</span>
+                            </label>
                             <select 
-                                id="destinatario" 
-                                name="destinatario" 
+                                id="tipo" 
+                                name="tipo" 
                                 required
-                                size="10"
-                                class="w-full px-3 sm:px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-red focus:border-primary-red text-sm sm:text-base bg-white"
-                                style="min-height: 250px; max-height: 300px;"
+                                class="w-full px-4 py-3 glass-dark border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-primary-red focus:border-primary-red transition-all input-glow backdrop-blur-sm"
                             >
-                                <option value="todos">📢 Todos os usuários</option>
-                                <% 
-                                // Debug: verifica o que está sendo recebido
-                                let usuariosArray = [];
-                                
-                                // Verifica se usuarios existe e seu tipo
-                                if (typeof usuarios !== 'undefined' && usuarios !== null) {
-                                    if (Array.isArray(usuarios)) {
-                                        usuariosArray = usuarios;
-                                    }
-                                }
-                                
-                                // Filtra usuários não-admin
-                                const usuariosNaoAdmin = usuariosArray.filter(u => {
-                                    if (!u || !u.id) return false;
-                                    // Verifica se é admin (pode ser boolean true ou string 'true')
-                                    // No PostgreSQL, boolean pode vir como true/false ou 't'/'f'
-                                    const isAdmin = u.is_admin === true || 
-                                                   u.is_admin === 'true' || 
-                                                   u.is_admin === 1 || 
-                                                   u.is_admin === 't' ||
-                                                   String(u.is_admin).toLowerCase() === 'true';
-                                    return !isAdmin;
-                                });
-                                %>
-                                <% if (usuariosArray.length > 0) { %>
-                                    <% if (usuariosNaoAdmin.length > 0) { %>
-                                        <% usuariosNaoAdmin.forEach(usuario => { %>
-                                            <% if (usuario && usuario.id) { %>
-                                                <option 
-                                                    value="<%= usuario.id %>" 
-                                                    data-nome="<%= (usuario.nome || '').toLowerCase() %>" 
-                                                    data-email="<%= (usuario.email || '').toLowerCase() %>">
-                                                    <%= usuario.nome || 'Sem nome' %> (<%= usuario.email || 'Sem email' %>)
-                                                </option>
-                                            <% } %>
-                                        <% }); %>
-                                    <% } else { %>
-                                        <option value="" disabled>⚠️ Todos os usuários cadastrados são administradores</option>
-                                    <% } %>
-                                <% } else { %>
-                                    <option value="" disabled>❌ Nenhum usuário encontrado no sistema</option>
-                                <% } %>
+                                <option value="info" class="bg-gray-800">ℹ️ Info</option>
+                                <option value="warning" class="bg-gray-800">⚠️ Aviso</option>
+                                <option value="success" class="bg-gray-800">✅ Sucesso</option>
+                                <option value="error" class="bg-gray-800">❌ Erro</option>
                             </select>
-                            <p class="text-xs text-gray-500 mt-1" id="contadorUsuarios">
-                                <% 
-                                if (typeof usuarios !== 'undefined' && usuarios && Array.isArray(usuarios) && usuarios.length > 0) {
-                                    const usuariosNaoAdmin = usuarios.filter(u => {
+                        </div>
+
+                        <div>
+                            <label for="destinatario" class="block text-sm font-semibold text-white/90 mb-2">
+                                <i class="fas fa-user-friends mr-2 text-primary-yellow"></i>Destinatário <span class="text-red-400">*</span>
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    type="text" 
+                                    id="buscarDestinatario" 
+                                    placeholder="🔍 Buscar usuário por nome ou email..."
+                                    class="w-full px-3 sm:px-4 py-2 glass-dark border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-primary-red focus:border-primary-red transition-all input-glow backdrop-blur-sm mb-2 text-sm sm:text-base"
+                                    autocomplete="off"
+                                    onkeyup="window.filtrarUsuarios(this.value)"
+                                >
+                                <select 
+                                    id="destinatario" 
+                                    name="destinatario" 
+                                    required
+                                    size="10"
+                                    class="w-full px-3 sm:px-4 py-2 glass-dark border-2 border-white/20 rounded-xl focus:ring-2 focus:ring-primary-red focus:border-primary-red text-sm sm:text-base text-white backdrop-blur-sm"
+                                    style="min-height: 250px; max-height: 300px;"
+                                >
+                                    <option value="todos" class="bg-gray-800">📢 Todos os usuários</option>
+                                    <% 
+                                    let usuariosArray = [];
+                                    
+                                    if (typeof usuarios !== 'undefined' && usuarios !== null) {
+                                        if (Array.isArray(usuarios)) {
+                                            usuariosArray = usuarios;
+                                        }
+                                    }
+                                    
+                                    const usuariosNaoAdmin = usuariosArray.filter(u => {
                                         if (!u || !u.id) return false;
-                                        const isAdmin = u.is_admin === true || u.is_admin === 'true' || u.is_admin === 1;
+                                        const isAdmin = u.is_admin === true || 
+                                                       u.is_admin === 'true' || 
+                                                       u.is_admin === 1 || 
+                                                       u.is_admin === 't' ||
+                                                       String(u.is_admin).toLowerCase() === 'true';
                                         return !isAdmin;
                                     });
-                                    if (usuariosNaoAdmin.length > 0) {
-                                        %><%= usuariosNaoAdmin.length %> usuário(s) disponível(is)<%
+                                    %>
+                                    <% if (usuariosArray.length > 0) { %>
+                                        <% if (usuariosNaoAdmin.length > 0) { %>
+                                            <% usuariosNaoAdmin.forEach(usuario => { %>
+                                                <% if (usuario && usuario.id) { %>
+                                                    <option 
+                                                        value="<%= usuario.id %>" 
+                                                        data-nome="<%= (usuario.nome || '').toLowerCase() %>" 
+                                                        data-email="<%= (usuario.email || '').toLowerCase() %>"
+                                                        class="bg-gray-800">
+                                                        <%= usuario.nome || 'Sem nome' %> (<%= usuario.email || 'Sem email' %>)
+                                                    </option>
+                                                <% } %>
+                                            <% }); %>
+                                        <% } else { %>
+                                            <option value="" disabled class="bg-gray-800">⚠️ Todos os usuários cadastrados são administradores</option>
+                                        <% } %>
+                                    <% } else { %>
+                                        <option value="" disabled class="bg-gray-800">❌ Nenhum usuário encontrado no sistema</option>
+                                    <% } %>
+                                </select>
+                                <p class="text-xs text-white/60 mt-2" id="contadorUsuarios">
+                                    <% 
+                                    if (typeof usuarios !== 'undefined' && usuarios && Array.isArray(usuarios) && usuarios.length > 0) {
+                                        const usuariosNaoAdmin = usuarios.filter(u => {
+                                            if (!u || !u.id) return false;
+                                            const isAdmin = u.is_admin === true || u.is_admin === 'true' || u.is_admin === 1;
+                                            return !isAdmin;
+                                        });
+                                        if (usuariosNaoAdmin.length > 0) {
+                                            %><%= usuariosNaoAdmin.length %> usuário(s) disponível(is)<%
+                                        } else {
+                                            %>⚠️ Todos os usuários são administradores<%
+                                        }
                                     } else {
-                                        %>⚠️ Todos os usuários são administradores<%
+                                        %>❌ Nenhum usuário encontrado no sistema<%
                                     }
-                                } else {
-                                    %>❌ Nenhum usuário encontrado no sistema<%
-                                }
-                                %>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex justify-end">
-                    <button 
-                        type="submit"
-                        class="w-full sm:w-auto px-4 sm:px-6 py-2 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-lg font-semibold hover:opacity-90 transition text-sm sm:text-base"
-                    >
-                        <i class="fas fa-paper-plane mr-2"></i>
-                        Enviar Notificação
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Histórico -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Histórico de Notificações</h2>
-            <% if (historico && historico.length > 0) { %>
-                <div class="space-y-3">
-                    <% historico.forEach(notif => { %>
-                        <div class="border-l-4 p-4 rounded 
-                            <%= notif.tipo === 'info' ? 'border-blue-500 bg-blue-50' :
-                               notif.tipo === 'warning' ? 'border-yellow-500 bg-yellow-50' :
-                               notif.tipo === 'success' ? 'border-green-500 bg-green-50' :
-                               'border-red-500 bg-red-50' %>">
-                            <div class="flex justify-between items-start">
-                                <div class="flex-1">
-                                    <h3 class="font-semibold text-gray-900"><%= notif.titulo %></h3>
-                                    <p class="text-gray-700 mt-1"><%= notif.mensagem %></p>
-                                    <div class="mt-2 text-sm text-gray-600">
-                                        <i class="fas fa-user mr-1"></i>
-                                        <%= notif.usuario_nome || 'Todos os usuários' %>
-                                        <span class="mx-2">•</span>
-                                        <i class="fas fa-clock mr-1"></i>
-                                        <%= new Date(notif.created_at).toLocaleString('pt-BR') %>
-                                    </div>
-                                </div>
-                                <span class="px-2 py-1 rounded text-xs font-semibold
-                                    <%= notif.tipo === 'info' ? 'bg-blue-200 text-blue-800' :
-                                       notif.tipo === 'warning' ? 'bg-yellow-200 text-yellow-800' :
-                                       notif.tipo === 'success' ? 'bg-green-200 text-green-800' :
-                                       'bg-red-200 text-red-800' %>">
-                                    <%= notif.tipo.toUpperCase() %>
-                                </span>
+                                    %>
+                                </p>
                             </div>
                         </div>
-                    <% }); %>
+                    </div>
+
+                    <div class="flex justify-end pt-4">
+                        <button 
+                            type="submit"
+                            class="group relative px-8 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-xl font-bold hover:shadow-2xl hover:shadow-primary-red/50 transition-all transform hover:scale-105 overflow-hidden"
+                        >
+                            <span class="relative z-10 flex items-center">
+                                <i class="fas fa-paper-plane mr-2"></i>
+                                Enviar Notificação
+                                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                            </span>
+                            <div
+                                class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity">
+                            </div>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Histórico -->
+            <div class="glass rounded-2xl shadow-2xl p-6 border border-white/20 backdrop-blur-xl animate-slide-up"
+                style="animation-delay: 0.1s;">
+                <div class="flex items-center mb-6">
+                    <div class="relative mr-4">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur-lg opacity-50">
+                        </div>
+                        <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl p-3">
+                            <i class="fas fa-history text-white text-2xl"></i>
+                        </div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">Histórico de Notificações</h2>
                 </div>
-            <% } else { %>
-                <p class="text-gray-500 text-center py-8">Nenhuma notificação enviada ainda.</p>
-            <% } %>
+                <% if (historico && historico.length > 0) { %>
+                    <div class="space-y-4">
+                        <% historico.forEach((notif, index) => { %>
+                            <div class="glass-dark border-l-4 p-5 rounded-xl border-white/20 backdrop-blur-sm animate-slide-up"
+                                style="animation-delay: <%= (index * 0.05) %>s; border-left-color: <%= 
+                                    notif.tipo === 'info' ? 'rgba(59, 130, 246, 0.8)' :
+                                    notif.tipo === 'warning' ? 'rgba(251, 191, 36, 0.8)' :
+                                    notif.tipo === 'success' ? 'rgba(34, 197, 94, 0.8)' :
+                                    'rgba(239, 68, 68, 0.8)' %>;">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <h3 class="font-bold text-white text-lg"><%= notif.titulo %></h3>
+                                            <span class="px-3 py-1 rounded-full text-xs font-bold
+                                                <%= notif.tipo === 'info' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
+                                                   notif.tipo === 'warning' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                                                   notif.tipo === 'success' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                                                   'bg-red-500/20 text-red-400 border border-red-500/30' %>">
+                                                <%= notif.tipo.toUpperCase() %>
+                                            </span>
+                                        </div>
+                                        <p class="text-white/80 mt-2 mb-3"><%= notif.mensagem %></p>
+                                        <div class="flex flex-wrap items-center gap-4 text-sm text-white/60">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-user mr-2 text-primary-yellow"></i>
+                                                <%= notif.usuario_nome || 'Todos os usuários' %>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <i class="fas fa-clock mr-2 text-primary-yellow"></i>
+                                                <%= new Date(notif.created_at).toLocaleString('pt-BR') %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-12">
+                        <i class="fas fa-inbox text-6xl text-white/30 mb-4 block"></i>
+                        <p class="text-white/50 text-lg">Nenhuma notificação enviada ainda.</p>
+                    </div>
+                <% } %>
+            </div>
         </div>
     </main>
 
@@ -259,7 +412,6 @@
                 options.forEach(option => {
                     if (!option) return;
 
-                    // Remove estilos anteriores
                     option.style.opacity = '';
                     option.style.fontWeight = '';
                     option.style.display = '';
@@ -269,10 +421,8 @@
                     option.removeAttribute('data-hidden');
 
                     if (option.value === 'todos') {
-                        // Opção "Todos os usuários" sempre visível e contabilizada
                         if (buscaLower === '') contador++;
                     } else {
-                        // Busca nos atributos e texto
                         const nome = (option.getAttribute('data-nome') || '').toLowerCase();
                         const email = (option.getAttribute('data-email') || '').toLowerCase();
                         const texto = option.textContent.toLowerCase();
@@ -284,20 +434,16 @@
 
                         if (corresponde) {
                             contador++;
-                            // Destaca opções que correspondem à busca
                             if (buscaLower !== '') {
-                                option.style.backgroundColor = '#fef3c7';
+                                option.style.backgroundColor = 'rgba(251, 191, 36, 0.2)';
                                 option.style.fontWeight = '600';
                             }
                         } else if (buscaLower !== '') {
-                            // Para opções que não correspondem, apenas reduz opacidade
-                            // MAS MANTÉM SELECIONÁVEL
                             option.style.opacity = '0.4';
                         }
                     }
                 });
 
-                // Atualiza contador
                 const contadorEl = document.getElementById('contadorUsuarios');
                 if (contadorEl) {
                     if (buscaLower === '') {
@@ -331,7 +477,6 @@
                 return;
             }
 
-            // Verifica quantas opções existem no select
             const options = Array.from(select.querySelectorAll('option'));
             console.log('📋 [CLIENTE] Total de opções no select:', options.length);
             
@@ -340,19 +485,16 @@
             } else {
                 console.log('✅ [CLIENTE] Opções encontradas:');
                 options.forEach((opt, index) => {
-                    if (index < 10) { // Mostra até 10 opções
+                    if (index < 10) {
                         console.log(`  ${index + 1}. value="${opt.value}" - text="${opt.textContent.substring(0, 50)}" - disabled=${opt.disabled}`);
                     }
                 });
                 
-                // Verifica se há opções além de "todos"
                 const opcoesUsuarios = options.filter(opt => opt.value !== 'todos' && !opt.disabled && opt.value !== '');
                 console.log('👥 [CLIENTE] Opções de usuários disponíveis (não "todos" e não disabled):', opcoesUsuarios.length);
                 
                 if (opcoesUsuarios.length === 0) {
                     console.warn('⚠️ [CLIENTE] Nenhum usuário disponível para seleção!');
-                    console.warn('   Verifique se há usuários não-admin no banco de dados.');
-                    console.warn('   Verifique os logs do servidor para ver quantos usuários foram encontrados.');
                 } else {
                     console.log('✅ [CLIENTE] Usuários disponíveis para seleção:');
                     opcoesUsuarios.forEach((opt, index) => {
@@ -363,12 +505,10 @@
                 }
             }
 
-            // Event listener para mudança no select - permite seleção normal
             select.addEventListener('change', (e) => {
                 const valorSelecionado = e.target.value;
                 console.log('✅ Usuário selecionado:', valorSelecionado);
                 
-                // Valida se a seleção foi bem-sucedida
                 if (valorSelecionado && valorSelecionado !== '') {
                     const opcaoSelecionada = Array.from(select.options).find(opt => opt.value === valorSelecionado);
                     if (opcaoSelecionada) {
@@ -377,53 +517,42 @@
                 }
             });
 
-            // Event listener para clique - garante que funciona
             select.addEventListener('click', (e) => {
                 console.log('🖱️ Select clicado');
                 e.stopPropagation();
             });
 
-            // Event listener para foco - garante que está ativo
             select.addEventListener('focus', () => {
                 console.log('👁️ Select recebeu foco');
             });
 
-            // Event listener para input de busca (além do onkeyup inline)
             buscarInput.addEventListener('input', (e) => {
                 window.filtrarUsuarios(e.target.value);
             });
 
-            // Event listener para tecla Enter (evita submit e foca no select)
             buscarInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    // Foca no select após Enter para facilitar seleção
                     setTimeout(() => select.focus(), 100);
                 }
             });
 
-            // Garante que o select é totalmente interativo
             select.style.pointerEvents = 'auto';
             select.style.cursor = 'pointer';
             select.style.userSelect = 'auto';
 
-            // Remove qualquer overlay que possa estar bloqueando
             const parentDiv = select.closest('.relative');
             if (parentDiv) {
                 parentDiv.style.pointerEvents = 'auto';
             }
 
-            // Inicializa contador
             window.filtrarUsuarios('');
             
-            // Debug: verifica dados recebidos do servidor (se disponível via script tag)
             console.log('🔍 [CLIENTE] Verificando dados do servidor...');
             const selectOptions = Array.from(select.querySelectorAll('option'));
             console.log('🔍 [CLIENTE] Total de opções renderizadas:', selectOptions.length);
             if (selectOptions.length <= 2) {
                 console.error('❌ [CLIENTE] PROBLEMA: Apenas', selectOptions.length, 'opções foram renderizadas!');
-                console.error('   Isso indica que a variável "usuarios" não está sendo passada corretamente do servidor.');
-                console.error('   Verifique os logs do servidor para ver quantos usuários foram encontrados.');
             }
         });
 
@@ -438,7 +567,6 @@
                 destinatario: formData.get('destinatario')
             };
 
-            // Adiciona CSRF token
             if (window.csrfToken) {
                 data._csrf = window.csrfToken;
             }
@@ -475,4 +603,3 @@
     </script>
 </body>
 </html>
-
