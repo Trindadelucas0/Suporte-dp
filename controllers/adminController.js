@@ -42,21 +42,28 @@ class AdminController {
 
   /**
    * Lista todos os usuários com informações de assinatura
+   * NOVA LÓGICA:
+   * - Ativos = usuários que pagaram (temPagamentoAtivo = true)
+   * - Inativos = usuários que não renovaram (temPagamentoAtivo = false e não está bloqueado)
+   * - Bloqueados = usuários bloqueados (bloqueado = true)
    */
   static async usuarios(req, res) {
     try {
       console.log('Buscando usuários com filtros:', req.query);
       
+      // Busca todos os usuários primeiro (sem filtros de ativo/bloqueado)
       const filtros = {};
-      if (req.query.ativo !== undefined) filtros.ativo = req.query.ativo === 'true';
-      if (req.query.bloqueado !== undefined) filtros.bloqueado = req.query.bloqueado === 'true';
+      // Apenas filtra por bloqueado se especificado (bloqueados são sempre bloqueados)
+      if (req.query.bloqueado !== undefined) {
+        filtros.bloqueado = req.query.bloqueado === 'true';
+      }
 
-      const usuarios = await User.findAll(filtros);
-      console.log(`Encontrados ${usuarios.length} usuários`);
+      const todosUsuarios = await User.findAll(filtros);
+      console.log(`Encontrados ${todosUsuarios.length} usuários`);
 
       // Busca pagamentos e informações adicionais para cada usuário
       const usuariosComPagamentos = await Promise.all(
-        usuarios.map(async (usuario) => {
+        todosUsuarios.map(async (usuario) => {
           // Busca último pagamento do usuário (mais recente, pode ser renovação)
           let ultimoPagamento = null;
           let todosPagamentos = [];
@@ -93,6 +100,11 @@ class AdminController {
           const totalPago = pagamentosPagos.reduce((sum, p) => sum + parseFloat(p.paid_amount || 0), 0);
           const temPagamentoAtivo = ultimoPagamento && ultimoPagamento.status === 'paid' && !estaExpirado;
 
+          // Determina status baseado na nova lógica
+          const isBloqueado = usuario.bloqueado === true || usuario.bloqueado === 'true';
+          const isAtivo = !isBloqueado && (usuario.is_admin || temPagamentoAtivo);
+          const isInativo = !isBloqueado && !usuario.is_admin && !temPagamentoAtivo;
+
           return {
             ...usuario,
             pagamento: ultimoPagamento, // Mantém compatibilidade com código existente
@@ -102,14 +114,29 @@ class AdminController {
             estaExpirado: estaExpirado,
             totalPagamentos: totalPagamentos,
             totalPago: totalPago,
-            temPagamentoAtivo: temPagamentoAtivo
+            temPagamentoAtivo: temPagamentoAtivo,
+            // Novos campos para facilitar filtros
+            isAtivo: isAtivo,
+            isInativo: isInativo,
+            isBloqueado: isBloqueado
           };
         })
       );
+
+      // Aplica filtros baseados na nova lógica
+      let usuariosFiltrados = usuariosComPagamentos;
+      if (req.query.ativo === 'true') {
+        // Ativos = usuários que pagaram (ou são admin)
+        usuariosFiltrados = usuariosComPagamentos.filter(u => u.isAtivo);
+      } else if (req.query.ativo === 'false') {
+        // Inativos = usuários que não renovaram (não pagaram e não são bloqueados)
+        usuariosFiltrados = usuariosComPagamentos.filter(u => u.isInativo);
+      }
+      // Se filtroBloqueado já foi aplicado no findAll, não precisa filtrar novamente
       
       res.render('admin/usuarios', {
         title: 'Gestão de Usuários - Suporte DP',
-        usuarios: usuariosComPagamentos || [],
+        usuarios: usuariosFiltrados || [],
         filtroAtivo: req.query.ativo,
         filtroBloqueado: req.query.bloqueado,
         csrfToken: req.csrfToken ? req.csrfToken() : null
@@ -293,33 +320,60 @@ class AdminController {
   static async resetarSenha(req, res) {
     // Verificação dupla de permissões
     if (!req.session.user || !req.session.user.is_admin) {
+      console.error('❌ [ADMIN] Tentativa de resetar senha sem permissão');
       return res.status(403).json({ success: false, error: 'Acesso negado' });
     }
 
     // Valida UUID
     const { id } = req.params;
     if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      console.error('❌ [ADMIN] ID inválido:', id);
       return res.status(400).json({ success: false, error: 'ID inválido' });
     }
 
     try {
-      const { id } = req.params;
       const { novaSenha } = req.body;
+      
+      console.log('🔐 [ADMIN] Tentando resetar senha:', {
+        userId: id,
+        temNovaSenha: !!novaSenha,
+        tamanhoSenha: novaSenha ? novaSenha.length : 0
+      });
 
-      if (!novaSenha || novaSenha.length < 6) {
+      if (!novaSenha || typeof novaSenha !== 'string') {
+        console.error('❌ [ADMIN] Senha não fornecida ou inválida');
+        return res.json({ success: false, error: 'Senha é obrigatória' });
+      }
+
+      if (novaSenha.length < 6) {
+        console.error('❌ [ADMIN] Senha muito curta:', novaSenha.length);
         return res.json({ success: false, error: 'Senha deve ter pelo menos 6 caracteres' });
       }
 
-      const usuario = await User.resetPassword(id, novaSenha);
-      
-      if (!usuario) {
+      // Verifica se usuário existe antes de resetar
+      const usuarioExiste = await User.findById(id);
+      if (!usuarioExiste) {
+        console.error('❌ [ADMIN] Usuário não encontrado:', id);
         return res.json({ success: false, error: 'Usuário não encontrado' });
       }
 
-      res.json({ success: true });
+      console.log('✅ [ADMIN] Usuário encontrado, resetando senha...');
+      const usuario = await User.resetPassword(id, novaSenha);
+      
+      if (!usuario) {
+        console.error('❌ [ADMIN] Erro: resetPassword retornou null');
+        return res.json({ success: false, error: 'Erro ao resetar senha. Tente novamente.' });
+      }
+
+      console.log('✅ [ADMIN] Senha resetada com sucesso para:', usuario.email);
+      res.json({ success: true, message: 'Senha resetada com sucesso!' });
     } catch (error) {
-      console.error('Erro ao resetar senha:', error);
-      res.json({ success: false, error: 'Erro ao resetar senha' });
+      console.error('❌ [ADMIN] Erro ao resetar senha:', error);
+      console.error('Stack:', error.stack);
+      res.json({ 
+        success: false, 
+        error: 'Erro ao resetar senha: ' + (process.env.NODE_ENV === 'development' ? error.message : 'Tente novamente mais tarde')
+      });
     }
   }
 

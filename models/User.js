@@ -228,6 +228,26 @@ class User {
       if (hasAtivo) selectFields += ', ativo';
       if (hasBloqueado) selectFields += ', bloqueado';
       if (hasLastLogin) selectFields += ', last_login';
+      
+      // Adiciona campos de perfil e assinatura se existirem
+      const profileColumnsCheck = await db.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'users' 
+        AND column_name IN ('whatsapp', 'status', 'subscription_status', 'subscription_expires_at', 'order_nsu')
+      `);
+      const profileColumns = profileColumnsCheck.rows.map(r => r.column_name);
+      const hasWhatsapp = profileColumns.includes('whatsapp');
+      const hasStatus = profileColumns.includes('status');
+      const hasSubscriptionStatus = profileColumns.includes('subscription_status');
+      const hasSubscriptionExpiresAt = profileColumns.includes('subscription_expires_at');
+      const hasOrderNsu = profileColumns.includes('order_nsu');
+      
+      if (hasWhatsapp) selectFields += ', whatsapp';
+      if (hasStatus) selectFields += ', status';
+      if (hasSubscriptionStatus) selectFields += ', subscription_status';
+      if (hasSubscriptionExpiresAt) selectFields += ', subscription_expires_at';
+      if (hasOrderNsu) selectFields += ', order_nsu';
 
       let query = `SELECT ${selectFields} FROM users WHERE 1=1`;
       const params = [];
@@ -253,10 +273,10 @@ class User {
         ativo: hasAtivo ? (row.ativo !== undefined ? row.ativo : true) : true,
         bloqueado: hasBloqueado ? (row.bloqueado !== undefined ? row.bloqueado : false) : false,
         last_login: hasLastLogin ? row.last_login : null,
-        subscription_status: hasSubscriptionStatus ? (row.subscription_status || 'ativa') : 'ativa',
-        subscription_expires_at: hasSubscriptionExpiresAt ? row.subscription_expires_at : null,
-        order_nsu: hasOrderNsu ? row.order_nsu : null,
-        whatsapp: hasWhatsapp ? row.whatsapp : null,
+        subscription_status: hasSubscriptionStatus ? (row.subscription_status || null) : null,
+        subscription_expires_at: hasSubscriptionExpiresAt ? (row.subscription_expires_at || null) : null,
+        order_nsu: hasOrderNsu ? (row.order_nsu || null) : null,
+        whatsapp: hasWhatsapp ? (row.whatsapp || null) : null,
         status: hasStatus ? (row.status || 'ativo') : 'ativo'
       }));
     } catch (error) {
@@ -427,6 +447,7 @@ class User {
       const senhaHash = await bcrypt.hash(data.senha, 10);
       fields.push(`senha_hash = $${paramCount++}`);
       values.push(senhaHash);
+      console.log('🔐 [USER] Atualizando senha para usuário:', id);
     }
     // Campos de perfil
     if (data.telefone !== undefined) {

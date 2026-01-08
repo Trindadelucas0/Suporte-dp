@@ -29,7 +29,8 @@ class PerfilController {
         title: 'Meu Perfil - Suporte DP',
         user,
         error: null,
-        success: null
+        success: null,
+        csrfToken: req.csrfToken ? req.csrfToken() : null
       });
     } catch (error) {
       console.error('Erro ao carregar perfil:', error);
@@ -37,7 +38,8 @@ class PerfilController {
         title: 'Meu Perfil - Suporte DP',
         user: req.session.user,
         error: 'Erro ao carregar dados do perfil',
-        success: null
+        success: null,
+        csrfToken: req.csrfToken ? req.csrfToken() : null
       });
     }
   }
@@ -56,7 +58,8 @@ class PerfilController {
         title: 'Meu Perfil - Suporte DP',
         user,
         error: errors.array().map(e => e.msg).join(', '),
-        success: null
+        success: null,
+        csrfToken: req.csrfToken ? req.csrfToken() : null
       });
     }
 
@@ -73,7 +76,8 @@ class PerfilController {
           title: 'Meu Perfil - Suporte DP',
           user,
           error: 'Este email já está em uso por outro usuário',
-          success: null
+          success: null,
+          csrfToken: req.csrfToken ? req.csrfToken() : null
         });
       }
 
@@ -108,7 +112,8 @@ class PerfilController {
           title: 'Meu Perfil - Suporte DP',
           user,
           error: null,
-          success: 'Dados básicos atualizados com sucesso!'
+          success: 'Dados básicos atualizados com sucesso!',
+          csrfToken: req.csrfToken ? req.csrfToken() : null
         });
       } else {
         const user = await User.findProfileById(userId);
@@ -116,7 +121,8 @@ class PerfilController {
           title: 'Meu Perfil - Suporte DP',
           user,
           error: 'Erro ao atualizar dados',
-          success: null
+          success: null,
+          csrfToken: req.csrfToken ? req.csrfToken() : null
         });
       }
     } catch (error) {
@@ -126,7 +132,8 @@ class PerfilController {
         title: 'Meu Perfil - Suporte DP',
         user,
         error: 'Erro interno ao atualizar dados',
-        success: null
+        success: null,
+        csrfToken: req.csrfToken ? req.csrfToken() : null
       });
     }
   }
@@ -144,7 +151,8 @@ class PerfilController {
         title: 'Meu Perfil - Suporte DP',
         user,
         error: errors.array().map(e => e.msg).join(', '),
-        success: null
+        success: null,
+        csrfToken: req.csrfToken ? req.csrfToken() : null
       });
     }
 
@@ -168,7 +176,8 @@ class PerfilController {
           title: 'Meu Perfil - Suporte DP',
           user,
           error: 'Observações muito longas (máximo 5000 caracteres)',
-          success: null
+          success: null,
+          csrfToken: req.csrfToken ? req.csrfToken() : null
         });
       }
 
@@ -180,7 +189,8 @@ class PerfilController {
           title: 'Meu Perfil - Suporte DP',
           user,
           error: null,
-          success: 'Perfil atualizado com sucesso!'
+          success: 'Perfil atualizado com sucesso!',
+          csrfToken: req.csrfToken ? req.csrfToken() : null
         });
       } else {
         const user = await User.findProfileById(userId);
@@ -188,7 +198,8 @@ class PerfilController {
           title: 'Meu Perfil - Suporte DP',
           user,
           error: 'Erro ao atualizar perfil',
-          success: null
+          success: null,
+          csrfToken: req.csrfToken ? req.csrfToken() : null
         });
       }
     } catch (error) {
@@ -198,7 +209,8 @@ class PerfilController {
         title: 'Meu Perfil - Suporte DP',
         user,
         error: 'Erro interno ao atualizar perfil',
-        success: null
+        success: null,
+        csrfToken: req.csrfToken ? req.csrfToken() : null
       });
     }
   }
@@ -209,31 +221,56 @@ class PerfilController {
   static async updatePassword(req, res) {
     const userId = req.session.user.id;
     const { senhaAtual, novaSenha, confirmarNovaSenha } = req.body;
+    
+    console.log('🔐 [PERFIL] Tentando atualizar senha:', {
+      userId: userId,
+      temSenhaAtual: !!senhaAtual,
+      temNovaSenha: !!novaSenha,
+      temConfirmar: !!confirmarNovaSenha
+    });
+    
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
+      console.log('❌ [PERFIL] Erros de validação:', errors.array());
       const user = await User.findProfileById(userId);
       return res.render('perfil/index', {
         title: 'Meu Perfil - Suporte DP',
         user,
         error: errors.array().map(e => e.msg).join(', '),
-        success: null
+        success: null,
+        csrfToken: req.csrfToken ? req.csrfToken() : null
       });
     }
 
     if (novaSenha !== confirmarNovaSenha) {
+      console.log('❌ [PERFIL] Senhas não coincidem');
       const user = await User.findProfileById(userId);
       return res.render('perfil/index', {
         title: 'Meu Perfil - Suporte DP',
         user,
         error: 'As novas senhas não coincidem',
-        success: null
+        success: null,
+        csrfToken: req.csrfToken ? req.csrfToken() : null
+      });
+    }
+
+    if (!senhaAtual || !novaSenha) {
+      console.log('❌ [PERFIL] Campos obrigatórios faltando');
+      const user = await User.findProfileById(userId);
+      return res.render('perfil/index', {
+        title: 'Meu Perfil - Suporte DP',
+        user,
+        error: 'Por favor, preencha todos os campos',
+        success: null,
+        csrfToken: req.csrfToken ? req.csrfToken() : null
       });
     }
 
     try {
       const user = await User.findById(userId);
       if (!user) {
+        console.error('❌ [PERFIL] Usuário não encontrado:', userId);
         return res.status(404).render('error', {
           title: 'Erro',
           error: 'Usuário não encontrado'
@@ -242,35 +279,67 @@ class PerfilController {
 
       // Busca senha hash do banco
       const userWithPassword = await User.findByEmail(user.email);
+      if (!userWithPassword || !userWithPassword.senha_hash) {
+        console.error('❌ [PERFIL] Senha hash não encontrada para usuário:', userId);
+        const userProfile = await User.findProfileById(userId);
+        return res.render('perfil/index', {
+          title: 'Meu Perfil - Suporte DP',
+          user: userProfile,
+          error: 'Erro ao verificar senha atual. Tente novamente.',
+          success: null,
+          csrfToken: req.csrfToken ? req.csrfToken() : null
+        });
+      }
+
       const senhaValida = await User.verifyPassword(senhaAtual, userWithPassword.senha_hash);
 
       if (!senhaValida) {
+        console.log('❌ [PERFIL] Senha atual incorreta');
         const userProfile = await User.findProfileById(userId);
         return res.render('perfil/index', {
           title: 'Meu Perfil - Suporte DP',
           user: userProfile,
           error: 'Senha atual incorreta',
-          success: null
+          success: null,
+          csrfToken: req.csrfToken ? req.csrfToken() : null
         });
       }
 
-      await User.update(userId, { senha: novaSenha });
+      console.log('✅ [PERFIL] Senha atual válida, atualizando senha...');
+      const updatedUser = await User.update(userId, { senha: novaSenha });
+      
+      if (!updatedUser) {
+        console.error('❌ [PERFIL] Erro: User.update retornou null');
+        const userProfile = await User.findProfileById(userId);
+        return res.render('perfil/index', {
+          title: 'Meu Perfil - Suporte DP',
+          user: userProfile,
+          error: 'Erro ao atualizar senha. Tente novamente.',
+          success: null,
+          csrfToken: req.csrfToken ? req.csrfToken() : null
+        });
+      }
+
+      console.log('✅ [PERFIL] Senha atualizada com sucesso');
       const userProfile = await User.findProfileById(userId);
       
       res.render('perfil/index', {
         title: 'Meu Perfil - Suporte DP',
         user: userProfile,
         error: null,
-        success: 'Senha atualizada com sucesso!'
+        success: 'Senha atualizada com sucesso!',
+        csrfToken: req.csrfToken ? req.csrfToken() : null
       });
     } catch (error) {
-      console.error('Erro ao atualizar senha:', error);
+      console.error('❌ [PERFIL] Erro ao atualizar senha:', error);
+      console.error('Stack:', error.stack);
       const user = await User.findProfileById(userId);
       res.render('perfil/index', {
         title: 'Meu Perfil - Suporte DP',
         user,
-        error: 'Erro interno ao atualizar senha',
-        success: null
+        error: 'Erro interno ao atualizar senha: ' + (process.env.NODE_ENV === 'development' ? error.message : 'Tente novamente mais tarde'),
+        success: null,
+        csrfToken: req.csrfToken ? req.csrfToken() : null
       });
     }
   }

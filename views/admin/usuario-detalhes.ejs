@@ -13,608 +13,1020 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: { red: '#DC2626', yellow: '#FBBF24' }
+                        primary: { red: '#DC2626', yellow: '#FBBF24' },
+                        'primary-red': '#DC2626',
+                        'primary-yellow': '#FBBF24'
                     }
                 }
             }
         }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <!-- Favicon com as letras "DP" nas cores do sistema (Vermelho #DC2626 e Amarelo #FBBF24) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dark-gradient-bg {
+            background: linear-gradient(135deg,
+                    #0a0a0a 0%,
+                    #1a0a0a 25%,
+                    #0a0a0a 50%,
+                    #1a0a0a 75%,
+                    #0a0a0a 100%);
+        }
+
+        .light-effects {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(251, 191, 36, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .icon-glow {
+            filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5)) drop-shadow(0 0 20px rgba(251, 191, 36, 0.3));
+        }
+
+        .table-glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .table-row-hover {
+            transition: all 0.3s ease;
+        }
+
+        .table-row-hover:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse-slow {
+
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .animate-slide-up {
+            animation: slide-up 0.6s ease-out;
+        }
+
+        .animate-fade-in {
+            animation: fade-in 0.8s ease-out;
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-slow 4s ease-in-out infinite;
+        }
+
+        .input-glow:focus {
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
+        }
+    </style>
 </head>
 
-<body class="bg-gray-50">
+<body class="dark-gradient-bg min-h-screen text-white relative overflow-x-hidden">
     <% if (typeof user !=='undefined' && user) { %>
         <%- include('../partials/navbar') %>
             <% } %>
 
-                <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-                    <div class="mb-6 flex justify-between items-center">
-                        <div>
-                            <h1 class="text-3xl font-bold text-gray-900">Detalhes do Usuário</h1>
-                            <p class="mt-2 text-gray-600">
-                                <%= usuario.nome %> - <%= usuario.email %>
-                            </p>
-                        </div>
-                        <a href="/admin/usuarios" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                            <i class="fas fa-arrow-left mr-2"></i>Voltar
-                        </a>
+                <main class="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8 relative min-h-screen">
+                    <!-- Background Effects -->
+                    <div class="light-effects"></div>
+                    <div
+                        class="absolute top-10 left-10 w-96 h-96 bg-primary-red/10 rounded-full blur-3xl animate-pulse-slow">
                     </div>
+                    <div class="absolute bottom-10 right-10 w-96 h-96 bg-primary-yellow/10 rounded-full blur-3xl animate-pulse-slow"
+                        style="animation-delay: 2s;"></div>
+
+                    <div class="relative z-10">
+                        <!-- Header -->
+                        <div class="mb-8 flex justify-between items-center animate-fade-in">
+                            <div class="flex items-center space-x-4">
+                                <div class="relative">
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-2xl blur-xl opacity-50">
+                                    </div>
+                                    <div
+                                        class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-4 rounded-2xl">
+                                        <i class="fas fa-user-circle text-white text-4xl icon-glow"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h1 class="text-4xl font-bold gradient-text">Detalhes do Usuário</h1>
+                                    <p class="mt-2 text-white/70 text-lg">
+                                        <i class="fas fa-user mr-2 text-primary-yellow"></i>
+                                        <%= usuario.nome %>
+                                    </p>
+                                    <p class="text-white/60 text-sm">
+                                        <i class="fas fa-envelope mr-2"></i>
+                                        <%= usuario.email %>
+                                    </p>
+                                </div>
+                            </div>
+                            <a href="/admin/usuarios"
+                                class="group relative px-6 py-3 glass rounded-xl text-white font-semibold hover:bg-white/20 transition-all transform hover:scale-105">
+                                <i class="fas fa-arrow-left mr-2"></i>Voltar
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl opacity-0 group-hover:opacity-20 transition-opacity">
+                                </div>
+                            </a>
+                        </div>
 
                         <!-- Informações da Assinatura -->
-                        <% if (usuario.subscription_status || usuario.subscription_expires_at || (dados.pagamentos && dados.pagamentos.length > 0)) { %>
-                            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                                <h2 class="text-xl font-bold text-gray-900 mb-4">
-                                    <i class="fas fa-credit-card text-primary-red mr-2"></i>Informações de Assinatura
-                                </h2>
+                        <% if (usuario.subscription_status || usuario.subscription_expires_at || (dados.pagamentos &&
+                            dados.pagamentos.length> 0)) { %>
+                            <div
+                                class="glass rounded-2xl shadow-2xl p-6 mb-6 border border-white/20 backdrop-blur-xl animate-slide-up">
+                                <div class="flex items-center mb-6">
+                                    <div class="relative mr-4">
+                                        <div
+                                            class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur-lg opacity-50">
+                                        </div>
+                                        <div
+                                            class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-3 rounded-xl">
+                                            <i class="fas fa-credit-card text-white text-2xl"></i>
+                                        </div>
+                                    </div>
+                                    <h2 class="text-2xl font-bold text-white">
+                                        Informações de Assinatura
+                                    </h2>
+                                </div>
                                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                                    <div>
-                                        <p class="text-sm text-gray-600">Status da Assinatura</p>
-                                        <p class="text-lg font-semibold">
-                                            <% if (usuario.subscription_status === 'ativa') { %>
-                                                <span class="text-green-600">Ativa</span>
-                                            <% } else if (usuario.subscription_status === 'inadimplente') { %>
-                                                <span class="text-red-600">Inadimplente</span>
-                                            <% } else { %>
-                                                <span class="text-gray-600"><%= usuario.subscription_status || 'N/A' %></span>
-                                            <% } %>
+                                    <div class="glass-dark rounded-xl p-4 border border-white/10">
+                                        <p class="text-sm text-white/70 mb-2">Status da Assinatura</p>
+                                        <p class="text-lg font-bold">
+                                            <% if (usuario.subscription_status==='ativa' ) { %>
+                                                <span
+                                                    class="px-3 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg inline-flex items-center">
+                                                    <i class="fas fa-check-circle mr-1.5"></i>Ativa</span>
+                                                <% } else if (usuario.subscription_status==='inadimplente' ) { %>
+                                                    <span
+                                                        class="px-3 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg inline-flex items-center">
+                                                        <i
+                                                            class="fas fa-exclamation-triangle mr-1.5"></i>Inadimplente</span>
+                                                    <% } else { %>
+                                                        <span
+                                                            class="px-3 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg">
+                                                            <%= usuario.subscription_status || 'N/A' %>
+                                                        </span>
+                                                        <% } %>
                                         </p>
                                     </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Expira em</p>
-                                        <p class="text-lg font-semibold">
-                                            <%= usuario.subscription_expires_at ? new Date(usuario.subscription_expires_at).toLocaleDateString('pt-BR') : 'N/A' %>
+                                    <div class="glass-dark rounded-xl p-4 border border-white/10">
+                                        <p class="text-sm text-white/70 mb-2">Expira em</p>
+                                        <p class="text-lg font-bold text-white">
+                                            <%= usuario.subscription_expires_at ? new
+                                                Date(usuario.subscription_expires_at).toLocaleDateString('pt-BR')
+                                                : 'N/A' %>
                                         </p>
                                     </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Dias Restantes</p>
-                                        <p class="text-lg font-semibold">
-                                            <% 
-                                                let diasRestantes = null;
-                                                let estaExpirado = false;
-                                                if (usuario.subscription_expires_at) {
-                                                    const hoje = new Date();
-                                                    hoje.setHours(0, 0, 0, 0);
-                                                    const dataExpiracao = new Date(usuario.subscription_expires_at);
-                                                    dataExpiracao.setHours(0, 0, 0, 0);
-                                                    const diffTime = dataExpiracao - hoje;
-                                                    diasRestantes = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                                    estaExpirado = diasRestantes < 0;
-                                                }
-                                            %>
-                                            <% if (diasRestantes !== null) { %>
-                                                <% if (estaExpirado) { %>
-                                                    <span class="text-red-600">Expirado (<%= Math.abs(diasRestantes) %> dias)</span>
-                                                <% } else if (diasRestantes <= 7) { %>
-                                                    <span class="text-yellow-600"><%= diasRestantes %> dia<%= diasRestantes !== 1 ? 's' : '' %></span>
-                                                <% } else { %>
-                                                    <span class="text-green-600"><%= diasRestantes %> dias</span>
-                                                <% } %>
-                                            <% } else { %>
-                                                <span class="text-gray-400">N/A</span>
-                                            <% } %>
+                                    <div class="glass-dark rounded-xl p-4 border border-white/10">
+                                        <p class="text-sm text-white/70 mb-2">Dias Restantes</p>
+                                        <p class="text-lg font-bold">
+                                            <% let diasRestantes=null; let estaExpirado=false; if
+                                                (usuario.subscription_expires_at) { const hoje=new Date();
+                                                hoje.setHours(0, 0, 0, 0); const dataExpiracao=new
+                                                Date(usuario.subscription_expires_at); dataExpiracao.setHours(0, 0, 0,
+                                                0); const diffTime=dataExpiracao - hoje;
+                                                diasRestantes=Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                                estaExpirado=diasRestantes < 0; } %>
+                                                <% if (diasRestantes !==null) { %>
+                                                    <% if (estaExpirado) { %>
+                                                        <span
+                                                            class="px-3 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg inline-flex items-center">
+                                                            <i class="fas fa-times-circle mr-1.5"></i>Expirado (<%=
+                                                                Math.abs(diasRestantes) %> dias)</span>
+                                                        <% } else if (diasRestantes <=7) { %>
+                                                            <span
+                                                                class="px-3 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-lg inline-flex items-center">
+                                                                <i class="fas fa-clock mr-1.5"></i>
+                                                                <%= diasRestantes %> dia<%= diasRestantes !==1 ? 's'
+                                                                        : '' %>
+                                                            </span>
+                                                            <% } else { %>
+                                                                <span
+                                                                    class="px-3 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg inline-flex items-center">
+                                                                    <i class="fas fa-check-circle mr-1.5"></i>
+                                                                    <%= diasRestantes %> dias
+                                                                </span>
+                                                                <% } %>
+                                                                    <% } else { %>
+                                                                        <span class="text-white/40">N/A</span>
+                                                                        <% } %>
                                         </p>
                                     </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600">Order NSU</p>
-                                        <p class="text-sm font-mono text-gray-700 break-all">
+                                    <div class="glass-dark rounded-xl p-4 border border-white/10">
+                                        <p class="text-sm text-white/70 mb-2">Order NSU</p>
+                                        <p class="text-sm font-mono text-white/80 break-all">
                                             <%= usuario.order_nsu || 'N/A' %>
                                         </p>
                                     </div>
                                 </div>
-                                <% if (dados.pagamentos && dados.pagamentos.length > 0) { %>
-                                    <div class="mt-4 pt-4 border-t border-gray-200">
-                                        <p class="text-sm text-gray-600 mb-2">Último Pagamento</p>
-                                        <% const ultimoPagamento = dados.pagamentos[0]; %>
-                                        <div class="flex items-center space-x-4">
-                                            <span class="text-lg font-semibold text-green-600">R$ <%= parseFloat(ultimoPagamento.paid_amount || 0).toFixed(2) %></span>
-                                            <span class="text-sm text-gray-600">em <%= new Date(ultimoPagamento.paid_at).toLocaleDateString('pt-BR') %></span>
-                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Pago</span>
-                                        </div>
-                                    </div>
-                                <% } %>
-                            </div>
-                        <% } %>
-
-                        <!-- Histórico de Pagamentos -->
-                        <% if (dados.pagamentos && dados.pagamentos.length > 0) { %>
-                            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                                <h2 class="text-xl font-bold text-gray-900 mb-4">
-                                    <i class="fas fa-history text-primary-yellow mr-2"></i>Histórico de Pagamentos
-                                </h2>
-                                <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="bg-gray-50">
-                                            <tr>
-                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor</th>
-                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Método</th>
-                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Próxima Renovação</th>
-                                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            <% dados.pagamentos.forEach(pagamento => { %>
-                                                <tr>
-                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                                                        <%= new Date(pagamento.paid_at).toLocaleDateString('pt-BR') %>
-                                                    </td>
-                                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                                        R$ <%= parseFloat(pagamento.paid_amount || 0).toFixed(2) %>
-                                                    </td>
-                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                                                        <%= pagamento.capture_method || 'N/A' %>
-                                                    </td>
-                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                                                        <%= pagamento.next_billing_date ? new Date(pagamento.next_billing_date).toLocaleDateString('pt-BR') : 'N/A' %>
-                                                    </td>
-                                                    <td class="px-4 py-3 whitespace-nowrap">
-                                                        <% if (pagamento.status === 'paid') { %>
-                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Pago</span>
-                                                        <% } else { %>
-                                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800"><%= pagamento.status %></span>
-                                                        <% } %>
-                                                    </td>
-                                                </tr>
-                                            <% }); %>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        <% } %>
-
-                        <!-- Informações do Usuário -->
-                        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                        <h2 class="text-xl font-bold text-gray-900 mb-4">Informações do Usuário</h2>
-
-                        <!-- Dados Básicos -->
-                        <div class="mb-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3">
-                                <i class="fas fa-user mr-2"></i>Dados Básicos
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Nome</label>
-                                    <p class="mt-1 text-sm text-gray-900">
-                                        <%= usuario.nome %>
-                                    </p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Email</label>
-                                    <p class="mt-1 text-sm text-gray-900">
-                                        <%= usuario.email %>
-                                    </p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Status</label>
-                                    <div class="mt-1 flex space-x-2">
-                                        <% const isBloqueado=usuario.bloqueado===true || usuario.bloqueado==='true' ;
-                                            const isAtivo=usuario.ativo !==false && usuario.ativo !=='false' &&
-                                            usuario.ativo !==null && usuario.ativo !==undefined; %>
-                                            <% if (isBloqueado) { %>
+                                <% if (dados.pagamentos && dados.pagamentos.length> 0) { %>
+                                    <div class="mt-4 pt-4 border-t border-white/20">
+                                        <p class="text-sm text-white/70 mb-2">Último Pagamento</p>
+                                        <% const ultimoPagamento=dados.pagamentos[0]; %>
+                                            <div class="flex items-center space-x-4">
+                                                <span class="text-xl font-bold text-green-400">
+                                                    <i class="fas fa-money-bill-wave mr-2"></i>R$ <%=
+                                                        parseFloat(ultimoPagamento.paid_amount || 0).toFixed(2) %>
+                                                </span>
+                                                <span class="text-sm text-white/60">
+                                                    <i class="fas fa-calendar mr-1"></i>em <%= new
+                                                        Date(ultimoPagamento.paid_at).toLocaleDateString('pt-BR') %>
+                                                </span>
                                                 <span
-                                                    class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Bloqueado</span>
-                                                <% } else if (!isAtivo) { %>
-                                                    <span
-                                                        class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Inativo</span>
-                                                    <% } else { %>
-                                                        <span
-                                                            class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativo</span>
-                                                        <% } %>
-                                                            <% if (usuario.is_admin) { %>
-                                                                <span
-                                                                    class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">Administrador</span>
-                                                                <% } %>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Data de Cadastro</label>
-                                    <p class="mt-1 text-sm text-gray-900">
-                                        <%= usuario.created_at ? new Date(usuario.created_at).toLocaleString('pt-BR')
-                                            : 'N/A' %>
-                                    </p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Último Login</label>
-                                    <p class="mt-1 text-sm text-gray-900">
-                                        <%= usuario.last_login ? new Date(usuario.last_login).toLocaleString('pt-BR')
-                                            : 'Nunca' %>
-                                    </p>
-                                </div>
-                                <% if (usuario.ultima_atividade) { %>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Última Atividade</label>
-                                        <p class="mt-1 text-sm text-gray-900">
-                                            <%= new Date(usuario.ultima_atividade).toLocaleString('pt-BR') %>
-                                        </p>
+                                                    class="px-3 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg">
+                                                    <i class="fas fa-check mr-1"></i>Pago</span>
+                                            </div>
                                     </div>
                                     <% } %>
                             </div>
-                        </div>
+                            <% } %>
 
-                        <!-- Informações de Contato e Profissionais -->
-                        <div class="mb-6 pt-6 border-t border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3">
-                                <i class="fas fa-address-card mr-2"></i>Informações de Contato e Profissionais
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <% if (usuario.telefone) { %>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">
-                                            <i class="fas fa-phone mr-1"></i>Telefone
-                                        </label>
-                                        <p class="mt-1 text-sm text-gray-900">
-                                            <%= usuario.telefone %>
-                                        </p>
-                                    </div>
-                                    <% } %>
-                                        <% if (usuario.whatsapp) { %>
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-700">
-                                                    <i class="fab fa-whatsapp mr-1 text-green-600"></i>WhatsApp
-                                                </label>
-                                                <p class="mt-1 text-sm text-gray-900">
-                                                    <%= usuario.whatsapp %>
-                                                        <a href="https://wa.me/<%= usuario.whatsapp.replace(/\D/g, '') %>"
-                                                            target="_blank"
-                                                            class="ml-2 text-green-600 hover:text-green-800"
-                                                            title="Abrir WhatsApp">
-                                                            <i class="fab fa-whatsapp"></i>
-                                                        </a>
-                                                </p>
+                                <!-- Histórico de Pagamentos -->
+                                <% if (dados.pagamentos && dados.pagamentos.length> 0) { %>
+                                    <div class="glass rounded-2xl shadow-2xl p-6 mb-6 border border-white/20 backdrop-blur-xl animate-slide-up"
+                                        style="animation-delay: 0.1s;">
+                                        <div class="flex items-center mb-6">
+                                            <div class="relative mr-4">
+                                                <div
+                                                    class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl blur-lg opacity-50">
+                                                </div>
+                                                <div
+                                                    class="relative bg-gradient-to-r from-primary-yellow to-primary-red p-3 rounded-xl">
+                                                    <i class="fas fa-history text-white text-2xl"></i>
+                                                </div>
                                             </div>
-                                            <% } %>
-                                                <% if (usuario.empresa) { %>
-                                                    <div>
-                                                        <label class="block text-sm font-medium text-gray-700">
-                                                            <i class="fas fa-building mr-1"></i>Empresa
-                                                        </label>
-                                                        <p class="mt-1 text-sm text-gray-900">
-                                                            <%= usuario.empresa %>
-                                                        </p>
-                                                    </div>
-                                                    <% } %>
-                                                        <% if (usuario.cargo) { %>
-                                                            <div>
-                                                                <label class="block text-sm font-medium text-gray-700">
-                                                                    <i class="fas fa-briefcase mr-1"></i>Cargo
-                                                                </label>
-                                                                <p class="mt-1 text-sm text-gray-900">
-                                                                    <%= usuario.cargo %>
-                                                                </p>
-                                                            </div>
-                                                            <% } %>
-                                                                <% if (usuario.instagram) { %>
-                                                                    <div>
-                                                                        <label
-                                                                            class="block text-sm font-medium text-gray-700">
-                                                                            <i
-                                                                                class="fab fa-instagram mr-1 text-pink-600"></i>Instagram
-                                                                        </label>
-                                                                        <p class="mt-1 text-sm text-gray-900">
-                                                                            <%= usuario.instagram %>
-                                                                                <a href="https://instagram.com/<%= usuario.instagram.replace('@', '') %>"
-                                                                                    target="_blank"
-                                                                                    class="ml-2 text-pink-600 hover:text-pink-800"
-                                                                                    title="Abrir Instagram">
-                                                                                    <i class="fab fa-instagram"></i>
-                                                                                </a>
-                                                                        </p>
-                                                                    </div>
-                                                                    <% } %>
-                            </div>
-                            <% if (usuario.observacoes) { %>
-                                <div class="mt-4">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        <i class="fas fa-sticky-note mr-1"></i>Observações
-                                    </label>
-                                    <div class="bg-gray-50 border border-gray-200 rounded-md p-4">
-                                        <p class="text-sm text-gray-700 whitespace-pre-wrap">
-                                            <%= usuario.observacoes %>
-                                        </p>
-                                    </div>
-                                </div>
-                                <% } %>
-                                    <% if (!usuario.telefone && !usuario.whatsapp && !usuario.empresa && !usuario.cargo
-                                        && !usuario.instagram && !usuario.observacoes) { %>
-                                        <p class="text-gray-500 text-sm italic mt-4">Nenhuma informação adicional
-                                            cadastrada.</p>
-                                        <% } %>
-                        </div>
-
-                        <!-- Ações Rápidas -->
-                        <div class="mt-6 pt-6 border-t border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Ações Rápidas</h3>
-                            <div class="flex flex-wrap gap-2">
-                                <% const usuarioAtivoDetalhes=isAtivo; const usuarioBloqueadoDetalhes=isBloqueado; const
-                                    ativoBtnClass=usuarioAtivoDetalhes ? 'bg-gray-500' : 'bg-green-500' ; const
-                                    bloqueadoBtnClass=usuarioBloqueadoDetalhes ? 'bg-green-500' : 'bg-red-500' ; const
-                                    novoValorAtivoDetalhes=usuarioAtivoDetalhes ? 'false' : 'true' ; const
-                                    novoValorBloqueadoDetalhes=usuarioBloqueadoDetalhes ? 'false' : 'true' ; %>
-                                    <button onclick="toggleStatus('ativo', '<%= novoValorAtivoDetalhes %>')"
-                                        class="px-4 py-2 rounded <%= ativoBtnClass %> text-white hover:opacity-90">
-                                        <i class="fas fa-<%= usuarioAtivoDetalhes ? 'ban' : 'check' %> mr-2"></i>
-                                        <%= usuarioAtivoDetalhes ? 'Desativar' : 'Ativar' %> Conta
-                                    </button>
-                                    <button onclick="toggleStatus('bloqueado', '<%= novoValorBloqueadoDetalhes %>')"
-                                        class="px-4 py-2 rounded <%= bloqueadoBtnClass %> text-white hover:opacity-90">
-                                        <i class="fas fa-<%= usuarioBloqueadoDetalhes ? 'unlock' : 'lock' %> mr-2"></i>
-                                        <%= usuarioBloqueadoDetalhes ? 'Desbloquear' : 'Bloquear' %> Acesso
-                                    </button>
-                                    <button onclick="resetarSenha()"
-                                        class="px-4 py-2 rounded bg-yellow-500 text-white hover:opacity-90">
-                                        <i class="fas fa-key mr-2"></i>Resetar Senha
-                                    </button>
-                                    <% if (!usuario.is_admin) { %>
-                                        <button onclick="toggleAdmin()"
-                                            class="px-4 py-2 rounded bg-purple-500 text-white hover:opacity-90">
-                                            <i class="fas fa-user-shield mr-2"></i>Tornar Admin
-                                        </button>
-                                        <% } %>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Estatísticas -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-gray-600 text-sm">Total de Cálculos</p>
-                                    <p class="text-3xl font-bold text-gray-900 mt-2">
-                                        <%= dados.calculos.total || 0 %>
-                                    </p>
-                                </div>
-                                <i class="fas fa-calculator text-blue-500 text-3xl"></i>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-gray-600 text-sm">Checklists</p>
-                                    <p class="text-3xl font-bold text-gray-900 mt-2">
-                                        <%= dados.checklists.length || 0 %>
-                                    </p>
-                                </div>
-                                <i class="fas fa-check-square text-green-500 text-3xl"></i>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-gray-600 text-sm">Anotações</p>
-                                    <p class="text-3xl font-bold text-gray-900 mt-2">
-                                        <%= dados.calendario.anotacoes || 0 %>
-                                    </p>
-                                </div>
-                                <i class="fas fa-sticky-note text-yellow-500 text-3xl"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Abas de Dados -->
-                    <div class="bg-white rounded-lg shadow-md">
-                        <div class="border-b border-gray-200">
-                            <nav class="flex -mb-px">
-                                <button onclick="showTab('calculos')" id="tab-calculos"
-                                    class="tab-button active px-6 py-3 text-sm font-medium border-b-2 border-blue-500 text-blue-600">
-                                    Cálculos (<%= dados.calculos.total || 0 %>)
-                                </button>
-                                <button onclick="showTab('checklists')" id="tab-checklists"
-                                    class="tab-button px-6 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700">
-                                    Checklists (<%= dados.checklists.length || 0 %>)
-                                </button>
-                            </nav>
-                        </div>
-
-                        <!-- Conteúdo das Abas -->
-                        <div class="p-6">
-                            <!-- Aba Cálculos -->
-                            <div id="content-calculos" class="tab-content">
-                                <div class="space-y-4">
-                                    <% if (dados.calculos.inss.length> 0) { %>
-                                        <div>
-                                            <h3 class="font-bold text-lg mb-2">Cálculos de INSS (<%=
-                                                    dados.calculos.inss.length %>)</h3>
-                                            <div class="overflow-x-auto">
-                                                <table class="min-w-full divide-y divide-gray-200 text-sm">
-                                                    <thead class="bg-gray-50">
-                                                        <tr>
-                                                            <th class="px-4 py-2 text-left">Data</th>
-                                                            <th class="px-4 py-2 text-left">Salário Bruto</th>
-                                                            <th class="px-4 py-2 text-left">Valor INSS</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <% dados.calculos.inss.slice(0, 10).forEach(calc=> { %>
-                                                            <tr>
-                                                                <td class="px-4 py-2">
-                                                                    <%= new
-                                                                        Date(calc.created_at).toLocaleDateString('pt-BR')
-                                                                        %>
-                                                                </td>
-                                                                <td class="px-4 py-2">R$ <%=
-                                                                        parseFloat(calc.salario_bruto).toFixed(2) %>
-                                                                </td>
-                                                                <td class="px-4 py-2">R$ <%=
-                                                                        parseFloat(calc.valor_inss).toFixed(2) %>
-                                                                </td>
-                                                            </tr>
-                                                            <% }); %>
-                                                    </tbody>
-                                                </table>
-                                            </div>
+                                            <h2 class="text-2xl font-bold text-white">
+                                                Histórico de Pagamentos
+                                            </h2>
                                         </div>
-                                        <% } %>
+                                        <div class="overflow-x-auto">
+                                            <table class="min-w-full divide-y divide-white/10">
+                                                <thead class="table-glass">
+                                                    <tr>
+                                                        <th
+                                                            class="px-4 py-3 text-left text-xs font-bold text-white/90 uppercase">
+                                                            Data</th>
+                                                        <th
+                                                            class="px-4 py-3 text-left text-xs font-bold text-white/90 uppercase">
+                                                            Valor</th>
+                                                        <th
+                                                            class="px-4 py-3 text-left text-xs font-bold text-white/90 uppercase">
+                                                            Método</th>
+                                                        <th
+                                                            class="px-4 py-3 text-left text-xs font-bold text-white/90 uppercase">
+                                                            Próxima Renovação</th>
+                                                        <th
+                                                            class="px-4 py-3 text-left text-xs font-bold text-white/90 uppercase">
+                                                            Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-white/10">
+                                                    <% dados.pagamentos.forEach((pagamento, index)=> { %>
+                                                        <tr class="table-row-hover">
+                                                            <td class="px-4 py-3 whitespace-nowrap text-sm text-white">
+                                                                <i class="fas fa-calendar mr-2 text-primary-yellow"></i>
+                                                                <%= new
+                                                                    Date(pagamento.paid_at).toLocaleDateString('pt-BR')
+                                                                    %>
+                                                            </td>
+                                                            <td
+                                                                class="px-4 py-3 whitespace-nowrap text-sm font-bold text-green-400">
+                                                                <i class="fas fa-money-bill-wave mr-2"></i>
+                                                                R$ <%= parseFloat(pagamento.paid_amount || 0).toFixed(2)
+                                                                    %>
+                                                            </td>
+                                                            <td
+                                                                class="px-4 py-3 whitespace-nowrap text-sm text-white/80">
+                                                                <%= pagamento.capture_method || 'N/A' %>
+                                                            </td>
+                                                            <td
+                                                                class="px-4 py-3 whitespace-nowrap text-sm text-white/80">
+                                                                <%= pagamento.next_billing_date ? new
+                                                                    Date(pagamento.next_billing_date).toLocaleDateString('pt-BR')
+                                                                    : 'N/A' %>
+                                                            </td>
+                                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                                <% if (pagamento.status==='paid' ) { %>
+                                                                    <span
+                                                                        class="px-3 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg inline-flex items-center">
+                                                                        <i class="fas fa-check mr-1.5"></i>Pago</span>
+                                                                    <% } else { %>
+                                                                        <span
+                                                                            class="px-3 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg">
+                                                                            <%= pagamento.status %>
+                                                                        </span>
+                                                                        <% } %>
+                                                            </td>
+                                                        </tr>
+                                                        <% }); %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <% } %>
 
-                                            <% if (dados.calculos.irrf.length> 0) { %>
-                                                <div>
-                                                    <h3 class="font-bold text-lg mb-2">Cálculos de IRRF (<%=
-                                                            dados.calculos.irrf.length %>)</h3>
-                                                    <div class="overflow-x-auto">
-                                                        <table class="min-w-full divide-y divide-gray-200 text-sm">
-                                                            <thead class="bg-gray-50">
-                                                                <tr>
-                                                                    <th class="px-4 py-2 text-left">Data</th>
-                                                                    <th class="px-4 py-2 text-left">Salário Bruto</th>
-                                                                    <th class="px-4 py-2 text-left">Valor IRRF</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                <% dados.calculos.irrf.slice(0, 10).forEach(calc=> { %>
-                                                                    <tr>
-                                                                        <td class="px-4 py-2">
-                                                                            <%= new
-                                                                                Date(calc.created_at).toLocaleDateString('pt-BR')
-                                                                                %>
-                                                                        </td>
-                                                                        <td class="px-4 py-2">R$ <%=
-                                                                                parseFloat(calc.salario_bruto).toFixed(2)
-                                                                                %>
-                                                                        </td>
-                                                                        <td class="px-4 py-2">R$ <%=
-                                                                                parseFloat(calc.valor_irrf).toFixed(2)
-                                                                                %>
-                                                                        </td>
-                                                                    </tr>
-                                                                    <% }); %>
-                                                            </tbody>
-                                                        </table>
+                                        <!-- Informações do Usuário -->
+                                        <div class="glass rounded-2xl shadow-2xl p-6 mb-6 border border-white/20 backdrop-blur-xl animate-slide-up"
+                                            style="animation-delay: 0.2s;">
+                                            <div class="flex items-center mb-6">
+                                                <div class="relative mr-4">
+                                                    <div
+                                                        class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur-lg opacity-50">
+                                                    </div>
+                                                    <div
+                                                        class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-3 rounded-xl">
+                                                        <i class="fas fa-info-circle text-white text-2xl"></i>
                                                     </div>
                                                 </div>
-                                                <% } %>
-
-                                                    <% if (dados.calculos.total===0) { %>
-                                                        <p class="text-gray-500 text-center py-8">Nenhum cálculo
-                                                            encontrado</p>
-                                                        <% } %>
-                                </div>
-                            </div>
-
-                            <!-- Aba Checklists -->
-                            <div id="content-checklists" class="tab-content hidden">
-                                <% if (dados.checklists.length> 0) { %>
-                                    <div class="space-y-4">
-                                        <% dados.checklists.forEach(checklist=> { %>
-                                            <div class="border rounded-lg p-4">
-                                                <h3 class="font-bold">
-                                                    <%= checklist.titulo %>
-                                                </h3>
-                                                <p class="text-sm text-gray-600">
-                                                    <%= checklist.descricao %>
-                                                </p>
-                                                <p class="text-xs text-gray-500 mt-2">
-                                                    Criado em: <%= new
-                                                        Date(checklist.created_at).toLocaleDateString('pt-BR') %>
-                                                        <% if (checklist.concluido) { %>
-                                                            <span class="ml-2 text-green-600">✓ Concluído</span>
-                                                            <% } %>
-                                                </p>
+                                                <h2 class="text-2xl font-bold text-white">Informações do Usuário</h2>
                                             </div>
-                                            <% }); %>
-                                    </div>
-                                    <% } else { %>
-                                        <p class="text-gray-500 text-center py-8">Nenhum checklist encontrado</p>
-                                        <% } %>
-                            </div>
 
-                        </div>
+                                            <!-- Dados Básicos -->
+                                            <div class="mb-6">
+                                                <h3 class="text-lg font-semibold text-white/90 mb-4 flex items-center">
+                                                    <i class="fas fa-user mr-2 text-primary-yellow"></i>Dados Básicos
+                                                </h3>
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div class="glass-dark rounded-xl p-4 border border-white/10">
+                                                        <label
+                                                            class="block text-sm font-medium text-white/70 mb-2">Nome</label>
+                                                        <p class="text-sm text-white font-semibold">
+                                                            <i class="fas fa-user mr-2 text-primary-yellow"></i>
+                                                            <%= usuario.nome %>
+                                                        </p>
+                                                    </div>
+                                                    <div class="glass-dark rounded-xl p-4 border border-white/10">
+                                                        <label
+                                                            class="block text-sm font-medium text-white/70 mb-2">Email</label>
+                                                        <p class="text-sm text-white font-semibold">
+                                                            <i class="fas fa-envelope mr-2 text-primary-yellow"></i>
+                                                            <%= usuario.email %>
+                                                        </p>
+                                                    </div>
+                                                    <div class="glass-dark rounded-xl p-4 border border-white/10">
+                                                        <label
+                                                            class="block text-sm font-medium text-white/70 mb-2">Status</label>
+                                                        <div class="mt-1 flex flex-wrap gap-2">
+                                                            <% const isBloqueado=usuario.bloqueado===true ||
+                                                                usuario.bloqueado==='true' ; const isAtivo=usuario.ativo
+                                                                !==false && usuario.ativo !=='false' && usuario.ativo
+                                                                !==null && usuario.ativo !==undefined; %>
+                                                                <% if (isBloqueado) { %>
+                                                                    <span
+                                                                        class="px-3 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg inline-flex items-center">
+                                                                        <i
+                                                                            class="fas fa-lock mr-1.5"></i>Bloqueado</span>
+                                                                    <% } else if (!isAtivo) { %>
+                                                                        <span
+                                                                            class="px-3 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg inline-flex items-center">
+                                                                            <i
+                                                                                class="fas fa-ban mr-1.5"></i>Inativo</span>
+                                                                        <% } else { %>
+                                                                            <span
+                                                                                class="px-3 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg inline-flex items-center">
+                                                                                <i
+                                                                                    class="fas fa-check-circle mr-1.5"></i>Ativo</span>
+                                                                            <% } %>
+                                                                                <% if (usuario.is_admin) { %>
+                                                                                    <span
+                                                                                        class="px-3 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg inline-flex items-center">
+                                                                                        <i
+                                                                                            class="fas fa-crown mr-1.5"></i>Administrador</span>
+                                                                                    <% } %>
+                                                        </div>
+                                                    </div>
+                                                    <div class="glass-dark rounded-xl p-4 border border-white/10">
+                                                        <label class="block text-sm font-medium text-white/70 mb-2">Data
+                                                            de Cadastro</label>
+                                                        <p class="text-sm text-white font-semibold">
+                                                            <i
+                                                                class="fas fa-calendar-plus mr-2 text-primary-yellow"></i>
+                                                            <%= usuario.created_at ? new
+                                                                Date(usuario.created_at).toLocaleString('pt-BR') : 'N/A'
+                                                                %>
+                                                        </p>
+                                                    </div>
+                                                    <div class="glass-dark rounded-xl p-4 border border-white/10">
+                                                        <label
+                                                            class="block text-sm font-medium text-white/70 mb-2">Último
+                                                            Login</label>
+                                                        <p class="text-sm text-white font-semibold">
+                                                            <i class="fas fa-sign-in-alt mr-2 text-primary-yellow"></i>
+                                                            <%= usuario.last_login ? new
+                                                                Date(usuario.last_login).toLocaleString('pt-BR')
+                                                                : 'Nunca' %>
+                                                        </p>
+                                                    </div>
+                                                    <% if (usuario.ultima_atividade) { %>
+                                                        <div class="glass-dark rounded-xl p-4 border border-white/10">
+                                                            <label
+                                                                class="block text-sm font-medium text-white/70 mb-2">Última
+                                                                Atividade</label>
+                                                            <p class="text-sm text-white font-semibold">
+                                                                <i class="fas fa-clock mr-2 text-primary-yellow"></i>
+                                                                <%= new
+                                                                    Date(usuario.ultima_atividade).toLocaleString('pt-BR')
+                                                                    %>
+                                                            </p>
+                                                        </div>
+                                                        <% } %>
+                                                </div>
+                                            </div>
+
+                                            <!-- Informações de Contato e Profissionais -->
+                                            <div class="mb-6 pt-6 border-t border-white/20">
+                                                <h3 class="text-lg font-semibold text-white/90 mb-4 flex items-center">
+                                                    <i
+                                                        class="fas fa-address-card mr-2 text-primary-yellow"></i>Informações
+                                                    de Contato e Profissionais
+                                                </h3>
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <% if (usuario.telefone) { %>
+                                                        <div class="glass-dark rounded-xl p-4 border border-white/10">
+                                                            <label class="block text-sm font-medium text-white/70 mb-2">
+                                                                <i
+                                                                    class="fas fa-phone mr-1 text-primary-yellow"></i>Telefone
+                                                            </label>
+                                                            <p class="text-sm text-white font-semibold">
+                                                                <%= usuario.telefone %>
+                                                            </p>
+                                                        </div>
+                                                        <% } %>
+                                                            <% if (usuario.whatsapp) { %>
+                                                                <div
+                                                                    class="glass-dark rounded-xl p-4 border border-white/10">
+                                                                    <label
+                                                                        class="block text-sm font-medium text-white/70 mb-2">
+                                                                        <i
+                                                                            class="fab fa-whatsapp mr-1 text-green-400"></i>WhatsApp
+                                                                    </label>
+                                                                    <p class="text-sm text-white font-semibold">
+                                                                        <%= usuario.whatsapp %>
+                                                                            <a href="https://wa.me/<%= usuario.whatsapp.replace(/\D/g, '') %>"
+                                                                                target="_blank"
+                                                                                class="ml-2 text-green-400 hover:text-green-300 transition-colors"
+                                                                                title="Abrir WhatsApp">
+                                                                                <i class="fab fa-whatsapp"></i>
+                                                                            </a>
+                                                                    </p>
+                                                                </div>
+                                                                <% } %>
+                                                                    <% if (usuario.empresa) { %>
+                                                                        <div
+                                                                            class="glass-dark rounded-xl p-4 border border-white/10">
+                                                                            <label
+                                                                                class="block text-sm font-medium text-white/70 mb-2">
+                                                                                <i
+                                                                                    class="fas fa-building mr-1 text-primary-yellow"></i>Empresa
+                                                                            </label>
+                                                                            <p class="text-sm text-white font-semibold">
+                                                                                <%= usuario.empresa %>
+                                                                            </p>
+                                                                        </div>
+                                                                        <% } %>
+                                                                            <% if (usuario.cargo) { %>
+                                                                                <div
+                                                                                    class="glass-dark rounded-xl p-4 border border-white/10">
+                                                                                    <label
+                                                                                        class="block text-sm font-medium text-white/70 mb-2">
+                                                                                        <i
+                                                                                            class="fas fa-briefcase mr-1 text-primary-yellow"></i>Cargo
+                                                                                    </label>
+                                                                                    <p
+                                                                                        class="text-sm text-white font-semibold">
+                                                                                        <%= usuario.cargo %>
+                                                                                    </p>
+                                                                                </div>
+                                                                                <% } %>
+                                                                                    <% if (usuario.instagram) { %>
+                                                                                        <div
+                                                                                            class="glass-dark rounded-xl p-4 border border-white/10">
+                                                                                            <label
+                                                                                                class="block text-sm font-medium text-white/70 mb-2">
+                                                                                                <i
+                                                                                                    class="fab fa-instagram mr-1 text-pink-400"></i>Instagram
+                                                                                            </label>
+                                                                                            <p
+                                                                                                class="text-sm text-white font-semibold">
+                                                                                                <%= usuario.instagram %>
+                                                                                                    <a href="https://instagram.com/<%= usuario.instagram.replace('@', '') %>"
+                                                                                                        target="_blank"
+                                                                                                        class="ml-2 text-pink-400 hover:text-pink-300 transition-colors"
+                                                                                                        title="Abrir Instagram">
+                                                                                                        <i
+                                                                                                            class="fab fa-instagram"></i>
+                                                                                                    </a>
+                                                                                            </p>
+                                                                                        </div>
+                                                                                        <% } %>
+                                                </div>
+                                                <% if (usuario.observacoes) { %>
+                                                    <div class="mt-4">
+                                                        <label class="block text-sm font-medium text-white/70 mb-2">
+                                                            <i
+                                                                class="fas fa-sticky-note mr-1 text-primary-yellow"></i>Observações
+                                                        </label>
+                                                        <div class="glass-dark border border-white/10 rounded-xl p-4">
+                                                            <p class="text-sm text-white/90 whitespace-pre-wrap">
+                                                                <%= usuario.observacoes %>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <% } %>
+                                                        <% if (!usuario.telefone && !usuario.whatsapp &&
+                                                            !usuario.empresa && !usuario.cargo && !usuario.instagram &&
+                                                            !usuario.observacoes) { %>
+                                                            <p class="text-white/40 text-sm italic mt-4">Nenhuma
+                                                                informação adicional
+                                                                cadastrada.</p>
+                                                            <% } %>
+                                            </div>
+
+                                            <!-- Ações Rápidas -->
+                                            <div class="mt-6 pt-6 border-t border-white/20">
+                                                <h3 class="text-lg font-semibold text-white/90 mb-4 flex items-center">
+                                                    <i class="fas fa-bolt mr-2 text-primary-yellow"></i>Ações Rápidas
+                                                </h3>
+                                                <div class="flex flex-wrap gap-3">
+                                                    <% const usuarioAtivoDetalhes=isAtivo; const
+                                                        usuarioBloqueadoDetalhes=isBloqueado; const
+                                                        ativoBtnClass=usuarioAtivoDetalhes
+                                                        ? 'bg-gray-500/20 hover:bg-gray-500/30 border-gray-500/30'
+                                                        : 'bg-green-500/20 hover:bg-green-500/30 border-green-500/30' ;
+                                                        const bloqueadoBtnClass=usuarioBloqueadoDetalhes
+                                                        ? 'bg-green-500/20 hover:bg-green-500/30 border-green-500/30'
+                                                        : 'bg-red-500/20 hover:bg-red-500/30 border-red-500/30' ; const
+                                                        novoValorAtivoDetalhes=usuarioAtivoDetalhes ? 'false' : 'true' ;
+                                                        const novoValorBloqueadoDetalhes=usuarioBloqueadoDetalhes
+                                                        ? 'false' : 'true' ; %>
+                                                        <button
+                                                            onclick="toggleStatus('ativo', '<%= novoValorAtivoDetalhes %>')"
+                                                            class="group relative px-6 py-3 <%= ativoBtnClass %> glass rounded-xl text-white font-semibold transition-all transform hover:scale-105 border">
+                                                            <i
+                                                                class="fas fa-<%= usuarioAtivoDetalhes ? 'ban' : 'check' %> mr-2"></i>
+                                                            <%= usuarioAtivoDetalhes ? 'Desativar' : 'Ativar' %> Conta
+                                                        </button>
+                                                        <button
+                                                            onclick="toggleStatus('bloqueado', '<%= novoValorBloqueadoDetalhes %>')"
+                                                            class="group relative px-6 py-3 <%= bloqueadoBtnClass %> glass rounded-xl text-white font-semibold transition-all transform hover:scale-105 border">
+                                                            <i
+                                                                class="fas fa-<%= usuarioBloqueadoDetalhes ? 'unlock' : 'lock' %> mr-2"></i>
+                                                            <%= usuarioBloqueadoDetalhes ? 'Desbloquear' : 'Bloquear' %>
+                                                                Acesso
+                                                        </button>
+                                                        <button onclick="resetarSenha()"
+                                                            class="group relative px-6 py-3 bg-yellow-500/20 hover:bg-yellow-500/30 glass rounded-xl text-yellow-400 hover:text-yellow-300 font-semibold transition-all transform hover:scale-105 border border-yellow-500/30">
+                                                            <i class="fas fa-key mr-2"></i>Resetar Senha
+                                                        </button>
+                                                        <% if (!usuario.is_admin) { %>
+                                                            <button onclick="toggleAdmin()"
+                                                                class="group relative px-6 py-3 bg-purple-500/20 hover:bg-purple-500/30 glass rounded-xl text-purple-400 hover:text-purple-300 font-semibold transition-all transform hover:scale-105 border border-purple-500/30">
+                                                                <i class="fas fa-user-shield mr-2"></i>Tornar Admin
+                                                            </button>
+                                                            <% } %>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Estatísticas -->
+                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                                            <div class="glass rounded-2xl shadow-2xl p-6 border border-white/20 backdrop-blur-xl animate-slide-up"
+                                                style="animation-delay: 0.3s;">
+                                                <div class="flex items-center justify-between">
+                                                    <div>
+                                                        <p class="text-white/70 text-sm mb-2">Total de Cálculos</p>
+                                                        <p class="text-4xl font-bold text-white">
+                                                            <%= dados.calculos.total || 0 %>
+                                                        </p>
+                                                    </div>
+                                                    <div class="relative">
+                                                        <div
+                                                            class="absolute inset-0 bg-blue-500/20 rounded-xl blur-lg opacity-50">
+                                                        </div>
+                                                        <div
+                                                            class="relative bg-gradient-to-r from-blue-500 to-blue-600 p-4 rounded-xl">
+                                                            <i class="fas fa-calculator text-white text-3xl"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="glass rounded-2xl shadow-2xl p-6 border border-white/20 backdrop-blur-xl animate-slide-up"
+                                                style="animation-delay: 0.4s;">
+                                                <div class="flex items-center justify-between">
+                                                    <div>
+                                                        <p class="text-white/70 text-sm mb-2">Checklists</p>
+                                                        <p class="text-4xl font-bold text-white">
+                                                            <%= dados.checklists.length || 0 %>
+                                                        </p>
+                                                    </div>
+                                                    <div class="relative">
+                                                        <div
+                                                            class="absolute inset-0 bg-green-500/20 rounded-xl blur-lg opacity-50">
+                                                        </div>
+                                                        <div
+                                                            class="relative bg-gradient-to-r from-green-500 to-green-600 p-4 rounded-xl">
+                                                            <i class="fas fa-check-square text-white text-3xl"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="glass rounded-2xl shadow-2xl p-6 border border-white/20 backdrop-blur-xl animate-slide-up"
+                                                style="animation-delay: 0.5s;">
+                                                <div class="flex items-center justify-between">
+                                                    <div>
+                                                        <p class="text-white/70 text-sm mb-2">Anotações</p>
+                                                        <p class="text-4xl font-bold text-white">
+                                                            <%= dados.calendario.anotacoes || 0 %>
+                                                        </p>
+                                                    </div>
+                                                    <div class="relative">
+                                                        <div
+                                                            class="absolute inset-0 bg-yellow-500/20 rounded-xl blur-lg opacity-50">
+                                                        </div>
+                                                        <div
+                                                            class="relative bg-gradient-to-r from-yellow-500 to-yellow-600 p-4 rounded-xl">
+                                                            <i class="fas fa-sticky-note text-white text-3xl"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="glass rounded-2xl shadow-2xl p-6 border border-white/20 backdrop-blur-xl animate-slide-up"
+                                                style="animation-delay: 0.6s;">
+                                                <div class="flex items-center justify-between">
+                                                    <div>
+                                                        <p class="text-white/70 text-sm mb-2">Obrigações</p>
+                                                        <p class="text-4xl font-bold text-white">
+                                                            <%= dados.calendario.obrigacoes || 0 %>
+                                                        </p>
+                                                    </div>
+                                                    <div class="relative">
+                                                        <div
+                                                            class="absolute inset-0 bg-purple-500/20 rounded-xl blur-lg opacity-50">
+                                                        </div>
+                                                        <div
+                                                            class="relative bg-gradient-to-r from-purple-500 to-purple-600 p-4 rounded-xl">
+                                                            <i class="fas fa-calendar-check text-white text-3xl"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Abas de Dados -->
+                                        <div class="glass rounded-2xl shadow-2xl border border-white/20 backdrop-blur-xl animate-slide-up"
+                                            style="animation-delay: 0.7s;">
+                                            <div class="border-b border-white/20">
+                                                <nav class="flex -mb-px">
+                                                    <button onclick="showTab('calculos')" id="tab-calculos"
+                                                        class="tab-button active px-6 py-3 text-sm font-medium border-b-2 border-primary-red text-primary-red transition-all">
+                                                        <i class="fas fa-calculator mr-2"></i>Cálculos (<%=
+                                                            dados.calculos.total || 0 %>)
+                                                    </button>
+                                                    <button onclick="showTab('checklists')" id="tab-checklists"
+                                                        class="tab-button px-6 py-3 text-sm font-medium border-b-2 border-transparent text-white/60 hover:text-white transition-all">
+                                                        <i class="fas fa-check-square mr-2"></i>Checklists (<%=
+                                                            dados.checklists.length || 0 %>)
+                                                    </button>
+                                                </nav>
+                                            </div>
+
+                                            <!-- Conteúdo das Abas -->
+                                            <div class="p-6">
+                                                <!-- Aba Cálculos -->
+                                                <div id="content-calculos" class="tab-content">
+                                                    <div class="space-y-6">
+                                                        <% if (dados.calculos.inss.length> 0) { %>
+                                                            <div>
+                                                                <h3
+                                                                    class="font-bold text-xl mb-4 text-white flex items-center">
+                                                                    <i
+                                                                        class="fas fa-calculator mr-2 text-primary-yellow"></i>Cálculos
+                                                                    de INSS (<%= dados.calculos.inss.length %>)
+                                                                </h3>
+                                                                <div class="overflow-x-auto">
+                                                                    <table class="min-w-full divide-y divide-white/10">
+                                                                        <thead class="table-glass">
+                                                                            <tr>
+                                                                                <th
+                                                                                    class="px-4 py-2 text-left text-xs font-bold text-white/90 uppercase">
+                                                                                    Data</th>
+                                                                                <th
+                                                                                    class="px-4 py-2 text-left text-xs font-bold text-white/90 uppercase">
+                                                                                    Salário Bruto</th>
+                                                                                <th
+                                                                                    class="px-4 py-2 text-left text-xs font-bold text-white/90 uppercase">
+                                                                                    Valor INSS</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody class="divide-y divide-white/10">
+                                                                            <% dados.calculos.inss.slice(0,
+                                                                                10).forEach((calc, index)=> { %>
+                                                                                <tr class="table-row-hover">
+                                                                                    <td class="px-4 py-2 text-white">
+                                                                                        <i
+                                                                                            class="fas fa-calendar mr-2 text-primary-yellow"></i>
+                                                                                        <%= new
+                                                                                            Date(calc.created_at).toLocaleDateString('pt-BR')
+                                                                                            %>
+                                                                                    </td>
+                                                                                    <td
+                                                                                        class="px-4 py-2 text-white font-semibold">
+                                                                                        R$ <%=
+                                                                                            parseFloat(calc.salario_bruto).toFixed(2)
+                                                                                            %>
+                                                                                    </td>
+                                                                                    <td
+                                                                                        class="px-4 py-2 text-green-400 font-bold">
+                                                                                        R$ <%=
+                                                                                            parseFloat(calc.valor_inss).toFixed(2)
+                                                                                            %>
+                                                                                    </td>
+                                                                                </tr>
+                                                                                <% }); %>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                            <% } %>
+
+                                                                <% if (dados.calculos.irrf.length> 0) { %>
+                                                                    <div>
+                                                                        <h3
+                                                                            class="font-bold text-xl mb-4 text-white flex items-center">
+                                                                            <i
+                                                                                class="fas fa-calculator mr-2 text-primary-yellow"></i>Cálculos
+                                                                            de IRRF (<%= dados.calculos.irrf.length %>)
+                                                                        </h3>
+                                                                        <div class="overflow-x-auto">
+                                                                            <table
+                                                                                class="min-w-full divide-y divide-white/10">
+                                                                                <thead class="table-glass">
+                                                                                    <tr>
+                                                                                        <th
+                                                                                            class="px-4 py-2 text-left text-xs font-bold text-white/90 uppercase">
+                                                                                            Data</th>
+                                                                                        <th
+                                                                                            class="px-4 py-2 text-left text-xs font-bold text-white/90 uppercase">
+                                                                                            Salário Bruto</th>
+                                                                                        <th
+                                                                                            class="px-4 py-2 text-left text-xs font-bold text-white/90 uppercase">
+                                                                                            Valor IRRF</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody class="divide-y divide-white/10">
+                                                                                    <% dados.calculos.irrf.slice(0,
+                                                                                        10).forEach((calc, index)=> { %>
+                                                                                        <tr class="table-row-hover">
+                                                                                            <td
+                                                                                                class="px-4 py-2 text-white">
+                                                                                                <i
+                                                                                                    class="fas fa-calendar mr-2 text-primary-yellow"></i>
+                                                                                                <%= new
+                                                                                                    Date(calc.created_at).toLocaleDateString('pt-BR')
+                                                                                                    %>
+                                                                                            </td>
+                                                                                            <td
+                                                                                                class="px-4 py-2 text-white font-semibold">
+                                                                                                R$ <%=
+                                                                                                    parseFloat(calc.salario_bruto).toFixed(2)
+                                                                                                    %>
+                                                                                            </td>
+                                                                                            <td
+                                                                                                class="px-4 py-2 text-green-400 font-bold">
+                                                                                                R$ <%=
+                                                                                                    parseFloat(calc.valor_irrf).toFixed(2)
+                                                                                                    %>
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                        <% }); %>
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div>
+                                                                    </div>
+                                                                    <% } %>
+
+                                                                        <% if (dados.calculos.total===0) { %>
+                                                                            <p
+                                                                                class="text-white/50 text-center py-12 text-lg">
+                                                                                <i
+                                                                                    class="fas fa-inbox text-4xl mb-4 block"></i>
+                                                                                Nenhum cálculo encontrado
+                                                                            </p>
+                                                                            <% } %>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Aba Checklists -->
+                                                <div id="content-checklists" class="tab-content hidden">
+                                                    <% if (dados.checklists.length> 0) { %>
+                                                        <div class="space-y-4">
+                                                            <% dados.checklists.forEach((checklist, index)=> { %>
+                                                                <div
+                                                                    class="glass-dark border border-white/10 rounded-xl p-4 table-row-hover">
+                                                                    <h3 class="font-bold text-white text-lg mb-2">
+                                                                        <i
+                                                                            class="fas fa-check-square mr-2 text-primary-yellow"></i>
+                                                                        <%= checklist.titulo %>
+                                                                    </h3>
+                                                                    <p class="text-sm text-white/80 mb-3">
+                                                                        <%= checklist.descricao %>
+                                                                    </p>
+                                                                    <p class="text-xs text-white/60 flex items-center">
+                                                                        <i class="fas fa-calendar mr-2"></i>
+                                                                        Criado em: <%= new
+                                                                            Date(checklist.created_at).toLocaleDateString('pt-BR')
+                                                                            %>
+                                                                            <% if (checklist.concluido) { %>
+                                                                                <span
+                                                                                    class="ml-4 px-2 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white">
+                                                                                    <i
+                                                                                        class="fas fa-check mr-1"></i>Concluído</span>
+                                                                                <% } %>
+                                                                    </p>
+                                                                </div>
+                                                                <% }); %>
+                                                        </div>
+                                                        <% } else { %>
+                                                            <p class="text-white/50 text-center py-12 text-lg">
+                                                                <i class="fas fa-inbox text-4xl mb-4 block"></i>
+                                                                Nenhum checklist encontrado
+                                                            </p>
+                                                            <% } %>
+                                                </div>
+
+                                            </div>
+                                        </div>
                     </div>
+                </main>
 
-                    <script>
-                        const userId = '<%= usuario.id %>';
+                <script>
+                    const userId = '<%= usuario.id %>';
+                    window.csrfToken = window.csrfToken || '<%= typeof csrfToken !== "undefined" && csrfToken ? csrfToken : "" %>';
 
-                        function showTab(tabName) {
-                            document.querySelectorAll('.tab-content').forEach(content => {
-                                content.classList.add('hidden');
-                            });
-                            document.querySelectorAll('.tab-button').forEach(button => {
-                                button.classList.remove('active', 'border-blue-500', 'text-blue-600');
-                                button.classList.add('border-transparent', 'text-gray-500');
-                            });
+                    function getCSRFHeaders() {
+                        const headers = { 'Content-Type': 'application/json' };
+                        if (window.csrfToken) {
+                            headers['x-csrf-token'] = window.csrfToken;
+                            headers['X-CSRF-Token'] = window.csrfToken;
+                            headers['csrf-token'] = window.csrfToken;
+                        }
+                        return headers;
+                    }
 
-                            document.getElementById('content-' + tabName).classList.remove('hidden');
-                            const button = document.getElementById('tab-' + tabName);
-                            button.classList.add('active', 'border-blue-500', 'text-blue-600');
-                            button.classList.remove('border-transparent', 'text-gray-500');
+                    function showTab(tabName) {
+                        document.querySelectorAll('.tab-content').forEach(content => {
+                            content.classList.add('hidden');
+                        });
+                        document.querySelectorAll('.tab-button').forEach(button => {
+                            button.classList.remove('active', 'border-primary-red', 'text-primary-red');
+                            button.classList.add('border-transparent', 'text-white/60');
+                        });
+
+                        document.getElementById('content-' + tabName).classList.remove('hidden');
+                        const button = document.getElementById('tab-' + tabName);
+                        button.classList.add('active', 'border-primary-red', 'text-primary-red');
+                        button.classList.remove('border-transparent', 'text-white/60');
+                    }
+
+                    async function toggleStatus(campo, valor) {
+                        const valorBool = valor === 'true' || valor === true;
+                        const acao = valorBool ? (campo === 'bloqueado' ? 'bloquear' : 'ativar') : (campo === 'bloqueado' ? 'desbloquear' : 'desativar');
+                        if (!confirm('Tem certeza que deseja ' + acao + ' este usuário?')) {
+                            return;
                         }
 
-                        async function toggleStatus(campo, valor) {
-                            // Converte string para boolean se necessário
-                            const valorBool = valor === 'true' || valor === true;
-                            const acao = valorBool ? (campo === 'bloqueado' ? 'bloquear' : 'ativar') : (campo === 'bloqueado' ? 'desbloquear' : 'desativar');
-                            if (!confirm('Tem certeza que deseja ' + acao + ' este usuário?')) {
-                                return;
+                        try {
+                            const response = await fetch('/admin/usuarios/' + userId + '/atualizar', {
+                                method: 'POST',
+                                headers: getCSRFHeaders(),
+                                body: JSON.stringify({ [campo]: valorBool, _csrf: window.csrfToken })
+                            });
+
+                            const data = await response.json();
+                            if (data.success) {
+                                location.reload();
+                            } else {
+                                alert('Erro: ' + (data.error || 'Erro ao atualizar usuário'));
                             }
+                        } catch (error) {
+                            alert('Erro ao atualizar usuário');
+                            console.error(error);
+                        }
+                    }
 
-                            try {
-                                const response = await fetch('/admin/usuarios/' + userId + '/atualizar', {
-                                    method: 'POST',
-                                    headers: getCSRFHeaders(),
-                                    body: JSON.stringify({ [campo]: valorBool, _csrf: window.csrfToken })
-                                });
+                    function toggleAdmin() {
+                        if (!confirm('Tem certeza que deseja tornar este usuário administrador?')) {
+                            return;
+                        }
 
-                                const data = await response.json();
+                        fetch('/admin/usuarios/' + userId + '/atualizar', {
+                            method: 'POST',
+                            headers: getCSRFHeaders(),
+                            body: JSON.stringify({ is_admin: true, _csrf: window.csrfToken })
+                        })
+                            .then(res => res.json())
+                            .then(data => {
                                 if (data.success) {
                                     location.reload();
                                 } else {
                                     alert('Erro: ' + (data.error || 'Erro ao atualizar usuário'));
                                 }
-                            } catch (error) {
-                                alert('Erro ao atualizar usuário');
-                                console.error(error);
-                            }
+                            });
+                    }
+
+                    function resetarSenha() {
+                        const novaSenha = prompt('Digite a nova senha:');
+                        if (!novaSenha || novaSenha.length < 6) {
+                            alert('Senha deve ter pelo menos 6 caracteres');
+                            return;
                         }
 
-                        function toggleAdmin() {
-                            if (!confirm('Tem certeza que deseja tornar este usuário administrador?')) {
-                                return;
-                            }
-
-                            fetch('/admin/usuarios/' + userId + '/atualizar', {
-                                method: 'POST',
-                                headers: getCSRFHeaders(),
-                                body: JSON.stringify({ is_admin: true, _csrf: window.csrfToken })
-                            })
-                                .then(res => res.json())
-                                .then(data => {
-                                    if (data.success) {
-                                        location.reload();
-                                    } else {
-                                        alert('Erro: ' + (data.error || 'Erro ao atualizar usuário'));
-                                    }
-                                });
+                        if (!confirm('Tem certeza que deseja alterar a senha deste usuário?')) {
+                            return;
                         }
 
-                        function resetarSenha() {
-                            const novaSenha = prompt('Digite a nova senha:');
-                            if (!novaSenha || novaSenha.length < 6) {
-                                alert('Senha deve ter pelo menos 6 caracteres');
-                                return;
-                            }
-
-                            if (!confirm('Tem certeza que deseja alterar a senha deste usuário?')) {
-                                return;
-                            }
-
-                            fetch('/admin/usuarios/' + userId + '/resetar-senha', {
-                                method: 'POST',
-                                headers: getCSRFHeaders(),
-                                body: JSON.stringify({ novaSenha: novaSenha, _csrf: window.csrfToken })
-                            })
-                                .then(res => res.json())
-                                .then(data => {
-                                    if (data.success) {
-                                        alert('Senha alterada com sucesso!');
-                                    } else {
-                                        alert('Erro: ' + (data.error || 'Erro ao alterar senha'));
-                                    }
-                                });
-                        }
-                    </script>
-                </main>
+                        fetch('/admin/usuarios/' + userId + '/resetar-senha', {
+                            method: 'POST',
+                            headers: getCSRFHeaders(),
+                            body: JSON.stringify({ novaSenha: novaSenha, _csrf: window.csrfToken })
+                        })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    alert('Senha alterada com sucesso!');
+                                } else {
+                                    alert('Erro: ' + (data.error || 'Erro ao alterar senha'));
+                                }
+                            });
+                    }
+                </script>
 </body>
 
 </html>
