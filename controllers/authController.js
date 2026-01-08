@@ -82,32 +82,65 @@ class AuthController {
     }
 
     try {
-      const user = await User.findByEmail(email);
+      // Normaliza email antes de buscar
+      const emailNormalizado = email ? email.trim().toLowerCase() : null;
+      
+      if (!emailNormalizado) {
+        return res.render('auth/login', {
+          title: 'Login - Suporte DP',
+          error: 'Por favor, informe um email válido.',
+          success: null
+        });
+      }
+      
+      console.log('🔍 [LOGIN] Tentando fazer login:', {
+        email: emailNormalizado
+      });
+      
+      const user = await User.findByEmail(emailNormalizado);
       
       if (!user) {
+        console.log('⚠️ [LOGIN] Usuário não encontrado:', emailNormalizado);
         return res.render('auth/login', {
           title: 'Login - Suporte DP',
           error: 'Email ou senha incorretos.',
-        success: null
+          success: null
         });
       }
+      
+      console.log('✅ [LOGIN] Usuário encontrado:', {
+        id: user.id,
+        email: user.email,
+        is_admin: user.is_admin
+      });
 
       const senhaValida = await User.verifyPassword(senha, user.senha_hash);
       
       if (!senhaValida) {
+        console.log('⚠️ [LOGIN] Senha inválida para usuário:', user.email);
         return res.render('auth/login', {
           title: 'Login - Suporte DP',
           error: 'Email ou senha incorretos.',
-        success: null
+          success: null
         });
       }
+      
+      console.log('✅ [LOGIN] Senha válida');
 
-      // Verifica se usuário está ativo e não bloqueado
-      if (user.ativo === false || user.bloqueado === true) {
+      // Verifica se usuário está ativo e não bloqueado (campos podem não existir)
+      const ativo = user.ativo !== undefined ? user.ativo : true;
+      const bloqueado = user.bloqueado !== undefined ? user.bloqueado : false;
+      
+      if (ativo === false || bloqueado === true) {
+        console.log('⚠️ [LOGIN] Conta desativada ou bloqueada:', {
+          email: user.email,
+          ativo: ativo,
+          bloqueado: bloqueado
+        });
         return res.render('auth/login', {
           title: 'Login - Suporte DP',
           error: 'Sua conta está desativada ou bloqueada. Entre em contato com o administrador.',
-        success: null
+          success: null
         });
       }
 
@@ -464,11 +497,25 @@ class AuthController {
         res.redirect(returnTo);
       });
     } catch (error) {
-      console.error('Erro no login:', error);
+      console.error('❌ [LOGIN] Erro no login:', error);
+      console.error('Tipo do erro:', error.constructor.name);
+      console.error('Código do erro:', error.code);
+      console.error('Mensagem:', error.message);
       console.error('Stack:', error.stack);
+      
+      // Mensagem de erro mais específica
+      let errorMessage = 'Erro ao fazer login. Tente novamente.';
+      
+      if (error.code === '42703' || (error.message.includes('column') && error.message.includes('does not exist'))) {
+        errorMessage = 'Erro na estrutura do banco de dados. Entre em contato com o suporte.';
+        console.error('⚠️ COLUNA NÃO EXISTE NO BANCO! Verifique se as migrations foram executadas.');
+      } else if (process.env.NODE_ENV === 'development') {
+        errorMessage = `Erro ao fazer login: ${error.message}`;
+      }
+      
       res.render('auth/login', {
         title: 'Login - Suporte DP',
-        error: 'Erro ao fazer login. Tente novamente. ' + (process.env.NODE_ENV === 'development' ? error.message : ''),
+        error: errorMessage,
         success: null
       });
     }

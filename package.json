@@ -15,6 +15,7 @@
     "gerar-tokens": "node scripts/gerar-tokens-para-usuarios.js",
     "diagnostico-pagamento": "node scripts/diagnostico-fluxo-pagamento.js",
     "diagnostico-email": "node scripts/diagnostico-email.js",
+    "diagnostico": "node scripts/diagnostico-completo.js",
     "test-email": "node scripts/test-email-completo.js"
   },
   "keywords": [

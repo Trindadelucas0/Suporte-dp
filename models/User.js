@@ -109,23 +109,33 @@ class User {
         order_nsu: hasOrderNsu ? (user.order_nsu || null) : null
       };
     } catch (error) {
-      console.error('Erro ao buscar usuário por email:', error);
-      // Fallback: busca básica com campos de assinatura
-      const result = await db.query(
-        'SELECT id, nome, email, senha_hash, is_admin, subscription_status, subscription_expires_at, status, order_nsu FROM users WHERE email = $1',
-        [email]
-      );
-      if (!result.rows[0]) return null;
-      const user = result.rows[0];
-      return {
-        ...user,
-        ativo: true,
-        bloqueado: false,
-        subscription_status: user.subscription_status || null,
-        subscription_expires_at: user.subscription_expires_at || null,
-        status: user.status || 'ativo',
-        order_nsu: user.order_nsu || null
-      };
+      console.error('❌ Erro ao buscar usuário por email:', error);
+      console.error('Código do erro:', error.code);
+      console.error('Mensagem:', error.message);
+      
+      // Fallback: busca apenas campos básicos que sempre existem
+      try {
+        const result = await db.query(
+          'SELECT id, nome, email, senha_hash, is_admin FROM users WHERE email = $1',
+          [email]
+        );
+        if (!result.rows[0]) return null;
+        const user = result.rows[0];
+        
+        // Retorna com valores padrão para campos que podem não existir
+        return {
+          ...user,
+          ativo: true,
+          bloqueado: false,
+          subscription_status: null,
+          subscription_expires_at: null,
+          status: 'ativo',
+          order_nsu: null
+        };
+      } catch (fallbackError) {
+        console.error('❌ Erro no fallback de busca de usuário:', fallbackError);
+        return null;
+      }
     }
   }
 

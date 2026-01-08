@@ -4,7 +4,20 @@
 -- ============================================
 
 -- Adicionar campo order_nsu (vincula usuário ao pedido)
-ALTER TABLE users ADD COLUMN IF NOT EXISTS order_nsu UUID REFERENCES orders(order_nsu) ON DELETE SET NULL;
+-- Primeiro adiciona a coluna sem constraint (caso orders não exista ainda)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS order_nsu UUID;
+
+-- Depois adiciona a constraint apenas se a tabela orders existir
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'orders') THEN
+        -- Remove constraint antiga se existir
+        ALTER TABLE users DROP CONSTRAINT IF EXISTS users_order_nsu_fkey;
+        -- Adiciona constraint
+        ALTER TABLE users ADD CONSTRAINT users_order_nsu_fkey 
+            FOREIGN KEY (order_nsu) REFERENCES orders(order_nsu) ON DELETE SET NULL;
+    END IF;
+END $$;
 
 -- Adicionar campo whatsapp (se não existir)
 ALTER TABLE users ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(20);
