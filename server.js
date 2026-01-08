@@ -278,6 +278,10 @@ app.use("/", authRoutes);
 app.use("/adquirir", adquirirRoutes);
 app.use("/webhook", require("./routes/webhook")); // Webhooks não precisam de CSRF
 
+// Rotas públicas legais (sem CSRF protection)
+const legalRoutes = require("./routes/legal");
+app.use("/legal", legalRoutes);
+
 // Rotas protegidas (com CSRF protection)
 // Aplicamos CSRF apenas nas rotas protegidas
 app.use(csrfProtection); // Protege POST/PUT/DELETE e adiciona req.csrfToken()

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { red: '#DC2626', yellow: '#FBBF24' },
+                        'primary-red': '#DC2626',
+                        'primary-yellow': '#FBBF24'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dark-gradient-bg {
+            background: linear-gradient(135deg, 
+                #0a0a0a 0%, 
+                #1a0a0a 25%, 
+                #0a0a0a 50%, 
+                #1a0a0a 75%, 
+                #0a0a0a 100%
+            );
+        }
+
+        .light-effects {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(251, 191, 36, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .icon-glow {
+            filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5)) drop-shadow(0 0 20px rgba(251, 191, 36, 0.3));
+        }
+
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse-slow {
+            0%, 100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .animate-slide-up {
+            animation: slide-up 0.6s ease-out;
+        }
+
+        .animate-fade-in {
+            animation: fade-in 0.8s ease-out;
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-slow 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body class="dark-gradient-bg min-h-screen text-white relative overflow-x-hidden">
+    <%- include('../partials/navbar') %>
+
+    <main class="max-w-4xl mx-auto py-8 sm:px-6 lg:px-8 relative min-h-screen">
+        <!-- Background Effects -->
+        <div class="light-effects"></div>
+        <div class="absolute top-10 left-10 w-96 h-96 bg-primary-red/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div class="absolute bottom-10 right-10 w-96 h-96 bg-primary-yellow/10 rounded-full blur-3xl animate-pulse-slow"
+            style="animation-delay: 2s;"></div>
+
+        <div class="relative z-10">
+            <!-- Header -->
+            <div class="mb-8 animate-fade-in">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="relative">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-2xl blur-xl opacity-50">
+                        </div>
+                        <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow rounded-2xl p-4">
+                            <i class="fas fa-shield-alt text-white text-4xl icon-glow"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h1 class="text-4xl font-bold gradient-text">Política de Privacidade</h1>
+                        <p class="mt-2 text-white/70 text-lg">Última atualização: <%= new Date().toLocaleDateString('pt-BR') %></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conteúdo -->
+            <div class="glass rounded-2xl shadow-2xl p-6 sm:p-8 border border-white/20 backdrop-blur-xl animate-slide-up">
+                <div class="prose prose-invert max-w-none">
+                    <section class="mb-8">
+                        <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                            <i class="fas fa-info-circle mr-3 text-primary-yellow"></i>
+                            1. Introdução
+                        </h2>
+                        <p class="text-white/80 leading-relaxed mb-4">
+                            O Suporte DP está comprometido em proteger a privacidade e segurança dos dados de nossos usuários. Esta Política de Privacidade descreve como coletamos, usamos, armazenamos e protegemos suas informações pessoais.
+                        </p>
+                    </section>
+
+                    <section class="mb-8">
+                        <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                            <i class="fas fa-database mr-3 text-primary-yellow"></i>
+                            2. Informações Coletadas
+                        </h2>
+                        <p class="text-white/80 leading-relaxed mb-4">
+                            Coletamos as seguintes informações quando você utiliza nosso serviço:
+                        </p>
+                        <ul class="list-disc list-inside text-white/80 space-y-2 ml-4">
+                            <li><strong>Dados de Cadastro:</strong> Nome, e-mail, telefone, WhatsApp e outras informações fornecidas durante o registro</li>
+                            <li><strong>Dados de Uso:</strong> Informações sobre como você utiliza o sistema, cálculos realizados e funcionalidades acessadas</li>
+                            <li><strong>Dados de Pagamento:</strong> Informações necessárias para processar pagamentos (processadas por provedores seguros terceirizados)</li>
+                            <li><strong>Dados Técnicos:</strong> Endereço IP, tipo de navegador, sistema operacional e informações de dispositivo</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-8">
+                        <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                            <i class="fas fa-cog mr-3 text-primary-yellow"></i>
+                            3. Como Utilizamos Suas Informações
+                        </h2>
+                        <p class="text-white/80 leading-relaxed mb-4">
+                            Utilizamos suas informações para:
+                        </p>
+                        <ul class="list-disc list-inside text-white/80 space-y-2 ml-4">
+                            <li>Fornecer e melhorar nossos serviços de cálculos trabalhistas</li>
+                            <li>Processar pagamentos e gerenciar sua assinatura</li>
+                            <li>Enviar notificações importantes sobre o serviço</li>
+                            <li>Personalizar sua experiência no sistema</li>
+                            <li>Garantir a segurança e prevenir fraudes</li>
+                            <li>Cumprir obrigações legais e regulatórias</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-8">
+                        <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                            <i class="fas fa-lock mr-3 text-primary-yellow"></i>
+                            4. Proteção de Dados
+                        </h2>
+                        <p class="text-white/80 leading-relaxed mb-4">
+                            Implementamos medidas de segurança técnicas e organizacionais para proteger suas informações:
+                        </p>
+                        <ul class="list-disc list-inside text-white/80 space-y-2 ml-4">
+                            <li>Criptografia de dados sensíveis em trânsito e em repouso</li>
+                            <li>Controles de acesso rigorosos e autenticação de usuários</li>
+                            <li>Monitoramento contínuo de segurança e detecção de ameaças</li>
+                            <li>Backups regulares e planos de recuperação de desastres</li>
+                            <li>Conformidade com a LGPD (Lei Geral de Proteção de Dados)</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-8">
+                        <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                            <i class="fas fa-share-alt mr-3 text-primary-yellow"></i>
+                            5. Compartilhamento de Informações
+                        </h2>
+                        <p class="text-white/80 leading-relaxed mb-4">
+                            Não vendemos suas informações pessoais. Podemos compartilhar seus dados apenas nas seguintes situações:
+                        </p>
+                        <ul class="list-disc list-inside text-white/80 space-y-2 ml-4">
+                            <li><strong>Provedores de Serviços:</strong> Empresas que nos auxiliam na operação do sistema (hospedagem, processamento de pagamentos)</li>
+                            <li><strong>Obrigações Legais:</strong> Quando exigido por lei ou ordem judicial</li>
+                            <li><strong>Proteção de Direitos:</strong> Para proteger nossos direitos, propriedade ou segurança</li>
+                            <li><strong>Com Seu Consentimento:</strong> Quando você autorizar explicitamente o compartilhamento</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-8">
+                        <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                            <i class="fas fa-user-cog mr-3 text-primary-yellow"></i>
+                            6. Seus Direitos (LGPD)
+                        </h2>
+                        <p class="text-white/80 leading-relaxed mb-4">
+                            De acordo com a LGPD, você tem os seguintes direitos:
+                        </p>
+                        <ul class="list-disc list-inside text-white/80 space-y-2 ml-4">
+                            <li><strong>Acesso:</strong> Solicitar informações sobre seus dados pessoais armazenados</li>
+                            <li><strong>Correção:</strong> Solicitar a correção de dados incompletos ou desatualizados</li>
+                            <li><strong>Exclusão:</strong> Solicitar a exclusão de dados desnecessários ou excessivos</li>
+                            <li><strong>Portabilidade:</strong> Solicitar a portabilidade de seus dados</li>
+                            <li><strong>Revogação:</strong> Revogar seu consentimento a qualquer momento</li>
+                            <li><strong>Oposição:</strong> Opor-se ao tratamento de seus dados em certas circunstâncias</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-8">
+                        <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                            <i class="fas fa-cookie mr-3 text-primary-yellow"></i>
+                            7. Cookies e Tecnologias Similares
+                        </h2>
+                        <p class="text-white/80 leading-relaxed mb-4">
+                            Utilizamos cookies e tecnologias similares para melhorar sua experiência, analisar o uso do sistema e personalizar conteúdo. Você pode gerenciar suas preferências de cookies através das configurações do seu navegador.
+                        </p>
+                    </section>
+
+                    <section class="mb-8">
+                        <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                            <i class="fas fa-clock mr-3 text-primary-yellow"></i>
+                            8. Retenção de Dados
+                        </h2>
+                        <p class="text-white/80 leading-relaxed mb-4">
+                            Mantemos suas informações pessoais apenas pelo tempo necessário para cumprir os propósitos descritos nesta política, a menos que um período de retenção mais longo seja exigido ou permitido por lei.
+                        </p>
+                    </section>
+
+                    <section class="mb-8">
+                        <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                            <i class="fas fa-child mr-3 text-primary-yellow"></i>
+                            9. Privacidade de Menores
+                        </h2>
+                        <p class="text-white/80 leading-relaxed mb-4">
+                            Nosso serviço não é destinado a menores de 18 anos. Não coletamos intencionalmente informações pessoais de menores. Se tomarmos conhecimento de que coletamos dados de um menor, tomaremos medidas para excluir essas informações.
+                        </p>
+                    </section>
+
+                    <section class="mb-8">
+                        <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                            <i class="fas fa-sync-alt mr-3 text-primary-yellow"></i>
+                            10. Alterações nesta Política
+                        </h2>
+                        <p class="text-white/80 leading-relaxed mb-4">
+                            Podemos atualizar esta Política de Privacidade periodicamente. Notificaremos você sobre alterações significativas através do sistema ou por e-mail. Recomendamos que revise esta política regularmente.
+                        </p>
+                    </section>
+
+                    <section class="mb-8">
+                        <h2 class="text-2xl font-bold text-white mb-4 flex items-center">
+                            <i class="fas fa-envelope mr-3 text-primary-yellow"></i>
+                            11. Contato
+                        </h2>
+                        <p class="text-white/80 leading-relaxed mb-4">
+                            Se você tiver dúvidas, preocupações ou solicitações relacionadas a esta Política de Privacidade ou ao exercício de seus direitos sob a LGPD, entre em contato conosco através do sistema ou pelo e-mail de suporte disponível em seu painel.
+                        </p>
+                    </section>
+                </div>
+
+                <!-- Botão Voltar -->
+                <div class="mt-8 pt-6 border-t border-white/20">
+                    <a href="/" class="inline-flex items-center px-6 py-3 glass rounded-xl text-white font-semibold hover:bg-white/20 transition-all transform hover:scale-105">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Voltar ao Início
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
+
