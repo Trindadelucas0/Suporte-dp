@@ -13,7 +13,9 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: { red: '#DC2626', yellow: '#FBBF24' }
+                        primary: { red: '#DC2626', yellow: '#FBBF24' },
+                        'primary-red': '#DC2626',
+                        'primary-yellow': '#FBBF24'
                     }
                 }
             }
@@ -21,124 +23,316 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Favicon com as letras "DP" nas cores do sistema (Vermelho #DC2626 e Amarelo #FBBF24) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
     <style>
-        .bungee-inline-regular {
-            font-family: "Bungee Inline", sans-serif;
-            font-weight: 400;
-            font-style: normal;
+        * {
+            font-family: 'Inter', sans-serif;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .fade-in { animation: fadeIn 0.3s ease-out; }
+
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dark-gradient-bg {
+            background: linear-gradient(135deg, 
+                #0a0a0a 0%, 
+                #1a0a0a 25%, 
+                #0a0a0a 50%, 
+                #1a0a0a 75%, 
+                #0a0a0a 100%
+            );
+        }
+
+        .light-effects {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 30%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(251, 191, 36, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .icon-glow {
+            filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5)) drop-shadow(0 0 20px rgba(251, 191, 36, 0.3));
+        }
+
+        @keyframes slide-up {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse-slow {
+            0%, 100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .animate-slide-up {
+            animation: slide-up 0.6s ease-out;
+        }
+
+        .animate-fade-in {
+            animation: fade-in 0.8s ease-out;
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-slow 4s ease-in-out infinite;
+        }
     </style>
 </head>
 
-<body class="bg-gray-50">
+<body class="dark-gradient-bg min-h-screen text-white relative overflow-x-hidden">
     <% if (typeof user !=='undefined' && user) { %>
         <%- include('../partials/navbar') %>
             <% } %>
 
-                <main class="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
-                    <div class="mb-8">
-                        <div class="flex items-center gap-4 mb-2">
-                            <div class="bg-gradient-to-r from-primary-red to-primary-yellow rounded-lg p-3">
-                                <i class="fas fa-shield-alt text-white text-2xl"></i>
-                            </div>
-                            <div>
-                                <h1 class="text-4xl font-bold text-gray-900">Painel Administrativo</h1>
-                                <p class="mt-1 text-gray-600 text-lg">Gerenciamento completo do sistema</p>
-                            </div>
-                        </div>
-                    </div>
+                <main class="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8 relative min-h-screen">
+                    <!-- Background Effects -->
+                    <div class="light-effects"></div>
+                    <div class="absolute top-10 left-10 w-96 h-96 bg-primary-red/10 rounded-full blur-3xl animate-pulse-slow"></div>
+                    <div class="absolute bottom-10 right-10 w-96 h-96 bg-primary-yellow/10 rounded-full blur-3xl animate-pulse-slow"
+                        style="animation-delay: 2s;"></div>
 
-                    <!-- Card de Estatísticas de Usuários -->
-                    <div class="mb-8">
-                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-8 text-white">
-                            <div class="flex items-center justify-between">
+                    <div class="relative z-10">
+                        <!-- Header -->
+                        <div class="mb-8 animate-fade-in">
+                            <div class="flex items-center gap-4 mb-2">
+                                <div class="relative">
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-2xl blur-xl opacity-50">
+                                    </div>
+                                    <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow rounded-2xl p-4">
+                                        <i class="fas fa-shield-alt text-white text-4xl icon-glow"></i>
+                                    </div>
+                                </div>
                                 <div>
-                                    <p class="text-blue-100 text-sm font-medium mb-1">Total de Usuários</p>
-                                    <p class="text-5xl font-bold mb-3">
-                                        <%= stats.usuarios.total || 0 %>
-                                    </p>
-                                    <div class="flex gap-6 text-sm">
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-3 h-3 rounded-full bg-green-300"></div>
-                                            <span class="text-blue-100">
-                                                <%= stats.usuarios.ativos || 0 %> ativos
-                                            </span>
+                                    <h1 class="text-5xl font-bold gradient-text">Painel Administrativo</h1>
+                                    <p class="mt-2 text-white/70 text-lg">Gerenciamento completo do sistema</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card de Estatísticas de Usuários -->
+                        <div class="mb-8 animate-slide-up">
+                            <div class="glass rounded-2xl shadow-2xl p-8 border border-white/20 backdrop-blur-xl">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex-1">
+                                        <p class="text-white/70 text-sm font-medium mb-2 flex items-center">
+                                            <i class="fas fa-chart-line mr-2 text-primary-yellow"></i>Total de Usuários
+                                        </p>
+                                        <p class="text-6xl font-bold text-white mb-4">
+                                            <%= stats.usuarios.total || 0 %>
+                                        </p>
+                                        <div class="flex flex-wrap gap-6 text-sm">
+                                            <div class="flex items-center gap-2 glass-dark rounded-lg px-4 py-2 border border-white/10">
+                                                <div class="w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-green-500 shadow-lg shadow-green-500/50"></div>
+                                                <span class="text-white font-semibold">
+                                                    <%= stats.usuarios.ativos || 0 %> ativos
+                                                </span>
+                                            </div>
+                                            <div class="flex items-center gap-2 glass-dark rounded-lg px-4 py-2 border border-white/10">
+                                                <div class="w-3 h-3 rounded-full bg-gradient-to-r from-red-400 to-red-500 shadow-lg shadow-red-500/50"></div>
+                                                <span class="text-white font-semibold">
+                                                    <%= stats.usuarios.bloqueados || 0 %> bloqueados
+                                                </span>
+                                            </div>
+                                            <div class="flex items-center gap-2 glass-dark rounded-lg px-4 py-2 border border-white/10">
+                                                <div class="w-3 h-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 shadow-lg shadow-yellow-500/50"></div>
+                                                <span class="text-white font-semibold">
+                                                    <%= stats.usuarios.inativos || 0 %> inativos
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-3 h-3 rounded-full bg-red-300"></div>
-                                            <span class="text-blue-100">
-                                                <%= stats.usuarios.bloqueados || 0 %> bloqueados
-                                            </span>
+                                    </div>
+                                    <div class="relative ml-8">
+                                        <div
+                                            class="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full blur-2xl opacity-50">
                                         </div>
-                                        <div class="flex items-center gap-2">
-                                            <div class="w-3 h-3 rounded-full bg-gray-300"></div>
-                                            <span class="text-blue-100">
-                                                <%= stats.usuarios.inativos || 0 %> inativos
-                                            </span>
+                                        <div class="relative bg-gradient-to-r from-blue-500 to-blue-600 rounded-full p-8">
+                                            <i class="fas fa-users text-white text-7xl"></i>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="bg-white bg-opacity-20 rounded-full p-6">
-                                    <i class="fas fa-users text-6xl"></i>
+                            </div>
+                        </div>
+
+                        <!-- Menu de Ações Rápidas -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Gerenciar Usuários -->
+                            <a href="/admin/usuarios"
+                                class="group glass rounded-2xl shadow-2xl p-8 border border-white/20 backdrop-blur-xl hover:bg-white/15 transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 animate-slide-up"
+                                style="animation-delay: 0.1s;">
+                                <div class="flex items-start">
+                                    <div class="relative mr-6">
+                                        <div
+                                            class="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity">
+                                        </div>
+                                        <div
+                                            class="relative bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-5 group-hover:scale-110 transition-transform duration-300">
+                                            <i class="fas fa-users-cog text-white text-4xl"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="text-2xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors">
+                                            <i class="fas fa-users-cog mr-2 text-primary-yellow"></i>Gerenciar Usuários
+                                        </h3>
+                                        <p class="text-sm text-white/70 leading-relaxed mb-4">
+                                            Visualizar, bloquear, ativar e gerenciar todos os usuários do sistema. Controle completo de permissões e acessos.
+                                        </p>
+                                        <div class="flex items-center text-blue-400 text-sm font-semibold group-hover:text-blue-300 transition-colors">
+                                            <span>Acessar</span>
+                                            <i class="fas fa-arrow-right ml-2 group-hover:translate-x-2 transition-transform"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <!-- Notificações -->
+                            <a href="/admin/notificacoes"
+                                class="group glass rounded-2xl shadow-2xl p-8 border border-white/20 backdrop-blur-xl hover:bg-white/15 transition-all duration-300 transform hover:scale-105 hover:-translate-y-2 animate-slide-up"
+                                style="animation-delay: 0.2s;">
+                                <div class="flex items-start">
+                                    <div class="relative mr-6">
+                                        <div
+                                            class="absolute inset-0 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity">
+                                        </div>
+                                        <div
+                                            class="relative bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-5 group-hover:scale-110 transition-transform duration-300">
+                                            <i class="fas fa-bell text-white text-4xl"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="text-2xl font-bold text-white mb-3 group-hover:text-yellow-400 transition-colors">
+                                            <i class="fas fa-bell mr-2 text-primary-yellow"></i>Notificações
+                                        </h3>
+                                        <p class="text-sm text-white/70 leading-relaxed mb-4">
+                                            Enviar notificações para todos os usuários ou usuários específicos. Avisos importantes e comunicados do sistema.
+                                        </p>
+                                        <div class="flex items-center text-yellow-400 text-sm font-semibold group-hover:text-yellow-300 transition-colors">
+                                            <span>Acessar</span>
+                                            <i class="fas fa-arrow-right ml-2 group-hover:translate-x-2 transition-transform"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Cards de Estatísticas Detalhadas -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                            <!-- Card Ativos -->
+                            <div class="glass rounded-2xl shadow-2xl p-6 border border-white/20 backdrop-blur-xl animate-slide-up"
+                                style="animation-delay: 0.3s;">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <p class="text-white/70 text-sm mb-1">Usuários Ativos</p>
+                                        <p class="text-4xl font-bold text-green-400">
+                                            <%= stats.usuarios.ativos || 0 %>
+                                        </p>
+                                    </div>
+                                    <div class="relative">
+                                        <div class="absolute inset-0 bg-green-500/20 rounded-xl blur-lg opacity-50"></div>
+                                        <div class="relative bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4">
+                                            <i class="fas fa-check-circle text-white text-3xl"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center text-green-400 text-xs">
+                                    <i class="fas fa-arrow-up mr-1"></i>
+                                    <span>Usuários que pagaram</span>
+                                </div>
+                            </div>
+
+                            <!-- Card Inativos -->
+                            <div class="glass rounded-2xl shadow-2xl p-6 border border-white/20 backdrop-blur-xl animate-slide-up"
+                                style="animation-delay: 0.4s;">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <p class="text-white/70 text-sm mb-1">Usuários Inativos</p>
+                                        <p class="text-4xl font-bold text-yellow-400">
+                                            <%= stats.usuarios.inativos || 0 %>
+                                        </p>
+                                    </div>
+                                    <div class="relative">
+                                        <div class="absolute inset-0 bg-yellow-500/20 rounded-xl blur-lg opacity-50"></div>
+                                        <div class="relative bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl p-4">
+                                            <i class="fas fa-exclamation-triangle text-white text-3xl"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center text-yellow-400 text-xs">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    <span>Não renovaram</span>
+                                </div>
+                            </div>
+
+                            <!-- Card Bloqueados -->
+                            <div class="glass rounded-2xl shadow-2xl p-6 border border-white/20 backdrop-blur-xl animate-slide-up"
+                                style="animation-delay: 0.5s;">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <p class="text-white/70 text-sm mb-1">Usuários Bloqueados</p>
+                                        <p class="text-4xl font-bold text-red-400">
+                                            <%= stats.usuarios.bloqueados || 0 %>
+                                        </p>
+                                    </div>
+                                    <div class="relative">
+                                        <div class="absolute inset-0 bg-red-500/20 rounded-xl blur-lg opacity-50"></div>
+                                        <div class="relative bg-gradient-to-r from-red-500 to-red-600 rounded-xl p-4">
+                                            <i class="fas fa-lock text-white text-3xl"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center text-red-400 text-xs">
+                                    <i class="fas fa-ban mr-1"></i>
+                                    <span>Sem acesso ao sistema</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Menu de Ações Rápidas -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <a href="/admin/usuarios"
-                            class="group bg-white rounded-xl shadow-md p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-blue-500">
-                            <div class="flex items-start">
-                                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 mr-6 group-hover:scale-110 transition-transform duration-300">
-                                    <i class="fas fa-users-cog text-white text-3xl"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                                        Gerenciar Usuários
-                                    </h3>
-                                    <p class="text-sm text-gray-600 leading-relaxed">
-                                        Visualizar, bloquear, ativar e gerenciar todos os usuários do sistema. Controle completo de permissões e acessos.
-                                    </p>
-                                    <div class="mt-4 flex items-center text-blue-600 text-sm font-medium">
-                                        <span>Acessar</span>
-                                        <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                        <a href="/admin/notificacoes"
-                            class="group bg-white rounded-xl shadow-md p-8 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-yellow-500">
-                            <div class="flex items-start">
-                                <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-4 mr-6 group-hover:scale-110 transition-transform duration-300">
-                                    <i class="fas fa-bell text-white text-3xl"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-yellow-600 transition-colors">
-                                        Notificações
-                                    </h3>
-                                    <p class="text-sm text-gray-600 leading-relaxed">
-                                        Enviar notificações para todos os usuários ou usuários específicos. Avisos importantes e comunicados do sistema.
-                                    </p>
-                                    <div class="mt-4 flex items-center text-yellow-600 text-sm font-medium">
-                                        <span>Acessar</span>
-                                        <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
                 </main>
 
                 <script src="/js/loading.js"></script>
