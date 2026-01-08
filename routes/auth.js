@@ -39,6 +39,19 @@ const registerLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => getRealIp(req), // Usa IP real considerando proxy do Render
+  handler: (req, res) => {
+    // Retorna página de erro em vez de JSON quando rate limit é atingido
+    console.warn('⚠️ Rate limit atingido para registro:', {
+      ip: getRealIp(req),
+      path: req.path
+    });
+    return res.status(429).render('auth/register', {
+      title: 'Cadastro - Suporte DP',
+      error: 'Muitas tentativas de registro. Por favor, tente novamente em 1 hora.',
+      order_nsu: null,
+      payment: null
+    });
+  }
 });
 
 // Validações

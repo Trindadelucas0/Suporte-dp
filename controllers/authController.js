@@ -490,14 +490,51 @@ class AuthController {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
+      const errorMessages = errors.array().map(err => err.msg).join(', ');
+      console.log('❌ Erros de validação:', errorMessages);
       return res.render('auth/register', {
         title: 'Cadastro - Suporte DP',
-        error: 'Por favor, preencha todos os campos corretamente.',
+        error: errorMessages || 'Por favor, preencha todos os campos corretamente.',
         order_nsu: null,
         payment: null
       });
     }
 
+    // Valida e normaliza nome
+    const nomeNormalizado = nome ? nome.trim() : null;
+    if (!nomeNormalizado || nomeNormalizado.length < 3) {
+      return res.render('auth/register', {
+        title: 'Cadastro - Suporte DP',
+        error: 'Nome deve ter pelo menos 3 caracteres.',
+        order_nsu: null,
+        payment: null
+      });
+    }
+
+    // Normaliza email explicitamente (já deve estar normalizado pelo validator, mas garantimos)
+    // O validator já normalizou o email no req.body, mas garantimos aqui também
+    const emailNormalizado = email ? email.trim().toLowerCase() : null;
+    
+    if (!emailNormalizado) {
+      return res.render('auth/register', {
+        title: 'Cadastro - Suporte DP',
+        error: 'Email inválido.',
+        order_nsu: null,
+        payment: null
+      });
+    }
+
+    // Validação de senha (já validada pelo express-validator, mas verificamos novamente por segurança)
+    if (!senha || senha.length < 6) {
+      return res.render('auth/register', {
+        title: 'Cadastro - Suporte DP',
+        error: 'A senha deve ter pelo menos 6 caracteres.',
+        order_nsu: null,
+        payment: null
+      });
+    }
+
+    // Validação de confirmação de senha (já validada pelo express-validator)
     if (senha !== confirmarSenha) {
       return res.render('auth/register', {
         title: 'Cadastro - Suporte DP',
@@ -507,18 +544,9 @@ class AuthController {
       });
     }
 
-    if (senha.length < 6) {
-      return res.render('auth/register', {
-        title: 'Cadastro - Suporte DP',
-        error: 'A senha deve ter pelo menos 6 caracteres.',
-        order_nsu: null,
-        payment: null
-      });
-    }
-
     try {
-      // NOVO FLUXO: Verifica se email já está cadastrado
-      const userExistente = await User.findByEmail(email);
+      // NOVO FLUXO: Verifica se email já está cadastrado (usa email normalizado)
+      const userExistente = await User.findByEmail(emailNormalizado);
       if (userExistente) {
         return res.render('auth/register', {
           title: 'Cadastro - Suporte DP',
@@ -530,10 +558,10 @@ class AuthController {
 
       // Verifica se há token validado na sessão (após validação de pagamento)
       const hasTokenValidated = req.session.pendingToken && req.session.pendingEmail;
-      const tokenEmail = req.session.pendingEmail;
+      const tokenEmail = req.session.pendingEmail ? req.session.pendingEmail.toLowerCase() : null;
       
       // Se há token validado, verifica se o email corresponde
-      if (hasTokenValidated && tokenEmail.toLowerCase() !== email.toLowerCase()) {
+      if (hasTokenValidated && tokenEmail !== emailNormalizado) {
         return res.render('auth/register', {
           title: 'Cadastro - Suporte DP',
           error: 'O email informado deve ser o mesmo usado no pagamento.',
@@ -542,47 +570,65 @@ class AuthController {
         });
       }
       
+      console.log('📝 Tentando criar usuário:', {
+        nome: nomeNormalizado,
+        email: emailNormalizado,
+        hasTokenValidated: hasTokenValidated
+      });
+      
       // NOVO FLUXO: Cria usuário - se há token validado, ativa assinatura imediatamente
       const user = await db.transaction(async (client) => {
-        const bcrypt = require('bcrypt');
-        const senhaHash = await bcrypt.hash(senha, 10);
-        
-        // Se há token validado, ativa assinatura por 30 dias a partir de AGORA
-        let subscriptionStatus = 'pendente';
-        let subscriptionExpiresAt = null;
-        
-        if (hasTokenValidated) {
-          subscriptionStatus = 'ativa';
-          const agora = new Date();
-          const dataExpiracao = new Date(agora);
-          dataExpiracao.setDate(dataExpiracao.getDate() + 30);
-          subscriptionExpiresAt = dataExpiracao.toISOString().split('T')[0];
+        try {
+          const bcrypt = require('bcrypt');
+          const senhaHash = await bcrypt.hash(senha, 10);
           
-          console.log('✅ Token validado - Criando usuário com assinatura ativa por 30 dias:', {
-            email: email,
-            data_ativacao: agora.toISOString(),
-            data_expiracao: subscriptionExpiresAt,
-            dias_acesso: 30
-          });
+          // Se há token validado, ativa assinatura por 30 dias a partir de AGORA
+          let subscriptionStatus = 'pendente';
+          let subscriptionExpiresAt = null;
+          
+          if (hasTokenValidated) {
+            subscriptionStatus = 'ativa';
+            const agora = new Date();
+            const dataExpiracao = new Date(agora);
+            dataExpiracao.setDate(dataExpiracao.getDate() + 30);
+            subscriptionExpiresAt = dataExpiracao.toISOString().split('T')[0];
+            
+            console.log('✅ Token validado - Criando usuário com assinatura ativa por 30 dias:', {
+              email: emailNormalizado,
+              data_ativacao: agora.toISOString(),
+              data_expiracao: subscriptionExpiresAt,
+              dias_acesso: 30
+            });
+          }
+          
+          // Normaliza whatsapp (remove espaços e caracteres especiais, mantém apenas números)
+          const whatsappNormalizado = whatsapp ? whatsapp.trim().replace(/\D/g, '') : null;
+          
+          const userResult = await client.query(
+            `INSERT INTO users (nome, email, senha_hash, is_admin, whatsapp, status, subscription_status, subscription_expires_at, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+             RETURNING id, nome, email, is_admin, whatsapp, status, subscription_status, subscription_expires_at, created_at`,
+            [
+              nomeNormalizado, // Usa nome normalizado
+              emailNormalizado, // Usa email normalizado
+              senhaHash,
+              false,
+              whatsappNormalizado || null,
+              'ativo', // Status ativo (pode fazer login)
+              subscriptionStatus, // 'ativa' se há token, 'pendente' caso contrário
+              subscriptionExpiresAt // 30 dias se há token, null caso contrário
+            ]
+          );
+          
+          if (!userResult.rows || !userResult.rows[0]) {
+            throw new Error('Erro ao criar usuário: nenhum registro retornado');
+          }
+          
+          return userResult.rows[0];
+        } catch (dbError) {
+          console.error('❌ Erro na transação de criação de usuário:', dbError);
+          throw dbError;
         }
-        
-        const userResult = await client.query(
-          `INSERT INTO users (nome, email, senha_hash, is_admin, whatsapp, status, subscription_status, subscription_expires_at, created_at, updated_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-           RETURNING id, nome, email, is_admin, whatsapp, status, subscription_status, subscription_expires_at, created_at`,
-          [
-            nome,
-            email,
-            senhaHash,
-            false,
-            whatsapp || null,
-            'ativo', // Status ativo (pode fazer login)
-            subscriptionStatus, // 'ativa' se há token, 'pendente' caso contrário
-            subscriptionExpiresAt // 30 dias se há token, null caso contrário
-          ]
-        );
-        
-        return userResult.rows[0];
       });
       
       // Limpa dados do token da sessão após criar usuário
@@ -626,10 +672,18 @@ class AuthController {
       // Salva timestamp da última atividade na sessão
       req.session.lastActivity = Date.now();
 
-      // Salva a sessão antes de redirecionar
+      // Define mensagem de sucesso antes de salvar
+      if (hasTokenValidated) {
+        req.session.successMessage = 'Cadastro realizado com sucesso! Seu acesso está liberado por 30 dias.';
+      } else {
+        req.session.successMessage = 'Conta criada com sucesso! Agora finalize o pagamento para liberar o acesso.';
+      }
+
+      // Salva a sessão uma única vez antes de redirecionar
       req.session.save((err) => {
         if (err) {
-          console.error('Erro ao salvar sessão após cadastro:', err);
+          console.error('❌ Erro ao salvar sessão após cadastro:', err);
+          console.error('Detalhes do erro:', err.message);
           return res.render('auth/register', {
             title: 'Cadastro - Suporte DP',
             error: 'Conta criada, mas erro ao fazer login automático. Tente fazer login manualmente.',
@@ -641,23 +695,30 @@ class AuthController {
         // Se há token validado, acesso já está liberado - redireciona para dashboard
         // Caso contrário, redireciona para /checkout (página de pagamento)
         if (hasTokenValidated) {
-          req.session.successMessage = 'Cadastro realizado com sucesso! Seu acesso está liberado por 30 dias.';
-          req.session.save(() => {
-            res.redirect('/dashboard');
-          });
+          res.redirect('/dashboard');
         } else {
-          req.session.successMessage = 'Conta criada com sucesso! Agora finalize o pagamento para liberar o acesso.';
-          req.session.save(() => {
-            res.redirect('/checkout');
-          });
+          res.redirect('/checkout');
         }
       });
     } catch (error) {
-      console.error('Erro no cadastro:', error);
+      console.error('❌ Erro no cadastro:', error);
       console.error('Stack:', error.stack);
+      
+      // Mensagem de erro mais específica
+      let errorMessage = 'Erro ao criar conta. Tente novamente.';
+      
+      // Verifica se é erro de duplicação de email (violação de constraint única)
+      if (error.code === '23505' || error.message.includes('duplicate key') || error.message.includes('unique constraint')) {
+        errorMessage = 'Este email já está cadastrado. Faça login ou use outro email.';
+      } else if (error.code === '23502' || error.message.includes('not null')) {
+        errorMessage = 'Por favor, preencha todos os campos obrigatórios.';
+      } else if (process.env.NODE_ENV === 'development') {
+        errorMessage = `Erro ao criar conta: ${error.message}`;
+      }
+      
       res.render('auth/register', {
         title: 'Cadastro - Suporte DP',
-        error: 'Erro ao criar conta. Tente novamente. ' + (process.env.NODE_ENV === 'development' ? error.message : ''),
+        error: errorMessage,
         order_nsu: null,
         payment: null
       });
