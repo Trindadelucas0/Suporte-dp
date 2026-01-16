@@ -136,14 +136,16 @@ const sessionConfig = {
     createTableIfMissing: true, // Cria tabela automaticamente se não existir
   }),
   secret: sessionSecret,
-  resave: false,
-  saveUninitialized: false,
+  resave: false, // Não salva sessão se não foi modificada
+  saveUninitialized: false, // Não cria sessão para requisições sem dados de sessão
   cookie: {
     secure: process.env.NODE_ENV === "production", // true em produção (HTTPS)
-    httpOnly: true,
-    sameSite: process.env.NODE_ENV === "production" ? "lax" : "strict", // "lax" funciona melhor no Render
+    httpOnly: true, // Cookie não acessível via JavaScript (segurança)
+    sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax", // "lax" funciona melhor no Render e permite navegação
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 dias
-    // domain não é necessário no Render
+    // domain não é necessário no Render (deixa undefined para funcionar em qualquer domínio)
+    // path: '/' garante que cookie funciona em todas as rotas
+    path: '/',
   },
   name: "suporte-dp.sid", // Nome customizado para evitar detecção
 };
@@ -155,10 +157,18 @@ app.use(session(sessionConfig));
 const { checkInactivity } = require('./middleware/activityTracker');
 app.use((req, res, next) => {
   // Lista de rotas públicas que não devem ser bloqueadas
-  const publicRoutes = ['/login', '/register', '/logout', '/validar-pagamento', '/adquirir', '/legal', '/webhook', '/'];
+  // Rotas exatas e prefixos de rotas públicas
+  const publicRoutesExact = ['/login', '/register', '/logout', '/validar-pagamento', '/'];
+  const publicRoutesPrefix = ['/adquirir', '/legal', '/webhook'];
+  
+  // Verifica se é rota pública exata
+  const isPublicExact = publicRoutesExact.includes(req.path);
+  
+  // Verifica se é rota pública por prefixo (mas não apenas "/")
+  const isPublicPrefix = publicRoutesPrefix.some(prefix => req.path === prefix || req.path.startsWith(prefix + '/'));
   
   // Se é rota pública, pula verificação de inatividade
-  if (publicRoutes.some(route => req.path === route || req.path.startsWith(route))) {
+  if (isPublicExact || isPublicPrefix) {
     return next();
   }
   
@@ -286,7 +296,12 @@ const notificacoesRoutes = require("./routes/notificacoes");
 const perfilRoutes = require("./routes/perfil");
 const adminRoutes = require("./routes/admin");
 
-// Rota raiz - página inicial institucional (DEVE VIR ANTES DAS ROTAS DE AUTH)
+// Rotas públicas (sem CSRF protection)
+// IMPORTANTE: Rotas de auth devem vir ANTES da rota raiz para garantir prioridade
+app.use("/", authRoutes);
+
+// Rota raiz - página inicial institucional (DEVE VIR DEPOIS DAS ROTAS DE AUTH)
+// Isso garante que /login, /register, etc. tenham prioridade sobre /
 app.get("/", (req, res) => {
   if (req.session.user) {
     res.redirect("/dashboard");
@@ -296,10 +311,6 @@ app.get("/", (req, res) => {
     });
   }
 });
-
-// Rotas públicas (sem CSRF protection)
-// IMPORTANTE: Rotas de auth devem vir DEPOIS da rota raiz para não conflitar
-app.use("/", authRoutes);
 app.use("/adquirir", adquirirRoutes);
 app.use("/webhook", require("./routes/webhook")); // Webhooks não precisam de CSRF
 
