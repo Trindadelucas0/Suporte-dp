@@ -46,7 +46,7 @@
                 <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                     <div class="mb-6">
                         <h1 class="text-3xl font-bold text-gray-900">Calculadora de IRRF</h1>
-                        <p class="mt-2 text-gray-600">Imposto de Renda Retido na Fonte - IN RFB 1500/2014</p>
+                        <p class="mt-2 text-gray-600">Imposto de Renda Retido na Fonte - Lei nº 7.713/1988 - Art. 7º, inciso I</p>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -313,7 +313,7 @@
                                                             <%= resultado.baseLegal.titulo %>
                                                         </h4>
                                                         <p class="mb-4"><strong>Artigo:</strong>
-                                                            <%= resultado.baseLegal.artigo %>
+                                                            <strong><%= resultado.baseLegal.artigo %></strong>
                                                         </p>
                                                         <% if (resultado.baseLegal.textoCompleto) { %>
                                                             <div

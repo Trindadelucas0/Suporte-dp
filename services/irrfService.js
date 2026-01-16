@@ -2,7 +2,7 @@
  * SERVICE: IRRFService
  * Cálculo de Imposto de Renda Retido na Fonte
  * 
- * BASE LEGAL: Instrução Normativa RFB nº 1500/2014
+ * BASE LEGAL: Lei nº 7.713/1988 - Art. 7º, inciso I
  */
 
 const fs = require('fs');
@@ -168,8 +168,8 @@ class IRRFService {
         ano: anoUsado,
         memoria,
         baseLegal: {
-          titulo: 'Instrução Normativa RFB nº 1500/2014',
-          artigo: 'Art. 1º',
+          titulo: 'Lei nº 7.713, de 22 de dezembro de 1988',
+          artigo: 'Art. 7º, inciso I',
           descricao: 'Isento de IRRF quando a base de cálculo for igual ou inferior a zero.'
         }
       };
@@ -276,11 +276,11 @@ class IRRFService {
       memoria,
       baseLegal: {
         titulo: deducaoSimplificada 
-          ? 'Lei nº 13.670/2018 e Instrução Normativa RFB nº 1500/2014'
-          : 'Instrução Normativa RFB nº 1500/2014',
+          ? 'Lei nº 13.670/2018 e Lei nº 7.713/1988'
+          : 'Lei nº 7.713, de 22 de dezembro de 1988',
         artigo: deducaoSimplificada 
-          ? 'Lei 13.670/2018 - Art. 1º e IN RFB 1500/2014 - Art. 1º'
-          : 'Art. 1º e Anexo I',
+          ? 'Lei 13.670/2018 - Art. 1º e Lei 7.713/1988 - Art. 7º, inciso I'
+          : 'Art. 7º, inciso I',
         descricao: (() => {
           let desc = deducaoSimplificada
             ? `Dedução simplificada: Valor fixo mensal de R$ 607,20 (Lei 15.191/2025 e MP 1.294/2025). Substitui todas as deduções legais (INSS, dependentes, pensão). Aplica-se exclusivamente ao IRRF mensal.`

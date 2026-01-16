@@ -102,8 +102,8 @@ class FGTSService {
       },
       baseLegal: {
         titulo: 'Lei nº 8.036, de 11 de maio de 1990',
-        artigo: 'Art. 2º, Art. 15 e Art. 18-A',
-        descricao: 'Estabelece o depósito mensal de 8% do salário bruto em conta vinculada do trabalhador. Jovem Aprendiz: 2% (Lei 10.097/2000, Art. 428, § 1º, II). Doméstico: 8% + 3,2% adicional (Art. 18-A).'
+        artigo: 'Art. 15',
+        descricao: 'Estabelece o depósito mensal de 8% do salário bruto em conta vinculada do trabalhador. Jovem Aprendiz: 2% (Art. 15, § 7º). Doméstico: 8% + 3,2% adicional conforme legislação específica.'
       }
     };
   }

@@ -2,7 +2,7 @@
  * SERVICE: AvosService
  * Cálculo de avos para 13º salário
  * 
- * BASE LEGAL: Art. 1º da Lei 4.090/1962 (13º)
+ * BASE LEGAL: Lei nº 4.090/1962 - Art. 1º, Art. 2º, Art. 3º e Art. 4º
  */
 
 const moment = require('moment');
@@ -137,9 +137,9 @@ class AvosService {
       meses,
       memoria,
       baseLegal: {
-        titulo: 'Lei nº 4.090/1962',
-        artigo: 'Art. 1º',
-        descricao: '13º salário proporcional: 1/12 por mês trabalhado, considerando mês completo quando houver 15 dias ou mais de trabalho.'
+        titulo: 'Lei nº 4.090, de 13 de julho de 1962',
+        artigo: 'Art. 1º, Art. 2º, Art. 3º e Art. 4º',
+        descricao: '13º salário proporcional: 1/12 por mês trabalhado, considerando mês completo quando houver 15 dias ou mais de trabalho (Art. 1º, § 2º). As faltas legais e justificadas não são deduzidas (Art. 2º).'
       }
     };
   }

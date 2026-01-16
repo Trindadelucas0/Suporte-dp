@@ -50,7 +50,7 @@
                 <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                     <div class="mb-6">
                         <h1 class="text-3xl font-bold text-gray-900">Calculadora de INSS</h1>
-                        <p class="mt-2 text-gray-600">Cálculo progressivo conforme EC 103/2019</p>
+                        <p class="mt-2 text-gray-600">Cálculo progressivo conforme Lei nº 8.212/1991 - Art. 28</p>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -296,7 +296,7 @@
                                                         </h4>
                                                         <p class="text-gray-700 mb-4">
                                                             <strong>Artigo:</strong>
-                                                            <%= resultado.baseLegal.artigo %>
+                                                            <strong><%= resultado.baseLegal.artigo %></strong>
                                                         </p>
                                                         <% if (resultado.baseLegal.textoCompleto) { %>
                                                             <div

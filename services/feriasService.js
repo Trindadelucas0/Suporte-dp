@@ -2,7 +2,7 @@
  * SERVICE: FeriasService
  * Cálculo de férias proporcionais
  *
- * BASE LEGAL: CLT Art. 130 e Art. 7º, inciso XVII da CF/88
+ * BASE LEGAL: CLT Art. 130 e Art. 134
  */
 
 const moment = require("moment");
@@ -194,9 +194,9 @@ class FeriasService {
       memoria,
       baseLegal: {
         titulo: "Consolidação das Leis do Trabalho - CLT",
-        artigo: "Art. 130",
+        artigo: "Art. 130 e Art. 134",
         descricao:
-          "Férias proporcionais calculadas em avos conforme período aquisitivo de 12 meses. Cada mês em que o empregado trabalhou 15 dias ou mais gera 1/12 avo de férias. O cálculo é independente do 13º salário e não exige mês completo ou fechado, apenas 15+ dias trabalhados.",
+          "Art. 130 Após cada período de 12 (doze) meses de vigência do contrato de trabalho, o empregado terá direito a férias, na seguinte proporção: (Redação dada pelo Decreto-lei nº 1.535, de 13.4.1977) I - 30 (trinta) dias corridos, quando não houver faltado ao serviço mais de 5 (cinco) vezes; (Incluído pelo Decreto-lei nº 1.535, de 13.4.1977) II - 24 (vinte e quatro) dias corridos, quando houver tido de 6 (seis) a 14 (quatorze) faltas; (Incluído pelo Decreto-lei nº 1.535, de 13.4.1977) III - 18 (dezoito) dias corridos, quando houver tido de 15 (quinze) a 23 (vinte e três) faltas; (Incluído pelo Decreto-lei nº 1.535, de 13.4.1977) IV - 12 (doze) dias corridos, quando houver tido de 24 (vinte e quatro) a 32 (trinta e duas) faltas. (Incluído pelo Decreto-lei nº 1.535, de 13.4.1977) § 1º É vedado descontar, do período de férias, as faltas do empregado ao serviço. (Incluído pelo Decreto-lei nº 1.535, de 13.4.1977) § 2º O período das férias será computado, para todos os efeitos, como tempo de serviço. Art. 134 As férias serão concedidas por ato do empregador, em um só período, nos 12 (doze) meses subseqüentes à data em que o empregado tiver adquirido o direito. § 1º Desde que haja concordância do empregado, as férias poderão ser usufruídas em até três períodos, sendo que um deles não poderá ser inferior a quatorze dias corridos e os demais não poderão ser inferiores a cinco dias corridos, cada um. § 3º É vedado o início das férias no período de dois dias que antecede feriado ou dia de repouso semanal remunerado.",
       },
     };
   }

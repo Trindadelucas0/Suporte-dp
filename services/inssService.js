@@ -1,8 +1,8 @@
 /**
  * SERVICE: INSSService
- * Cálculo de INSS progressivo conforme EC 103/2019
+ * Cálculo de INSS progressivo conforme Lei nº 8.212/1991
  * 
- * BASE LEGAL: Emenda Constitucional nº 103/2019
+ * BASE LEGAL: Lei nº 8.212, de 24 de julho de 1991 - Art. 28
  * Tabelas históricas de 2001 até 2026
  */
 
@@ -154,8 +154,8 @@ class INSSService {
       teto: TETO_PREVIDENCIARIO,
       memoria,
       baseLegal: {
-        titulo: 'Emenda Constitucional nº 103/2019',
-        artigo: 'Art. 201, § 1º da CF/88',
+        titulo: 'Lei nº 8.212, de 24 de julho de 1991',
+        artigo: 'Art. 28',
         descricao: `Tabela de INSS ${anoUsado}: Estabelece o cálculo progressivo do INSS por faixas de contribuição. Teto previdenciário: R$ ${TETO_PREVIDENCIARIO.toFixed(2)}.`
       }
     };
@@ -207,8 +207,8 @@ class INSSService {
       teto: TETO_PREVIDENCIARIO,
       memoria,
       baseLegal: {
-        titulo: 'Emenda Constitucional nº 103/2019',
-        artigo: 'Art. 201, § 1º da CF/88',
+        titulo: 'Lei nº 8.212, de 24 de julho de 1991',
+        artigo: 'Art. 28',
         descricao: `Pró-labore ${anoUsado}: alíquota fixa de 11% sobre o salário, limitado ao teto previdenciário de R$ ${TETO_PREVIDENCIARIO.toFixed(2)}.`
       }
     };
