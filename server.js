@@ -29,16 +29,20 @@ const PORT = process.env.NODE_ENV === 'test'
   : (process.env.PORT || 3000);
 
 // Validação e geração automática de SESSION_SECRET
+// ⚠️ IMPORTANTE: SESSION_SECRET é crítico para segurança de sessões
+// Em produção, DEVE ser configurado como variável de ambiente
 let sessionSecretWarning = false;
 if (!process.env.SESSION_SECRET) {
   const crypto = require('crypto');
-  // Gera um secret seguro automaticamente
+  // Gera um secret seguro automaticamente (apenas para desenvolvimento)
   process.env.SESSION_SECRET = crypto.randomBytes(32).toString('hex');
   sessionSecretWarning = true;
   console.warn("⚠️  ATENÇÃO: SESSION_SECRET não foi configurado!");
   console.warn("💡 Um secret foi gerado automaticamente, mas é recomendado configurar manualmente no Render.");
+  console.warn("💡 PROBLEMA: Em produção, isso pode causar problemas de sessão (cookies não funcionam corretamente)");
   console.warn("💡 Para gerar um secret seguro: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"");
   console.warn("💡 Configure no Render: Environment → Add Environment Variable → SESSION_SECRET");
+  console.warn("💡 Valor gerado automaticamente (NÃO usar em produção):", process.env.SESSION_SECRET.substring(0, 20) + "...");
 }
 
 // Helmet.js - Proteção de headers HTTP
@@ -147,8 +151,17 @@ const sessionConfig = {
 app.use(session(sessionConfig));
 
 // Middleware para verificar inatividade (deve vir ANTES do trackActivity)
+// IMPORTANTE: Não bloqueia rotas públicas (login, register, etc)
 const { checkInactivity } = require('./middleware/activityTracker');
 app.use((req, res, next) => {
+  // Lista de rotas públicas que não devem ser bloqueadas
+  const publicRoutes = ['/login', '/register', '/logout', '/validar-pagamento', '/adquirir', '/legal', '/webhook', '/'];
+  
+  // Se é rota pública, pula verificação de inatividade
+  if (publicRoutes.some(route => req.path === route || req.path.startsWith(route))) {
+    return next();
+  }
+  
   // Aplica verificação de inatividade apenas para usuários autenticados
   if (req.session && req.session.user) {
     const canContinue = checkInactivity(req, res);
@@ -273,7 +286,19 @@ const notificacoesRoutes = require("./routes/notificacoes");
 const perfilRoutes = require("./routes/perfil");
 const adminRoutes = require("./routes/admin");
 
+// Rota raiz - página inicial institucional (DEVE VIR ANTES DAS ROTAS DE AUTH)
+app.get("/", (req, res) => {
+  if (req.session.user) {
+    res.redirect("/dashboard");
+  } else {
+    res.render("index", {
+      title: "Suporte DP - Sistema de Cálculos Trabalhistas",
+    });
+  }
+});
+
 // Rotas públicas (sem CSRF protection)
+// IMPORTANTE: Rotas de auth devem vir DEPOIS da rota raiz para não conflitar
 app.use("/", authRoutes);
 app.use("/adquirir", adquirirRoutes);
 app.use("/webhook", require("./routes/webhook")); // Webhooks não precisam de CSRF
@@ -304,17 +329,6 @@ app.use("/tarefas", tarefasRoutes);
 app.use("/notificacoes", notificacoesRoutes);
 app.use("/perfil", perfilRoutes);
 app.use("/admin", adminRoutes);
-
-// Rota raiz - página inicial institucional
-app.get("/", (req, res) => {
-  if (req.session.user) {
-    res.redirect("/dashboard");
-  } else {
-    res.render("index", {
-      title: "Suporte DP - Sistema de Cálculos Trabalhistas",
-    });
-  }
-});
 
 
 // Middleware de tratamento de erros
