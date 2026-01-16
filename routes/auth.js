@@ -10,14 +10,20 @@ const { body } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const { validateAndNormalizeEmail } = require('../utils/emailValidator');
 
-// Função para obter IP real (considera proxy do Render)
+// Função para obter IP real (VPS com ou sem proxy reverso)
 const getRealIp = (req) => {
-  // Render usa X-Forwarded-For
-  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
-         req.headers['x-real-ip'] || 
-         req.connection?.remoteAddress || 
+  // Se tiver proxy reverso (Nginx/Apache), IP vem no header
+  if (req.headers['x-forwarded-for']) {
+    return req.headers['x-forwarded-for'].split(',')[0].trim();
+  }
+  if (req.headers['x-real-ip']) {
+    return req.headers['x-real-ip'];
+  }
+  // VPS direto (sem proxy reverso)
+  return req.connection?.remoteAddress || 
          req.socket?.remoteAddress ||
-         req.ip;
+         req.ip ||
+         '127.0.0.1';
 };
 
 // Rate Limiting para Login
@@ -28,7 +34,7 @@ const loginLimiter = rateLimit({
   skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => getRealIp(req), // Usa IP real considerando proxy do Render
+  keyGenerator: (req) => getRealIp(req), // Usa IP real (VPS com ou sem proxy)
 });
 
 // Rate Limiting para Registro
@@ -38,7 +44,7 @@ const registerLimiter = rateLimit({
   message: "Muitas tentativas de registro. Tente novamente em 1 hora.",
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => getRealIp(req), // Usa IP real considerando proxy do Render
+  keyGenerator: (req) => getRealIp(req), // Usa IP real (VPS com ou sem proxy)
   handler: (req, res) => {
     // Retorna página de erro em vez de JSON quando rate limit é atingido
     console.warn('⚠️ Rate limit atingido para registro:', {
@@ -98,7 +104,22 @@ const registerValidation = [
   })
 ];
 
-router.get('/login', AuthController.login);
+// Rota GET /login com tratamento de erro
+router.get('/login', async (req, res, next) => {
+  try {
+    await AuthController.login(req, res);
+  } catch (error) {
+    console.error('❌ [AUTH] Erro ao acessar rota GET /login:', error);
+    console.error('Stack:', error.stack);
+    // Renderiza página de erro ao invés de quebrar
+    res.status(500).render('auth/login', {
+      title: 'Login - Suporte DP',
+      error: 'Erro ao carregar página de login. Tente novamente.',
+      success: null
+    });
+  }
+});
+
 router.post('/login', loginLimiter, loginValidation, AuthController.login);
 
 router.get('/register', AuthController.register);

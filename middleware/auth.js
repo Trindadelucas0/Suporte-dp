@@ -170,6 +170,12 @@ async function requireActiveSubscription(req, res, next) {
 function requireAuth(req, res, next) {
   // Verifica se está autenticado primeiro
   if (!req.session || !req.session.user) {
+    console.log('⚠️ [AUTH] requireAuth: Sessão não encontrada ou usuário não autenticado:', {
+      path: req.path,
+      has_session: !!req.session,
+      has_user: !!(req.session && req.session.user),
+      cookies: req.headers.cookie ? 'existem' : 'não existem'
+    });
     if (req.session) {
       req.session.returnTo = req.originalUrl;
     }

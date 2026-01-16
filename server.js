@@ -18,9 +18,13 @@ const cookieParser = require("cookie-parser");
 
 const app = express();
 
-// Configuração de proxy para Render (importante para cookies e sessões)
-if (process.env.NODE_ENV === 'production') {
-  app.set('trust proxy', 1); // Confia no primeiro proxy (Render)
+// Configuração de proxy para VPS
+// Se tiver Nginx/Apache como proxy reverso, configure HAS_REVERSE_PROXY=true
+// Se estiver rodando direto na VPS sem proxy, deixe false ou não defina
+if (process.env.HAS_REVERSE_PROXY === 'true') {
+  app.set('trust proxy', 1); // Confia no proxy reverso (Nginx/Apache)
+} else {
+  app.set('trust proxy', false); // VPS direto, sem proxy
 }
 
 // Em modo de teste, usa porta diferente para evitar conflitos
@@ -61,14 +65,20 @@ app.use(helmet({
   },
 }));
 
-// Função para obter IP real (considera proxy do Render)
+// Função para obter IP real (VPS com ou sem proxy reverso)
 const getRealIp = (req) => {
-  // Render usa X-Forwarded-For
-  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
-         req.headers['x-real-ip'] || 
-         req.connection?.remoteAddress || 
+  // Se tiver proxy reverso (Nginx/Apache), IP vem no header
+  if (req.headers['x-forwarded-for']) {
+    return req.headers['x-forwarded-for'].split(',')[0].trim();
+  }
+  if (req.headers['x-real-ip']) {
+    return req.headers['x-real-ip'];
+  }
+  // VPS direto (sem proxy reverso)
+  return req.connection?.remoteAddress || 
          req.socket?.remoteAddress ||
-         req.ip;
+         req.ip ||
+         '127.0.0.1';
 };
 
 // Rate Limiting Global (ajustado para produção no Render)
@@ -106,7 +116,7 @@ const loginLimiter = rateLimit({
   max: 5, // 5 tentativas de login
   message: "Muitas tentativas de login. Tente novamente em 15 minutos.",
   skipSuccessfulRequests: true,
-  keyGenerator: (req) => getRealIp(req), // Usa IP real considerando proxy do Render
+  keyGenerator: (req) => getRealIp(req), // Usa IP real (VPS com ou sem proxy)
 });
 
 // Rate Limiting para Registro
@@ -114,7 +124,7 @@ const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hora
   max: 3, // 3 registros por hora por IP
   message: "Muitas tentativas de registro. Tente novamente em 1 hora.",
-  keyGenerator: (req) => getRealIp(req), // Usa IP real considerando proxy do Render
+  keyGenerator: (req) => getRealIp(req), // Usa IP real (VPS com ou sem proxy)
 });
 
 // Cookie Parser (necessário para CSRF)
@@ -128,7 +138,13 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 // SESSION_SECRET já foi validado/gerado acima
 const sessionSecret = process.env.SESSION_SECRET;
 
-// Configuração de sessão otimizada para Render
+// Detecta HTTPS para VPS (usa variável de ambiente)
+// Se sua VPS tem HTTPS (Let's Encrypt, etc), defina HAS_HTTPS=true
+// Se não tem HTTPS, deixe undefined ou false
+const hasHTTPS = process.env.FORCE_HTTPS === 'true' || 
+                 process.env.HAS_HTTPS === 'true';
+
+// Configuração de sessão otimizada para VPS
 const sessionConfig = {
   store: new pgSession({
     pool: db.pool,
@@ -139,15 +155,14 @@ const sessionConfig = {
   resave: false, // Não salva sessão se não foi modificada
   saveUninitialized: false, // Não cria sessão para requisições sem dados de sessão
   cookie: {
-    secure: process.env.NODE_ENV === "production", // true em produção (HTTPS)
+    secure: hasHTTPS, // true apenas se realmente tiver HTTPS configurado
     httpOnly: true, // Cookie não acessível via JavaScript (segurança)
-    sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax", // "lax" funciona melhor no Render e permite navegação
+    sameSite: 'lax', // Funciona bem em HTTP e HTTPS
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 dias
-    // domain não é necessário no Render (deixa undefined para funcionar em qualquer domínio)
-    // path: '/' garante que cookie funciona em todas as rotas
-    path: '/',
+    path: '/', // Garante que cookie funciona em todas as rotas
+    // domain: undefined permite funcionar em qualquer domínio/IP
   },
-  name: "suporte-dp.sid", // Nome customizado para evitar detecção
+  name: "suporte-dp.sid", // Nome customizado
 };
 
 app.use(session(sessionConfig));
@@ -222,8 +237,8 @@ if (process.env.NODE_ENV === 'test') {
   csrfProtection = csrf({ 
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax", // "lax" funciona melhor
+      secure: hasHTTPS, // Usa mesma detecção de HTTPS da sessão
+      sameSite: 'lax', // Funciona bem em HTTP e HTTPS
       key: '_csrf'
     },
     // Ignora métodos GET, HEAD, OPTIONS (mas ainda gera tokens)

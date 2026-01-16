@@ -55,8 +55,18 @@ class CheckoutController {
   static async index(req, res) {
     // Requer autenticação
     if (!req.session || !req.session.user) {
+      console.log('⚠️ [CHECKOUT] Sessão não encontrada ao acessar /checkout:', {
+        has_session: !!req.session,
+        has_user: !!(req.session && req.session.user),
+        cookies: req.headers.cookie ? 'existem' : 'não existem'
+      });
       return res.redirect('/login');
     }
+    
+    console.log('✅ [CHECKOUT] Acessando /checkout com usuário autenticado:', {
+      user_id: req.session.user.id,
+      email: req.session.user.email
+    });
 
     const userId = req.session.user.id;
 

@@ -792,11 +792,19 @@ class AuthController {
         req.session.successMessage = 'Conta criada com sucesso! Agora finalize o pagamento para liberar o acesso.';
       }
 
+      console.log('💾 [REGISTER] Salvando sessão antes de redirecionar:', {
+        user_id: user.id,
+        email: user.email,
+        session_id: req.sessionID,
+        has_session_user: !!req.session.user
+      });
+
       // Salva a sessão uma única vez antes de redirecionar
       req.session.save((err) => {
         if (err) {
           console.error('❌ Erro ao salvar sessão após cadastro:', err);
           console.error('Detalhes do erro:', err.message);
+          console.error('Stack:', err.stack);
           return res.render('auth/register', {
             title: 'Cadastro - Suporte DP',
             error: 'Conta criada, mas erro ao fazer login automático. Tente fazer login manualmente.',
@@ -805,11 +813,24 @@ class AuthController {
           });
         }
 
+        console.log('✅ [REGISTER] Sessão salva com sucesso. Redirecionando...', {
+          session_id: req.sessionID,
+          user_id: req.session.user?.id,
+          target: hasTokenValidated ? '/dashboard' : '/checkout'
+        });
+
         // Se há token validado, acesso já está liberado - redireciona para dashboard
         // Caso contrário, redireciona para /checkout (página de pagamento)
         if (hasTokenValidated) {
+          console.log('✅ [REGISTER] Token validado - redirecionando para /dashboard');
           res.redirect('/dashboard');
         } else {
+          console.log('✅ [REGISTER] Redirecionando para /checkout após cadastro:', {
+            user_id: user.id,
+            email: user.email,
+            session_user: req.session.user ? 'existe' : 'não existe',
+            session_id: req.sessionID
+          });
           res.redirect('/checkout');
         }
       });
