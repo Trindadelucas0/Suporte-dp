@@ -44,7 +44,7 @@
     "pdf-lib": "^1.17.1",
     "pg": "^8.11.3",
     "resend": "^6.6.0",
-    "uuid": "^13.0.0"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
