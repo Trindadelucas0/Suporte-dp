@@ -170,18 +170,18 @@
 
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center z-10">
             <!-- Ícones Flutuantes -->
-            <div class="absolute top-10 left-10 text-primary-red/5 text-6xl animate-float">
+            <div class="absolute top-10 left-10 text-primary-red/40 text-6xl animate-float">
                 <i class="fas fa-file-invoice-dollar"></i>
             </div>
-            <div class="absolute top-20 right-20 text-primary-yellow/5 text-5xl animate-float"
+            <div class="absolute top-20 right-20 text-primary-yellow/40 text-5xl animate-float"
                 style="animation-delay: 1s;">
                 <i class="fas fa-chart-line"></i>
             </div>
-            <div class="absolute bottom-20 left-20 text-primary-red/5 text-4xl animate-float"
+            <div class="absolute bottom-20 left-20 text-primary-red/40 text-4xl animate-float"
                 style="animation-delay: 2s;">
                 <i class="fas fa-users"></i>
             </div>
-            <div class="absolute bottom-10 right-10 text-primary-yellow/5 text-5xl animate-float"
+            <div class="absolute bottom-10 right-10 text-primary-yellow/40 text-5xl animate-float"
                 style="animation-delay: 3s;">
                 <i class="fas fa-shield-alt"></i>
             </div>
@@ -190,15 +190,18 @@
                 <div class="inline-block mb-6 px-4 py-2 glass rounded-full border border-white/20">
                     <span class="text-white/90 text-sm font-medium">Sistema Profissional de DP</span>
                 </div>
-                <h1 class="text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-tight">
-                    <span class="gradient-text">Cálculos</span><br>
-                    <span class="text-white">Trabalhistas</span><br>
+                <h1 class="text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-tight relative">
+                    <span class="gradient-text relative z-10">Cálculos</span><br>
+                    <span class="text-white relative z-10 inline-block">
+                        Trabalhistas
+                        <div class="absolute -inset-4 bg-gradient-to-r from-primary-red/20 via-primary-yellow/20 to-primary-red/20 rounded-lg blur-2xl -z-10 opacity-60"></div>
+                    </span><br>
                     <span class="text-white/80 text-4xl md:text-5xl lg:text-6xl font-bold">Inteligentes</span>
                 </h1>
                 <p class="text-xl md:text-2xl text-white/80 mb-12 max-w-2xl mx-auto font-light">
                     Tecnologia avançada para profissionais de DP
                 </p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
                     <a href="/register"
                         class="group relative px-10 py-4 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-xl font-bold text-lg hover:shadow-2xl hover:shadow-primary-red/50 transition-all transform hover:scale-110 overflow-hidden">
                         <span class="relative z-10 flex items-center">
@@ -213,12 +216,18 @@
                         Entrar
                     </a>
                 </div>
+                <!-- Seta para baixo indicando mais conteúdo -->
+                <div class="flex justify-center mt-8 animate-bounce">
+                    <a href="#features" class="text-white/60 hover:text-white transition-colors">
+                        <i class="fas fa-chevron-down text-3xl"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Features Grid -->
-    <section class="relative py-24 dark-gradient-bg">
+    <section id="features" class="relative py-24 dark-gradient-bg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16 animate-slide-up">
                 <h2 class="text-4xl md:text-5xl font-black text-white mb-4">
@@ -227,7 +236,7 @@
             </div>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Feature 1 -->
-                <div class="group glass-dark rounded-2xl p-8 card-hover border border-white/10">
+                <div class="group glass-dark rounded-2xl p-8 card-hover border-[3px] border-primary-yellow/40">
                     <div class="relative mb-6">
                         <div
                             class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity">
@@ -241,7 +250,7 @@
                     <p class="text-white/70 text-sm">INSS, IRRF, FGTS e mais</p>
                 </div>
                 <!-- Feature 2 -->
-                <div class="group glass-dark rounded-2xl p-8 card-hover border border-white/10">
+                <div class="group glass-dark rounded-2xl p-8 card-hover border-[3px] border-primary-yellow/40">
                     <div class="relative mb-6">
                         <div
                             class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity">
@@ -255,7 +264,7 @@
                     <p class="text-white/70 text-sm">Simulação completa</p>
                 </div>
                 <!-- Feature 3 -->
-                <div class="group glass-dark rounded-2xl p-8 card-hover border border-white/10">
+                <div class="group glass-dark rounded-2xl p-8 card-hover border-[3px] border-primary-yellow/40">
                     <div class="relative mb-6">
                         <div
                             class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity">
@@ -269,7 +278,7 @@
                     <p class="text-white/70 text-sm">Análise preventiva</p>
                 </div>
                 <!-- Feature 4 -->
-                <div class="group glass-dark rounded-2xl p-8 card-hover border border-white/10">
+                <div class="group glass-dark rounded-2xl p-8 card-hover border-[3px] border-primary-yellow/40">
                     <div class="relative mb-6">
                         <div
                             class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity">
@@ -283,7 +292,7 @@
                     <p class="text-white/70 text-sm">Obrigações e feriados</p>
                 </div>
                 <!-- Feature 5 -->
-                <div class="group glass-dark rounded-2xl p-8 card-hover border border-white/10">
+                <div class="group glass-dark rounded-2xl p-8 card-hover border-[3px] border-primary-yellow/40">
                     <div class="relative mb-6">
                         <div
                             class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity">
@@ -297,7 +306,7 @@
                     <p class="text-white/70 text-sm">Processos organizados</p>
                 </div>
                 <!-- Feature 6 -->
-                <div class="group glass-dark rounded-2xl p-8 card-hover border border-white/10">
+                <div class="group glass-dark rounded-2xl p-8 card-hover border-[3px] border-primary-yellow/40">
                     <div class="relative mb-6">
                         <div
                             class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity">
@@ -384,7 +393,7 @@
     </section>
 
     <!-- Footer -->
-    <footer class="relative dark-gradient-bg text-white py-16 border-t border-white/10">
+    <footer class="relative dark-gradient-bg text-white py-16 border-t-[3px] border-primary-yellow/40">
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid md:grid-cols-3 gap-12 mb-12">
                 <div>
