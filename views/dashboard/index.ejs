@@ -52,158 +52,18 @@
             <% } %>
 
                 <main class="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
-                        <!-- Menu Lateral de Acesso Rápido (Lado Esquerdo) -->
-                        <div class="lg:col-span-3 order-2 lg:order-1 flex flex-col">
-                            <!-- Bem-vindo -->
-                            <div class="mb-3 sm:mb-4 h-12 sm:h-14 lg:h-16 flex items-center">
-                                <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
-                                    <strong>Bem-vindo,</strong> <span class="font-semibold text-primary-red">
-                                        <%= typeof user !=='undefined' && user ? user.nome : 'Usuário' %>
-                                    </span>!
-                                </h1>
-                            </div>
-                            <!-- Acesso Rápido -->
-                            <div
-                                class="bg-white rounded-xl shadow-xl p-4 sm:p-6 border-4 border-primary-red hover:border-primary-yellow transition-all duration-300 transform hover:shadow-2xl lg:sticky lg:top-6">
-                                <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-primary-red">
-                                    <i class="fas fa-bolt text-primary-yellow mr-2"></i>
-                                    Acesso Rápido
-                                </h3>
-                                <div class="grid grid-cols-2 sm:grid-cols-1 gap-2 sm:space-y-2">
-                                    <a href="/inss"
-                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
-                                        <i
-                                            class="fas fa-percent text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">INSS</p>
-                                            <p class="text-xs text-gray-600 hidden sm:block">Cálculo progressivo</p>
-                                        </div>
-                                    </a>
-                                    <a href="/irrf"
-                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
-                                        <i
-                                            class="fas fa-file-invoice-dollar text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">IRRF</p>
-                                            <p class="text-xs text-gray-600 hidden sm:block">Imposto de Renda</p>
-                                        </div>
-                                    </a>
-                                    <a href="/fgts"
-                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
-                                        <i
-                                            class="fas fa-piggy-bank text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">FGTS</p>
-                                            <p class="text-xs text-gray-600 hidden sm:block">Fundo de Garantia</p>
-                                        </div>
-                                    </a>
-                                    <a href="/avos"
-                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
-                                        <i
-                                            class="fas fa-gift text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">13º
-                                                Salário</p>
-                                            <p class="text-xs text-gray-600 hidden sm:block">Cálculo proporcional</p>
-                                        </div>
-                                    </a>
-                                    <a href="/ferias"
-                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
-                                        <i
-                                            class="fas fa-umbrella-beach text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Férias
-                                            </p>
-                                            <p class="text-xs text-gray-600 hidden sm:block">Cálculo proporcional</p>
-                                        </div>
-                                    </a>
-                                    <a href="/calendario"
-                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
-                                        <i
-                                            class="fas fa-calendar text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">
-                                                Calendário</p>
-                                            <p class="text-xs text-gray-600 hidden sm:block">Obrigações e feriados</p>
-                                        </div>
-                                    </a>
-                                    <a href="/custo"
-                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
-                                        <i
-                                            class="fas fa-calculator text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Custo</p>
-                                            <p class="text-xs text-gray-600 hidden sm:block">Simulador completo</p>
-                                        </div>
-                                    </a>
-                                    <a href="/periculosidade"
-                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
-                                        <i
-                                            class="fas fa-exclamation-triangle text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">
-                                                Periculosidade</p>
-                                            <p class="text-xs text-gray-600 hidden sm:block">Adicionais de risco</p>
-                                        </div>
-                                    </a>
-                                    <a href="/risco-multa"
-                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
-                                        <i
-                                            class="fas fa-gavel text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Multa
-                                                Data Base</p>
-                                            <p class="text-xs text-gray-600 hidden sm:block">Período de risco</p>
-                                        </div>
-                                    </a>
-                                    <a href="/contrato-experiencia"
-                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
-                                        <i
-                                            class="fas fa-file-contract text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Contrato
-                                                Experiência</p>
-                                            <p class="text-xs text-gray-600 hidden sm:block">Cálculo de multa</p>
-                                        </div>
-                                    </a>
-                                    <a href="/checklist"
-                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
-                                        <i
-                                            class="fas fa-check-square text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">
-                                                Checklists</p>
-                                            <p class="text-xs text-gray-600 hidden sm:block">Processos e documentos</p>
-                                        </div>
-                                    </a>
-                                    <% if (typeof user !=='undefined' && user && user.is_admin) { %>
-                                        <a href="/admin"
-                                            class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
-                                            <i
-                                                class="fas fa-user-shield text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
-                                            <div class="flex-1 min-w-0">
-                                                <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Admin
-                                                </p>
-                                                <p class="text-xs text-gray-600 hidden sm:block">Painel administrativo
-                                                </p>
-                                            </div>
-                                        </a>
-                                        <% } %>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Calendário (Lado Direito) -->
-                        <div class="lg:col-span-9 order-1 lg:order-2 flex flex-col">
-                            <!-- Título Suporte DP -->
-                            <div class="mb-3 sm:mb-4 text-center h-12 sm:h-14 lg:h-16 flex items-center justify-center">
-                                <h2
-                                    class="dela-gothic-one-regular text-2xl sm:text-3xl lg:text-4xl xl:text-5xl bg-gradient-to-r from-primary-red to-primary-yellow bg-clip-text text-transparent drop-shadow-lg flex items-center justify-center">
-                                    <i
-                                        class="fas fa-calculator mr-2 sm:mr-3 text-2xl sm:text-3xl lg:text-4xl xl:text-5xl bg-gradient-to-r from-primary-red to-primary-yellow bg-clip-text text-transparent"></i>
-                                    <span>Suporte DP</span>
-                                </h2>
-                            </div>
+                    <!-- Bem-vindo -->
+                    <div class="mb-3 sm:mb-4 h-12 sm:h-14 lg:h-16 flex items-center">
+                        <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
+                            <strong>Bem-vindo,</strong> <span class="font-semibold text-primary-red">
+                                <%= typeof user !=='undefined' && user ? user.nome : 'Usuário' %>
+                            </span>!
+                        </h1>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 gap-4 sm:gap-6">
+                        <!-- Calendário -->
+                        <div class="flex flex-col">
                             <!-- 
                     CALENDÁRIO DE OBRIGAÇÕES
                     =========================
@@ -402,6 +262,136 @@
                                                                 <p>Carregando calendário...</p>
                                                             </div>
                                                             <% } %>
+                                </div>
+                            </div>
+
+                            <!-- Acesso Rápido -->
+                            <div
+                                class="bg-white rounded-xl shadow-xl p-4 sm:p-6 border-4 border-primary-red hover:border-primary-yellow transition-all duration-300 transform hover:shadow-2xl mt-4 sm:mt-6">
+                                <h3 class="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-primary-red">
+                                    <i class="fas fa-bolt text-primary-yellow mr-2"></i>
+                                    Acesso Rápido
+                                </h3>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+                                    <a href="/inss"
+                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
+                                        <i
+                                            class="fas fa-percent text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">INSS</p>
+                                            <p class="text-xs text-gray-600 hidden sm:block">Cálculo progressivo</p>
+                                        </div>
+                                    </a>
+                                    <a href="/irrf"
+                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
+                                        <i
+                                            class="fas fa-file-invoice-dollar text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">IRRF</p>
+                                            <p class="text-xs text-gray-600 hidden sm:block">Imposto de Renda</p>
+                                        </div>
+                                    </a>
+                                    <a href="/fgts"
+                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
+                                        <i
+                                            class="fas fa-piggy-bank text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">FGTS</p>
+                                            <p class="text-xs text-gray-600 hidden sm:block">Fundo de Garantia</p>
+                                        </div>
+                                    </a>
+                                    <a href="/avos"
+                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
+                                        <i
+                                            class="fas fa-gift text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">13º
+                                                Salário</p>
+                                            <p class="text-xs text-gray-600 hidden sm:block">Cálculo proporcional</p>
+                                        </div>
+                                    </a>
+                                    <a href="/ferias"
+                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
+                                        <i
+                                            class="fas fa-umbrella-beach text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Férias
+                                            </p>
+                                            <p class="text-xs text-gray-600 hidden sm:block">Cálculo proporcional</p>
+                                        </div>
+                                    </a>
+                                    <a href="/calendario"
+                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
+                                        <i
+                                            class="fas fa-calendar text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">
+                                                Calendário</p>
+                                            <p class="text-xs text-gray-600 hidden sm:block">Obrigações e feriados</p>
+                                        </div>
+                                    </a>
+                                    <a href="/custo"
+                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
+                                        <i
+                                            class="fas fa-calculator text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Custo</p>
+                                            <p class="text-xs text-gray-600 hidden sm:block">Simulador completo</p>
+                                        </div>
+                                    </a>
+                                    <a href="/periculosidade"
+                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
+                                        <i
+                                            class="fas fa-exclamation-triangle text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">
+                                                Periculosidade</p>
+                                            <p class="text-xs text-gray-600 hidden sm:block">Adicionais de risco</p>
+                                        </div>
+                                    </a>
+                                    <a href="/risco-multa"
+                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
+                                        <i
+                                            class="fas fa-gavel text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Multa
+                                                Data Base</p>
+                                            <p class="text-xs text-gray-600 hidden sm:block">Período de risco</p>
+                                        </div>
+                                    </a>
+                                    <a href="/contrato-experiencia"
+                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
+                                        <i
+                                            class="fas fa-file-contract text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Contrato
+                                                Experiência</p>
+                                            <p class="text-xs text-gray-600 hidden sm:block">Cálculo de multa</p>
+                                        </div>
+                                    </a>
+                                    <a href="/checklist"
+                                        class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-yellow-50 hover:border-primary-yellow transition">
+                                        <i
+                                            class="fas fa-check-square text-primary-yellow text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">
+                                                Checklists</p>
+                                            <p class="text-xs text-gray-600 hidden sm:block">Processos e documentos</p>
+                                        </div>
+                                    </a>
+                                    <% if (typeof user !=='undefined' && user && user.is_admin) { %>
+                                        <a href="/admin"
+                                            class="flex items-center p-2 sm:p-3 border border-gray-200 rounded-lg hover:bg-red-50 hover:border-primary-red transition">
+                                            <i
+                                                class="fas fa-user-shield text-primary-red text-lg sm:text-xl mr-2 sm:mr-3 w-5 sm:w-6"></i>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="font-semibold text-gray-900 text-xs sm:text-sm truncate">Admin
+                                                </p>
+                                                <p class="text-xs text-gray-600 hidden sm:block">Painel administrativo
+                                                </p>
+                                            </div>
+                                        </a>
+                                        <% } %>
                                 </div>
                             </div>
 
