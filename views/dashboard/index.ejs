@@ -122,6 +122,24 @@
         .border-3 {
             border-width: 3px !important;
         }
+
+        .neon-glow {
+            box-shadow: 
+                0 0 10px rgba(220, 38, 38, 0.5),
+                0 0 20px rgba(220, 38, 38, 0.4),
+                0 0 30px rgba(251, 191, 36, 0.3),
+                0 0 40px rgba(251, 191, 36, 0.2),
+                inset 0 0 20px rgba(220, 38, 38, 0.1);
+        }
+
+        .neon-glow:hover {
+            box-shadow: 
+                0 0 15px rgba(220, 38, 38, 0.7),
+                0 0 25px rgba(220, 38, 38, 0.6),
+                0 0 35px rgba(251, 191, 36, 0.5),
+                0 0 50px rgba(251, 191, 36, 0.4),
+                inset 0 0 30px rgba(220, 38, 38, 0.2);
+        }
     </style>
 </head>
 
@@ -219,7 +237,7 @@
                     <!-- Cabeçalho dos dias da semana -->
                     <div class="grid grid-cols-7 gap-1.5 mb-1.5">
                         <div
-                            class="text-center font-bold text-white py-2 bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-md text-xs sm:text-sm">
+                            class="text-center font-bold text-white py-2 bg-gradient-to-br from-gray-400 to-gray-500 rounded-lg shadow-md text-xs sm:text-sm">
                             Dom</div>
                         <div
                             class="text-center font-bold text-white py-2 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg shadow-md text-xs sm:text-sm">
@@ -251,16 +269,14 @@
                                 <% if (typeof calendario !=='undefined' && calendario && calendario.length>
                                     0) { %>
                                     <% calendario.forEach(dia=> { %>
+                                        <% const temEventos = dia.anotacao || (dia.obrigacoes && dia.obrigacoes.length > 0) || (dia.tarefas && dia.tarefas.length > 0); %>
+                                        <% const ehFeriado = dia.isFeriado; %>
+                                        <% const temDestaque = temEventos || ehFeriado; %>
                                         <div onclick="abrirModal('<%= dia.data %>')"
-                                            class="glass min-h-[calc((100vh-350px)/6)] flex flex-col border-3 rounded-xl p-1.5 sm:p-2 cursor-pointer transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:z-10 card-hover
-                                    <%= dia.isFeriado && dia.feriadoTipo === 'nacional' ? 'border-red-500/50 hover:border-red-400' : 
-                                        dia.isFeriado && dia.feriadoTipo === 'facultativo' ? 'border-orange-500/50 hover:border-orange-400' :
-                                        dia.diaSemana === 0 ? 'border-gray-500/50 hover:border-gray-400' :
-                                        dia.anotacao || (dia.obrigacoes && dia.obrigacoes.length > 0) || (dia.tarefas && dia.tarefas.length > 0) ? 'border-yellow-500/50 hover:border-yellow-400' : 
-                                        'border-white/20 hover:border-primary-red/50' %>">
+                                            class="<%= temDestaque ? 'bg-gradient-to-br from-primary-red/40 via-primary-yellow/40 to-primary-red/40 border-4 border-primary-yellow/100 hover:border-primary-red/100 shadow-2xl shadow-primary-yellow/60 ring-2 ring-primary-yellow/50 neon-glow' : dia.diaSemana === 0 ? 'bg-white/50 border-3 border-white/70 hover:border-white/90 shadow-lg' : 'glass border-3 border-white/20 hover:border-primary-red/50' %> min-h-[calc((100vh-350px)/6)] flex flex-col rounded-xl p-1.5 sm:p-2 cursor-pointer transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:z-10 card-hover">
                                             <div class="flex justify-between items-start mb-0.5 flex-shrink-0">
                                                 <span
-                                                    class="text-sm sm:text-base font-bold <%= dia.isFeriado && dia.feriadoTipo === 'nacional' ? 'text-red-300' : dia.isFeriado && dia.feriadoTipo === 'facultativo' ? 'text-orange-300' : dia.diaSemana === 0 ? 'text-gray-400' : 'text-white' %>">
+                                                    class="text-sm sm:text-base font-bold <%= dia.isFeriado && dia.feriadoTipo === 'nacional' ? 'text-red-300' : dia.isFeriado && dia.feriadoTipo === 'facultativo' ? 'text-orange-300' : dia.diaSemana === 0 ? 'text-white' : 'text-white' %>">
                                                     <%= typeof dia.dia !=='undefined' ? dia.dia : '' %>
                                                 </span>
                                                 <% const totalEventos=(dia.obrigacoes ?

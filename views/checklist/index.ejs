@@ -10,9 +10,31 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: {
-                            red: '#DC2626',
-                            yellow: '#FBBF24'
+                        primary: { red: '#DC2626', yellow: '#FBBF24' }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'gradient': 'gradient 15s ease infinite',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        gradient: {
+                            '0%, 100%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
                         }
                     }
                 }
@@ -21,183 +43,238 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/loading.css">
     <!-- Favicon com as letras "DP" nas cores do sistema (Vermelho #DC2626 e Amarelo #FBBF24) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
     <style>
-        .bungee-inline-regular {
-            font-family: "Bungee Inline", sans-serif;
-            font-weight: 400;
-            font-style: normal;
+        * {
+            font-family: 'Inter', sans-serif;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .fade-in { animation: fadeIn 0.3s ease-out; }
+
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .icon-glow {
+            filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5));
+        }
+
+        .icon-glow-yellow {
+            filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .fade-in { animation: fadeIn 0.6s ease-out; }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
     <% if (typeof user !== 'undefined' && user) { %>
         <%- include('../partials/navbar') %>
     <% } %>
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="mb-8">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                <div>
-                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                        <i class="fas fa-tasks text-primary-red mr-2"></i>
-                        Checklists de Processos
-                    </h1>
-                    <p class="text-gray-600">
-                        Organize e acompanhe todos os processos trabalhistas da sua empresa
-                    </p>
+    <main class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 relative">
+        <!-- Background Elements -->
+        <div class="absolute top-0 right-0 w-96 h-96 bg-primary-red/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-primary-yellow/10 rounded-full blur-3xl"></div>
+        
+        <div class="relative z-10">
+            <!-- Header -->
+            <div class="mb-6 animate-fade-in">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                    <div>
+                        <h1 class="text-3xl md:text-4xl font-black text-white mb-2">
+                            <i class="fas fa-tasks text-primary-red mr-2 icon-glow"></i>
+                            Checklists de <span class="gradient-text">Processos</span>
+                        </h1>
+                        <p class="text-white/70 text-sm font-medium">
+                            Organize e acompanhe todos os processos trabalhistas da sua empresa
+                        </p>
+                    </div>
+                    <button 
+                        type="button"
+                        data-action="criar"
+                        class="group relative bg-gradient-to-r from-primary-red to-primary-yellow text-white px-6 py-3 rounded-xl font-bold hover:shadow-2xl hover:shadow-primary-yellow/50 transition-all transform hover:scale-105 overflow-hidden flex items-center gap-2">
+                        <span class="relative z-10 flex items-center">
+                            <i class="fas fa-plus"></i>
+                            Novo Checklist
+                        </span>
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity">
+                        </div>
+                    </button>
                 </div>
-                <button 
-                    type="button"
-                    data-action="criar"
-                    class="bg-gradient-to-r from-primary-red to-primary-yellow text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition transform hover:scale-105 shadow-lg flex items-center gap-2">
-                    <i class="fas fa-plus"></i>
-                    Novo Checklist
-                </button>
-            </div>
 
-            <!-- Estatísticas -->
-            <% if (checklists && checklists.length > 0) { %>
-                <% 
-                    const totalChecklists = checklists.length;
-                    const totalItens = checklists.reduce((sum, c) => sum + (parseInt(c.total_itens) || 0), 0);
-                    const itensConcluidos = checklists.reduce((sum, c) => sum + (parseInt(c.itens_concluidos) || 0), 0);
-                    const percentualGeral = totalItens > 0 ? Math.round((itensConcluidos / totalItens) * 100) : 0;
-                %>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-primary-red">
-                        <p class="text-sm text-gray-600 mb-1">Total de Checklists</p>
-                        <p class="text-2xl font-bold text-gray-900"><%= totalChecklists %></p>
-                    </div>
-                    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-primary-yellow">
-                        <p class="text-sm text-gray-600 mb-1">Total de Itens</p>
-                        <p class="text-2xl font-bold text-gray-900"><%= totalItens %></p>
-                    </div>
-                    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-green-500">
-                        <p class="text-sm text-gray-600 mb-1">Itens Concluídos</p>
-                        <p class="text-2xl font-bold text-gray-900"><%= itensConcluidos %></p>
-                    </div>
-                    <div class="bg-gradient-to-r from-primary-red to-primary-yellow rounded-lg shadow-md p-4 text-white">
-                        <p class="text-sm opacity-90 mb-1">Progresso Geral</p>
-                        <p class="text-2xl font-bold"><%= percentualGeral %>%</p>
-                    </div>
-                </div>
-            <% } %>
-        </div>
-
-        <!-- Modelos Prontos -->
-        <section class="mb-12">
-            <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <i class="fas fa-book text-primary-red mr-2"></i>
-                Modelos Prontos
-            </h2>
-            <p class="text-sm text-gray-600 mb-4">
-                Use nossos modelos pré-configurados para processos comuns
-            </p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <a href="/checklist/admissao" 
-                   class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500 hover:shadow-lg transition-all hover:scale-105 group">
-                    <div class="flex items-center gap-4 mb-3">
-                        <div class="bg-blue-100 text-blue-600 rounded-lg w-12 h-12 flex items-center justify-center">
-                            <i class="fas fa-user-plus text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-lg text-gray-900">Admissão</h3>
-                            <p class="text-xs text-gray-500">Processo completo de admissão</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-600">
-                        Checklist completo com todos os passos necessários para admissão de funcionários
-                    </p>
-                </a>
-
-                <a href="/checklist/rescisao" 
-                   class="bg-white rounded-lg shadow-md p-6 border-l-4 border-amber-500 hover:shadow-lg transition-all hover:scale-105 group">
-                    <div class="flex items-center gap-4 mb-3">
-                        <div class="bg-amber-100 text-amber-600 rounded-lg w-12 h-12 flex items-center justify-center">
-                            <i class="fas fa-user-minus text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-lg text-gray-900">Rescisão</h3>
-                            <p class="text-xs text-gray-500">Processo completo de rescisão</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-600">
-                        Todos os passos para realizar uma rescisão trabalhista corretamente
-                    </p>
-                </a>
-
-                <a href="/checklist/afastamento_inss" 
-                   class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500 hover:shadow-lg transition-all hover:scale-105 group">
-                    <div class="flex items-center gap-4 mb-3">
-                        <div class="bg-red-100 text-red-600 rounded-lg w-12 h-12 flex items-center justify-center">
-                            <i class="fas fa-user-injured text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-lg text-gray-900">Afastamento INSS</h3>
-                            <p class="text-xs text-gray-500">Gestão de afastamentos</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-600">
-                        Controle completo de afastamentos por INSS e retorno ao trabalho
-                    </p>
-                </a>
-            </div>
-        </section>
-
-        <!-- Checklists Personalizados -->
-        <section>
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-bold text-gray-900 flex items-center">
-                    <i class="fas fa-list-check text-primary-yellow mr-2"></i>
-                    Meus Checklists Personalizados
-                </h2>
+                <!-- Estatísticas -->
                 <% if (checklists && checklists.length > 0) { %>
-                    <span class="text-sm text-gray-500">
-                        <%= checklists.length %> checklist<%= checklists.length !== 1 ? 's' : '' %>
-                    </span>
+                    <% 
+                        const totalChecklists = checklists.length;
+                        const totalItens = checklists.reduce((sum, c) => sum + (parseInt(c.total_itens) || 0), 0);
+                        const itensConcluidos = checklists.reduce((sum, c) => sum + (parseInt(c.itens_concluidos) || 0), 0);
+                        const percentualGeral = totalItens > 0 ? Math.round((itensConcluidos / totalItens) * 100) : 0;
+                    %>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 animate-slide-up">
+                        <div class="glass rounded-2xl shadow-2xl p-4 border border-white/20 backdrop-blur-xl card-hover border-l-4 border-primary-red">
+                            <p class="text-sm text-white/70 mb-1">Total de Checklists</p>
+                            <p class="text-2xl font-bold text-white"><%= totalChecklists %></p>
+                        </div>
+                        <div class="glass rounded-2xl shadow-2xl p-4 border border-white/20 backdrop-blur-xl card-hover border-l-4 border-primary-yellow">
+                            <p class="text-sm text-white/70 mb-1">Total de Itens</p>
+                            <p class="text-2xl font-bold text-white"><%= totalItens %></p>
+                        </div>
+                        <div class="glass rounded-2xl shadow-2xl p-4 border border-white/20 backdrop-blur-xl card-hover border-l-4 border-green-500">
+                            <p class="text-sm text-white/70 mb-1">Itens Concluídos</p>
+                            <p class="text-2xl font-bold text-white"><%= itensConcluidos %></p>
+                        </div>
+                        <div class="bg-gradient-to-r from-primary-red/40 via-primary-yellow/40 to-primary-red/40 rounded-2xl shadow-2xl p-4 border-4 border-primary-yellow/80 text-white backdrop-blur-xl">
+                            <p class="text-sm opacity-90 mb-1">Progresso Geral</p>
+                            <p class="text-2xl font-bold"><%= percentualGeral %>%</p>
+                        </div>
+                    </div>
                 <% } %>
             </div>
 
-            <% if (checklists && checklists.length > 0) { %>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <% checklists.forEach(checklist => { %>
-                        <% 
-                            const percentual = checklist.total_itens > 0 
-                                ? Math.round((checklist.itens_concluidos / checklist.total_itens) * 100) 
-                                : 0;
-                            const dataCriacao = checklist.created_at 
-                                ? new Date(checklist.created_at).toLocaleDateString('pt-BR') 
-                                : 'Data não disponível';
-                        %>
-                        <div class="bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-xl transition-all fade-in">
+            <!-- Modelos Prontos -->
+            <section class="mb-12 animate-slide-up" style="animation-delay: 0.1s;">
+                <h2 class="text-2xl font-black text-white mb-4 flex items-center">
+                    <div class="relative mr-3">
+                        <div class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur opacity-50"></div>
+                        <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-2 rounded-xl">
+                            <i class="fas fa-book text-white text-xl icon-glow"></i>
+                        </div>
+                    </div>
+                    Modelos <span class="gradient-text">Prontos</span>
+                </h2>
+                <p class="text-sm text-white/70 mb-6 bg-white/5 p-4 rounded-lg border border-white/10">
+                    <i class="fas fa-info-circle text-primary-yellow mr-2"></i>
+                    Use nossos modelos pré-configurados para processos comuns
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <a href="/checklist/admissao" 
+                       class="glass rounded-2xl shadow-2xl p-6 border border-white/20 backdrop-blur-xl card-hover border-l-4 border-blue-500/80 hover:border-blue-400">
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="bg-blue-900/30 text-blue-300 border border-blue-500/30 rounded-xl w-12 h-12 flex items-center justify-center">
+                                <i class="fas fa-user-plus text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-white">Admissão</h3>
+                                <p class="text-xs text-white/70">Processo completo de admissão</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-white/80">
+                            Checklist completo com todos os passos necessários para admissão de funcionários
+                        </p>
+                    </a>
+
+                    <a href="/checklist/rescisao" 
+                       class="glass rounded-2xl shadow-2xl p-6 border border-white/20 backdrop-blur-xl card-hover border-l-4 border-amber-500/80 hover:border-amber-400 group">
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="bg-amber-900/30 text-amber-300 border border-amber-500/30 rounded-xl w-12 h-12 flex items-center justify-center">
+                                <i class="fas fa-user-minus text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-white">Rescisão</h3>
+                                <p class="text-xs text-white/70">Processo completo de rescisão</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-white/80">
+                            Todos os passos para realizar uma rescisão trabalhista corretamente
+                        </p>
+                    </a>
+
+                    <a href="/checklist/afastamento_inss" 
+                       class="glass rounded-2xl shadow-2xl p-6 border border-white/20 backdrop-blur-xl card-hover border-l-4 border-red-500/80 hover:border-red-400 group">
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="bg-red-900/30 text-red-300 border border-red-500/30 rounded-xl w-12 h-12 flex items-center justify-center">
+                                <i class="fas fa-user-injured text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-white">Afastamento INSS</h3>
+                                <p class="text-xs text-white/70">Gestão de afastamentos</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-white/80">
+                            Controle completo de afastamentos por INSS e retorno ao trabalho
+                        </p>
+                    </a>
+            </div>
+        </section>
+
+            <!-- Checklists Personalizados -->
+            <section class="animate-slide-up" style="animation-delay: 0.2s;">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-black text-white flex items-center">
+                        <div class="relative mr-3">
+                            <div class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl blur opacity-50"></div>
+                            <div class="relative bg-gradient-to-r from-primary-yellow to-primary-red p-2 rounded-xl">
+                                <i class="fas fa-list-check text-white text-xl icon-glow-yellow"></i>
+                            </div>
+                        </div>
+                        Meus Checklists <span class="gradient-text">Personalizados</span>
+                    </h2>
+                    <% if (checklists && checklists.length > 0) { %>
+                        <span class="text-sm text-white/70 bg-white/10 px-3 py-1 rounded-full border border-white/20">
+                            <%= checklists.length %> checklist<%= checklists.length !== 1 ? 's' : '' %>
+                        </span>
+                    <% } %>
+                </div>
+
+                <% if (checklists && checklists.length > 0) { %>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <% checklists.forEach(checklist => { %>
+                            <% 
+                                const percentual = checklist.total_itens > 0 
+                                    ? Math.round((checklist.itens_concluidos / checklist.total_itens) * 100) 
+                                    : 0;
+                                const dataCriacao = checklist.created_at 
+                                    ? new Date(checklist.created_at).toLocaleDateString('pt-BR') 
+                                    : 'Data não disponível';
+                            %>
+                            <div class="glass rounded-2xl shadow-2xl border border-white/20 backdrop-blur-xl card-hover fade-in">
                             <div class="p-6">
                                 <!-- Header do Card -->
                                 <div class="flex justify-between items-start mb-4">
                                     <div class="flex-1">
                                         <div class="flex items-center gap-2 mb-2">
-                                            <span class="px-2 py-1 bg-primary-red text-white text-xs font-bold rounded uppercase">
+                                                <span class="px-2 py-1 bg-primary-red/80 text-white text-xs font-bold rounded uppercase">
                                                 <%= checklist.tipo || 'Custom' %>
                                             </span>
                                             <% if (percentual === 100) { %>
-                                                <span class="px-2 py-1 bg-green-500 text-white text-xs font-bold rounded">
+                                                <span class="px-2 py-1 bg-green-500/80 text-white text-xs font-bold rounded">
                                                     <i class="fas fa-check-circle mr-1"></i>Concluído
                                                 </span>
                                             <% } %>
                                         </div>
-                                        <h3 class="text-lg font-bold text-gray-900 mb-1"><%= checklist.titulo %></h3>
-                                        <p class="text-xs text-gray-500">
-                                            <i class="fas fa-calendar-alt mr-1"></i>
+                                        <h3 class="text-lg font-bold text-white mb-1"><%= checklist.titulo %></h3>
+                                        <p class="text-xs text-white/70">
+                                            <i class="fas fa-calendar-alt mr-1 text-primary-yellow"></i>
                                             Criado em <%= dataCriacao %>
                                         </p>
                                     </div>
@@ -208,7 +285,7 @@
                                             data-id="<%= checklist.id %>"
                                             data-titulo="<%= checklist.titulo %>"
                                             data-tipo="<%= checklist.tipo || 'custom' %>"
-                                            class="text-gray-400 hover:text-primary-yellow transition-colors p-2"
+                                            class="text-white/50 hover:text-primary-yellow transition-colors p-2"
                                             title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </button>
@@ -217,7 +294,7 @@
                                             data-action="deletar"
                                             data-id="<%= checklist.id %>"
                                             data-titulo="<%= checklist.titulo %>"
-                                            class="text-gray-400 hover:text-primary-red transition-colors p-2"
+                                            class="text-white/50 hover:text-primary-red transition-colors p-2"
                                             title="Deletar">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -227,74 +304,85 @@
                                 <!-- Progresso -->
                                 <div class="mb-4">
                                     <div class="flex justify-between text-sm mb-2">
-                                        <span class="text-gray-600">
-                                            <i class="fas fa-tasks mr-1"></i>
-                                            <%= checklist.itens_concluidos || 0 %> de <%= checklist.total_itens || 0 %> itens
-                                        </span>
-                                        <span class="font-bold text-gray-900"><%= percentual %>%</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                                        <div 
-                                            class="bg-gradient-to-r from-primary-red to-primary-yellow h-3 rounded-full transition-all duration-500"
-                                            style="width: <%= percentual %>%">
+                                            <span class="text-white/80">
+                                                <i class="fas fa-tasks mr-1 text-primary-yellow"></i>
+                                                <%= checklist.itens_concluidos || 0 %> de <%= checklist.total_itens || 0 %> itens
+                                            </span>
+                                            <span class="font-bold text-white"><%= percentual %>%</span>
+                                        </div>
+                                        <div class="w-full bg-white/20 rounded-full h-3 overflow-hidden">
+                                            <div 
+                                                class="bg-gradient-to-r from-primary-red to-primary-yellow h-3 rounded-full transition-all duration-500"
+                                                style="width: <%= percentual %>%">
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <!-- Informações Adicionais -->
-                                <div class="grid grid-cols-2 gap-2 mb-4 text-xs text-gray-600">
-                                    <div>
-                                        <i class="fas fa-list mr-1"></i>
-                                        <%= checklist.total_itens || 0 %> itens
+                                    <!-- Informações Adicionais -->
+                                    <div class="grid grid-cols-2 gap-2 mb-4 text-xs text-white/70">
+                                        <div>
+                                            <i class="fas fa-list mr-1 text-primary-yellow"></i>
+                                            <%= checklist.total_itens || 0 %> itens
+                                        </div>
+                                        <div>
+                                            <i class="fas fa-check-circle mr-1 text-green-400"></i>
+                                            <%= checklist.itens_concluidos || 0 %> concluídos
+                                        </div>
                                     </div>
-                                    <div>
-                                        <i class="fas fa-check-circle mr-1"></i>
-                                        <%= checklist.itens_concluidos || 0 %> concluídos
-                                    </div>
-                                </div>
 
-                                <!-- Botão Abrir -->
-                                <a 
-                                    href="/checklist/custom/<%= checklist.id %>" 
-                                    class="block w-full text-center py-2 bg-gradient-to-r from-primary-red to-primary-yellow text-white font-bold rounded-lg hover:opacity-90 transition transform hover:scale-105">
-                                    <i class="fas fa-external-link-alt mr-2"></i>
-                                    Abrir Checklist
-                                </a>
+                                    <!-- Botão Abrir -->
+                                    <a 
+                                        href="/checklist/custom/<%= checklist.id %>" 
+                                        class="group relative block w-full text-center py-2 bg-gradient-to-r from-primary-red to-primary-yellow text-white font-bold rounded-xl hover:shadow-lg hover:shadow-primary-yellow/50 transition-all transform hover:scale-105 overflow-hidden">
+                                        <span class="relative z-10 flex items-center justify-center">
+                                            <i class="fas fa-external-link-alt mr-2"></i>
+                                            Abrir Checklist
+                                        </span>
+                                        <div
+                                            class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity">
+                                        </div>
+                                    </a>
+                                </div>
                             </div>
-                        </div>
-                    <% }); %>
-                </div>
-            <% } else { %>
-                <div class="bg-white rounded-lg shadow-md p-12 text-center border-2 border-dashed border-gray-300">
-                    <i class="fas fa-clipboard-list text-6xl text-gray-300 mb-4"></i>
-                    <h3 class="text-xl font-bold text-gray-700 mb-2">Nenhum checklist criado ainda</h3>
-                    <p class="text-gray-500 mb-6">
-                        Crie seu primeiro checklist personalizado ou use um dos modelos prontos acima
-                    </p>
-                    <button 
-                        type="button"
-                        data-action="criar"
-                        class="bg-gradient-to-r from-primary-red to-primary-yellow text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition">
-                        <i class="fas fa-plus mr-2"></i>
-                        Criar Primeiro Checklist
-                    </button>
-                </div>
-            <% } %>
-        </section>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <div class="glass rounded-2xl shadow-2xl p-12 text-center border-2 border-dashed border-white/20 backdrop-blur-xl">
+                        <i class="fas fa-clipboard-list text-6xl text-white/30 mb-4"></i>
+                        <h3 class="text-xl font-bold text-white mb-2">Nenhum checklist criado ainda</h3>
+                        <p class="text-white/70 mb-6">
+                            Crie seu primeiro checklist personalizado ou use um dos modelos prontos acima
+                        </p>
+                        <button 
+                            type="button"
+                            data-action="criar"
+                            class="group relative bg-gradient-to-r from-primary-red to-primary-yellow text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg hover:shadow-primary-yellow/50 transition-all transform hover:scale-105 overflow-hidden">
+                            <span class="relative z-10 flex items-center justify-center">
+                                <i class="fas fa-plus mr-2"></i>
+                                Criar Primeiro Checklist
+                            </span>
+                            <div
+                                class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity">
+                            </div>
+                        </button>
+                    </div>
+                <% } %>
+            </section>
+        </div>
     </main>
 
     <!-- Modal Criar Checklist -->
-    <div id="modalCriar" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full fade-in">
+    <div id="modalCriar" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-dark border border-white/20 rounded-2xl shadow-2xl p-8 max-w-md w-full fade-in">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gray-900">
-                    <i class="fas fa-plus-circle text-primary-red mr-2"></i>
-                    Criar Novo Checklist
+                <h3 class="text-2xl font-black text-white">
+                    <i class="fas fa-plus-circle text-primary-red mr-2 icon-glow"></i>
+                    Criar Novo <span class="gradient-text">Checklist</span>
                 </h3>
                 <button 
                     type="button"
                     data-action="fechar-criar"
-                    class="text-gray-400 hover:text-gray-600">
+                    class="text-white/70 hover:text-white transition-colors">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -305,8 +393,8 @@
                 <% } %>
                 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-heading text-primary-red mr-2"></i>
+                    <label class="block text-sm font-semibold text-white/90 mb-2">
+                        <i class="fas fa-heading text-primary-red mr-2 icon-glow"></i>
                         Título do Checklist *
                     </label>
                     <input 
@@ -315,13 +403,13 @@
                         name="titulo"
                         required
                         placeholder="Ex: Processo de Férias 2024"
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition outline-none">
-                    <p class="text-xs text-gray-500 mt-1">Dê um nome descritivo para seu checklist</p>
+                        class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white placeholder-white/50 focus:border-primary-red focus:ring-2 focus:ring-primary-red transition outline-none input-glow backdrop-blur-sm">
+                    <p class="text-xs text-white/70 mt-1">Dê um nome descritivo para seu checklist</p>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-tag text-primary-yellow mr-2"></i>
+                    <label class="block text-sm font-semibold text-white/90 mb-2">
+                        <i class="fas fa-tag text-primary-yellow mr-2 icon-glow-yellow"></i>
                         Tipo/Categoria
                     </label>
                     <input 
@@ -329,13 +417,13 @@
                         id="novoTipoChecklist" 
                         name="tipo"
                         placeholder="Ex: Férias, Folha de Pagamento, etc."
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-yellow focus:ring-2 focus:ring-primary-yellow transition outline-none">
-                    <p class="text-xs text-gray-500 mt-1">Opcional: categorize seu checklist</p>
+                        class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white placeholder-white/50 focus:border-primary-yellow focus:ring-2 focus:ring-primary-yellow transition outline-none input-glow backdrop-blur-sm">
+                    <p class="text-xs text-white/70 mt-1">Opcional: categorize seu checklist</p>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-list text-primary-red mr-2"></i>
+                    <label class="block text-sm font-semibold text-white/90 mb-2">
+                        <i class="fas fa-list text-primary-red mr-2 icon-glow"></i>
                         Itens Iniciais (Opcional)
                     </label>
                     <textarea 
@@ -343,22 +431,27 @@
                         name="itens"
                         rows="4" 
                         placeholder="Digite um item por linha&#10;Exemplo:&#10;Verificar documentos&#10;Calcular valores&#10;Enviar para aprovação"
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition outline-none resize-none"></textarea>
-                    <p class="text-xs text-gray-500 mt-1">Você pode adicionar itens depois também</p>
+                        class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white placeholder-white/50 focus:border-primary-red focus:ring-2 focus:ring-primary-red transition outline-none resize-none input-glow backdrop-blur-sm"></textarea>
+                    <p class="text-xs text-white/70 mt-1">Você pode adicionar itens depois também</p>
                 </div>
 
                 <div class="flex gap-3 pt-4">
                     <button 
                         type="button"
                         data-action="fechar-criar"
-                        class="flex-1 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition">
+                        class="flex-1 py-3 glass-dark border border-white/20 text-white font-bold rounded-xl hover:bg-white/10 transition">
                         Cancelar
                     </button>
                     <button 
                         type="submit"
-                        class="flex-1 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white font-bold rounded-lg hover:opacity-90 transition transform hover:scale-105 shadow-lg">
-                        <i class="fas fa-check mr-2"></i>
-                        Criar Checklist
+                        class="group relative flex-1 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white font-bold rounded-xl hover:shadow-lg hover:shadow-primary-yellow/50 transition-all transform hover:scale-105 overflow-hidden">
+                        <span class="relative z-10 flex items-center justify-center">
+                            <i class="fas fa-check mr-2"></i>
+                            Criar Checklist
+                        </span>
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity">
+                        </div>
                     </button>
                 </div>
             </form>
@@ -366,17 +459,17 @@
     </div>
 
     <!-- Modal Editar Checklist -->
-    <div id="modalEditar" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full fade-in">
+    <div id="modalEditar" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-dark border border-white/20 rounded-2xl shadow-2xl p-8 max-w-md w-full fade-in">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gray-900">
-                    <i class="fas fa-edit text-primary-yellow mr-2"></i>
-                    Editar Checklist
+                <h3 class="text-2xl font-black text-white">
+                    <i class="fas fa-edit text-primary-yellow mr-2 icon-glow-yellow"></i>
+                    Editar <span class="gradient-text">Checklist</span>
                 </h3>
                 <button 
                     type="button"
                     data-action="fechar-editar"
-                    class="text-gray-400 hover:text-gray-600">
+                    class="text-white/70 hover:text-white transition-colors">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -388,8 +481,8 @@
                 <input type="hidden" id="checklistIdEditar" name="checklistId">
                 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-heading text-primary-red mr-2"></i>
+                    <label class="block text-sm font-semibold text-white/90 mb-2">
+                        <i class="fas fa-heading text-primary-red mr-2 icon-glow"></i>
                         Título do Checklist *
                     </label>
                     <input 
@@ -397,33 +490,38 @@
                         id="tituloChecklistEditar" 
                         name="titulo"
                         required
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition outline-none">
+                        class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white placeholder-white/50 focus:border-primary-red focus:ring-2 focus:ring-primary-red transition outline-none input-glow backdrop-blur-sm">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-tag text-primary-yellow mr-2"></i>
+                    <label class="block text-sm font-semibold text-white/90 mb-2">
+                        <i class="fas fa-tag text-primary-yellow mr-2 icon-glow-yellow"></i>
                         Tipo/Categoria
                     </label>
                     <input 
                         type="text" 
                         id="tipoChecklistEditar" 
                         name="tipo"
-                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-yellow focus:ring-2 focus:ring-primary-yellow transition outline-none">
+                        class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white placeholder-white/50 focus:border-primary-yellow focus:ring-2 focus:ring-primary-yellow transition outline-none input-glow backdrop-blur-sm">
                 </div>
 
                 <div class="flex gap-3 pt-4">
                     <button 
                         type="button"
                         data-action="fechar-editar"
-                        class="flex-1 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition">
+                        class="flex-1 py-3 glass-dark border border-white/20 text-white font-bold rounded-xl hover:bg-white/10 transition">
                         Cancelar
                     </button>
                     <button 
                         type="submit"
-                        class="flex-1 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white font-bold rounded-lg hover:opacity-90 transition transform hover:scale-105 shadow-lg">
-                        <i class="fas fa-save mr-2"></i>
-                        Salvar Alterações
+                        class="group relative flex-1 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white font-bold rounded-xl hover:shadow-lg hover:shadow-primary-yellow/50 transition-all transform hover:scale-105 overflow-hidden">
+                        <span class="relative z-10 flex items-center justify-center">
+                            <i class="fas fa-save mr-2"></i>
+                            Salvar Alterações
+                        </span>
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity">
+                        </div>
                     </button>
                 </div>
             </form>

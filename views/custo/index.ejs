@@ -11,6 +11,31 @@
                 extend: {
                     colors: {
                         primary: { red: '#DC2626', yellow: '#FBBF24' }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'gradient': 'gradient 15s ease infinite',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        gradient: {
+                            '0%, 100%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        }
                     }
                 }
             }
@@ -18,164 +43,267 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/loading.css">
     <style>
-        .bungee-inline-regular {
-            font-family: "Bungee Inline", sans-serif;
-            font-weight: 400;
-            font-style: normal;
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .icon-glow {
+            filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5));
+        }
+
+        .icon-glow-yellow {
+            filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));
+        }
+
+        .input-glow:focus {
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1), 0 0 20px rgba(220, 38, 38, 0.2);
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
     </style>
     <!-- Favicon com as letras "DP" nas cores do sistema (Vermelho #DC2626 e Amarelo #FBBF24) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
 </head>
-<body class="bg-gray-50">
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
     <% if (typeof user !== 'undefined' && user) { %>
         <%- include('../partials/navbar') %>
     <% } %>
 
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">Simulador de Custo do Funcionário</h1>
-            <p class="mt-2 text-gray-600">Cálculo completo de todos os custos trabalhistas</p>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-xl shadow-xl p-4 sm:p-6 border-4 border-primary-red hover:border-primary-yellow transition-all duration-300 transform hover:shadow-2xl">
-                    <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-primary-red to-primary-yellow bg-clip-text text-transparent">
-                        <i class="fas fa-calculator text-primary-red mr-2"></i>Dados de Entrada
-                    </h2>
-                    
-                    <% if (error) { %>
-                        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-                            <%= error %>
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 relative">
+        <!-- Background Elements -->
+        <div class="absolute top-0 right-0 w-96 h-96 bg-primary-red/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-primary-yellow/10 rounded-full blur-3xl"></div>
+        
+        <div class="relative z-10">
+            <div class="mb-6 animate-fade-in">
+                <div class="flex items-center space-x-3 mb-2">
+                    <div class="relative">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur-lg opacity-50">
                         </div>
-                    <% } %>
-
-                    <form method="POST" action="/custo/calcular" class="space-y-4">
-                        <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
-                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                        <% } %>
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Salário Bruto (R$)</label>
-                            <input type="number" name="salarioBruto" step="0.01" required
-                                class="w-full px-4 py-2 border rounded-md">
+                        <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-2 rounded-xl">
+                            <i class="fas fa-dollar-sign text-white text-xl icon-glow"></i>
                         </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Tipo de Registro</label>
-                            <select name="tipoRegistro" class="w-full px-4 py-2 border rounded-md">
-                                <option value="clt_geral">CLT Geral</option>
-                                <option value="jovem_aprendiz">Jovem Aprendiz</option>
-                                <option value="domestico">Doméstico</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Regime Tributário</label>
-                            <select name="regimeTributario" class="w-full px-4 py-2 border rounded-md">
-                                <option value="simples_nacional">Simples Nacional</option>
-                                <option value="lucro_presumido">Lucro Presumido</option>
-                                <option value="lucro_real">Lucro Real</option>
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Para cálculo de impostos sobre folha</p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Benefícios (R$)</label>
-                            <input type="number" name="beneficios" step="0.01" value="0"
-                                class="w-full px-4 py-2 border rounded-md"
-                                placeholder="VT, VR, Plano de Saúde, etc.">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Encargos Adicionais (R$)</label>
-                            <input type="number" name="encargosAdicionais" step="0.01" value="0"
-                                class="w-full px-4 py-2 border rounded-md">
-                        </div>
-
-                        <button type="submit" class="w-full bg-gradient-to-r from-primary-red to-primary-yellow text-white py-3 rounded-md font-semibold hover:opacity-90">
-                            Calcular Custo Total
-                        </button>
-                    </form>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-black text-white">Simulador de <span class="gradient-text">Custo do Funcionário</span></h1>
+                        <p class="mt-1 text-white/70 text-sm font-medium">Cálculo completo de todos os custos trabalhistas</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-2">
-                <% if (resultado) { %>
-                    <div class="bg-white rounded-xl shadow-xl p-4 sm:p-6 border-4 border-primary-red hover:border-primary-yellow transition-all duration-300 transform hover:shadow-2xl">
-                        <div class="bg-gradient-to-r from-primary-red to-primary-yellow rounded-lg p-6 text-white mb-6">
-                            <h3 class="text-2xl font-bold mb-4">Custo Total do Funcionário</h3>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <p class="text-sm opacity-90">Custo Mensal</p>
-                                    <p class="text-3xl font-bold">R$ <%= resultado.custoMensal.toFixed(2) %></p>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-1">
+                    <div class="glass rounded-2xl shadow-2xl p-4 sm:p-6 border border-white/20 backdrop-blur-xl card-hover animate-slide-up sticky top-4">
+                        <div class="flex items-center mb-4 sm:mb-6">
+                            <div class="relative mr-3">
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur opacity-50">
                                 </div>
-                                <div>
-                                    <p class="text-sm opacity-90">Custo Anual</p>
-                                    <p class="text-3xl font-bold">R$ <%= resultado.custoAnual.toFixed(2) %></p>
+                                <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-2 rounded-xl">
+                                    <i class="fas fa-calculator text-white text-xl icon-glow"></i>
                                 </div>
                             </div>
+                            <h2 class="text-xl sm:text-2xl font-black text-white">
+                                Dados de <span class="gradient-text">Entrada</span>
+                            </h2>
                         </div>
+                        
+                        <% if (error) { %>
+                            <div class="glass-dark border-l-4 border-red-500 text-red-200 px-4 py-3 rounded-lg mb-4 flex items-start">
+                                <i class="fas fa-exclamation-circle mr-2 mt-0.5 flex-shrink-0"></i>
+                                <div>
+                                    <strong class="block">Erro:</strong>
+                                    <span class="text-sm"><%= error %></span>
+                                </div>
+                            </div>
+                        <% } %>
 
-                        <h4 class="text-lg font-bold mb-4">Composição do Custo Mensal</h4>
-                        <div class="space-y-3 mb-6">
-                            <div class="flex justify-between border-b pb-2">
-                                <span>Salário Bruto</span>
-                                <span class="font-semibold">R$ <%= resultado.salarioBruto.toFixed(2) %></span>
-                            </div>
-                            <% if (resultado.inssPatronal) { %>
-                                <div class="flex justify-between border-b pb-2">
-                                    <span>INSS Patronal (20%)</span>
-                                    <span class="font-semibold">R$ <%= resultado.inssPatronal.toFixed(2) %></span>
-                                </div>
+                        <form method="POST" action="/custo/calcular" class="space-y-4">
+                            <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                             <% } %>
-                            <% if (resultado.impostosRegime) { %>
-                                <div class="flex justify-between border-b pb-2">
-                                    <span>Impostos - <%= resultado.regimeTributario.replace('_', ' ').toUpperCase() %></span>
-                                    <span class="font-semibold">R$ <%= resultado.impostosRegime.toFixed(2) %></span>
-                                </div>
-                            <% } %>
-                            <div class="flex justify-between border-b pb-2">
-                                <span>Férias Proporcionais (1/12 + 1/3)</span>
-                                <span class="font-semibold">R$ <%= resultado.valorFeriasMensal.toFixed(2) %></span>
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    <i class="fas fa-money-bill-wave text-primary-red mr-2 icon-glow"></i>
+                                    Salário Bruto (R$)
+                                </label>
+                                <input type="number" name="salarioBruto" step="0.01" required
+                                    class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-primary-red focus:border-primary-red transition outline-none input-glow backdrop-blur-sm">
                             </div>
-                            <div class="flex justify-between border-b pb-2">
-                                <span>13º Salário (1/12)</span>
-                                <span class="font-semibold">R$ <%= resultado.valorDecimoTerceiroMensal.toFixed(2) %></span>
-                            </div>
-                            <div class="flex justify-between border-b pb-2">
-                                <span>FGTS</span>
-                                <span class="font-semibold">R$ <%= resultado.valorFGTS.toFixed(2) %></span>
-                            </div>
-                            <% if (resultado.beneficios > 0) { %>
-                                <div class="flex justify-between border-b pb-2">
-                                    <span>Benefícios</span>
-                                    <span class="font-semibold">R$ <%= resultado.beneficios.toFixed(2) %></span>
-                                </div>
-                            <% } %>
-                        </div>
 
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <h5 class="font-bold mb-2">Memória de Cálculo</h5>
-                            <div class="space-y-2 text-sm">
-                                <% resultado.memoria.forEach(passo => { %>
-                                    <div class="<%= passo.destaque ? 'font-bold text-primary-red' : '' %>">
-                                        <%= passo.descricao %>: R$ <%= passo.valor %>
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    <i class="fas fa-file-contract text-primary-yellow mr-2 icon-glow-yellow"></i>
+                                    Tipo de Registro
+                                </label>
+                                <select name="tipoRegistro" class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none backdrop-blur-sm">
+                                    <option value="clt_geral" class="bg-gray-800">CLT Geral</option>
+                                    <option value="jovem_aprendiz" class="bg-gray-800">Jovem Aprendiz</option>
+                                    <option value="domestico" class="bg-gray-800">Doméstico</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    <i class="fas fa-receipt text-primary-red mr-2 icon-glow"></i>
+                                    Regime Tributário
+                                </label>
+                                <select name="regimeTributario" class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-primary-red focus:border-primary-red transition outline-none backdrop-blur-sm">
+                                    <option value="simples_nacional" class="bg-gray-800">Simples Nacional</option>
+                                    <option value="lucro_presumido" class="bg-gray-800">Lucro Presumido</option>
+                                    <option value="lucro_real" class="bg-gray-800">Lucro Real</option>
+                                </select>
+                                <p class="text-xs text-white/70 mt-1">Para cálculo de impostos sobre folha</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    <i class="fas fa-gift text-primary-yellow mr-2 icon-glow-yellow"></i>
+                                    Benefícios (R$)
+                                </label>
+                                <input type="number" name="beneficios" step="0.01" value="0"
+                                    class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none input-glow backdrop-blur-sm"
+                                    placeholder="VT, VR, Plano de Saúde, etc.">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    <i class="fas fa-plus-circle text-primary-red mr-2 icon-glow"></i>
+                                    Encargos Adicionais (R$)
+                                </label>
+                                <input type="number" name="encargosAdicionais" step="0.01" value="0"
+                                    class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-primary-red focus:border-primary-red transition outline-none input-glow backdrop-blur-sm">
+                            </div>
+
+                            <button type="submit" class="group relative w-full bg-gradient-to-r from-primary-red to-primary-yellow text-white py-3 rounded-xl font-bold hover:shadow-2xl hover:shadow-primary-yellow/50 transition-all transform hover:scale-105 overflow-hidden">
+                                <span class="relative z-10 flex items-center justify-center">
+                                    <i class="fas fa-calculator mr-2"></i>
+                                    Calcular Custo Total
+                                </span>
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity">
+                                </div>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 animate-slide-up" style="animation-delay: 0.1s;">
+                    <% if (resultado) { %>
+                        <div class="glass rounded-2xl shadow-2xl p-4 sm:p-6 border border-white/20 backdrop-blur-xl card-hover">
+                            <div class="bg-gradient-to-r from-primary-red/40 via-primary-yellow/40 to-primary-red/40 rounded-xl p-6 text-white mb-6 border-4 border-primary-red/80 shadow-2xl shadow-primary-red/30 ring-2 ring-primary-red/50">
+                                <h3 class="text-2xl font-black mb-4 flex items-center">
+                                    <i class="fas fa-dollar-sign mr-2 icon-glow"></i>
+                                    Custo Total do Funcionário
+                                </h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-sm opacity-90 font-semibold">Custo Mensal</p>
+                                        <p class="text-3xl font-black mt-1">R$ <%= resultado.custoMensal.toFixed(2) %></p>
                                     </div>
-                                <% }); %>
+                                    <div>
+                                        <p class="text-sm opacity-90 font-semibold">Custo Anual</p>
+                                        <p class="text-3xl font-black mt-1">R$ <%= resultado.custoAnual.toFixed(2) %></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h4 class="text-lg font-black text-white mb-4 flex items-center">
+                                <i class="fas fa-list-ul text-primary-yellow mr-2 icon-glow-yellow"></i>
+                                Composição do <span class="gradient-text">Custo Mensal</span>
+                            </h4>
+                            <div class="glass-dark rounded-xl p-4 mb-6 space-y-3 border border-white/20 backdrop-blur-xl">
+                                <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                                    <span class="text-white/90">Salário Bruto</span>
+                                    <span class="font-bold text-white">R$ <%= resultado.salarioBruto.toFixed(2) %></span>
+                                </div>
+                                <% if (resultado.inssPatronal) { %>
+                                    <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                                        <span class="text-white/90">INSS Patronal (20%)</span>
+                                        <span class="font-bold text-white">R$ <%= resultado.inssPatronal.toFixed(2) %></span>
+                                    </div>
+                                <% } %>
+                                <% if (resultado.impostosRegime) { %>
+                                    <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                                        <span class="text-white/90">Impostos - <%= resultado.regimeTributario.replace('_', ' ').toUpperCase() %></span>
+                                        <span class="font-bold text-white">R$ <%= resultado.impostosRegime.toFixed(2) %></span>
+                                    </div>
+                                <% } %>
+                                <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                                    <span class="text-white/90">Férias Proporcionais (1/12 + 1/3)</span>
+                                    <span class="font-bold text-white">R$ <%= resultado.valorFeriasMensal.toFixed(2) %></span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                                    <span class="text-white/90">13º Salário (1/12)</span>
+                                    <span class="font-bold text-white">R$ <%= resultado.valorDecimoTerceiroMensal.toFixed(2) %></span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                                    <span class="text-white/90">FGTS</span>
+                                    <span class="font-bold text-white">R$ <%= resultado.valorFGTS.toFixed(2) %></span>
+                                </div>
+                                <% if (resultado.beneficios > 0) { %>
+                                    <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                                        <span class="text-white/90">Benefícios</span>
+                                        <span class="font-bold text-white">R$ <%= resultado.beneficios.toFixed(2) %></span>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <div class="glass-dark border-l-4 border-yellow-500/80 rounded-xl p-4 bg-yellow-900/20 backdrop-blur-xl">
+                                <h5 class="font-black text-yellow-200 mb-2 flex items-center">
+                                    <i class="fas fa-calculator mr-2 text-primary-yellow icon-glow-yellow"></i>
+                                    Memória de <span class="gradient-text">Cálculo</span>
+                                </h5>
+                                <div class="space-y-2 text-sm">
+                                    <% resultado.memoria.forEach(passo => { %>
+                                        <div class="<%= passo.destaque ? 'font-bold text-primary-yellow' : 'text-white/90' %>">
+                                            <%= passo.descricao %>: <span class="text-white font-semibold">R$ <%= passo.valor %></span>
+                                        </div>
+                                    <% }); %>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                <% } else { %>
-                    <div class="bg-white rounded-lg shadow-md p-12 text-center">
-                        <i class="fas fa-calculator text-gray-300 text-6xl mb-4"></i>
-                        <p class="text-gray-600">Preencha os dados para calcular o custo total</p>
-                    </div>
-                <% } %>
+                    <% } else { %>
+                        <div class="glass rounded-2xl shadow-xl p-12 text-center border border-white/20 backdrop-blur-xl animate-slide-up">
+                            <i class="fas fa-calculator text-white/30 text-6xl mb-4"></i>
+                            <p class="text-white/70 text-lg">Preencha os dados para calcular o custo total</p>
+                        </div>
+                    <% } %>
+                </div>
             </div>
         </div>
     </main>

@@ -10,20 +10,77 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: {
-                            red: '#DC2626',
-                            yellow: '#FBBF24'
+                        primary: { red: '#DC2626', yellow: '#FBBF24' }
+                    },
+                    animation: {
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                    },
+                    keyframes: {
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
                         }
                     }
                 }
             }
         }
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/loading.css">
     <!-- Favicon com as letras "DP" nas cores do sistema (Vermelho #DC2626 e Amarelo #FBBF24) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
     <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .icon-glow {
+            filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5));
+        }
+
+        .icon-glow-yellow {
+            filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
         .item-completed {
             text-decoration: line-through;
             color: #9CA3AF;
@@ -35,6 +92,9 @@
             opacity: 0;
             transition: opacity 0.2s;
         }
+        .fade-in-item {
+            animation: slideIn 0.3s ease-out;
+        }
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -45,36 +105,38 @@
                 transform: translateX(0);
             }
         }
-        .fade-in-item {
-            animation: slideIn 0.3s ease-out;
-        }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
     <% if (typeof user !== 'undefined' && user) { %>
         <%- include('../partials/navbar') %>
     <% } %>
 
-    <main class="max-w-4xl mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="mb-8">
-            <a href="/checklist" class="text-primary-red hover:text-primary-yellow transition-colors flex items-center gap-2 text-sm font-semibold mb-4">
-                <i class="fas fa-arrow-left"></i>
-                Voltar para Checklists
-            </a>
+    <main class="max-w-4xl mx-auto px-4 py-6 sm:px-6 lg:px-8 relative">
+        <!-- Background Elements -->
+        <div class="absolute top-0 right-0 w-96 h-96 bg-primary-red/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-primary-yellow/10 rounded-full blur-3xl"></div>
+        
+        <div class="relative z-10">
+            <!-- Header -->
+            <div class="mb-8 animate-fade-in">
+                <a href="/checklist" class="text-white/70 hover:text-primary-yellow transition-colors flex items-center gap-2 text-sm font-semibold mb-4">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar para Checklists
+                </a>
 
-            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-primary-red">
+                <div class="glass rounded-2xl shadow-2xl p-6 border border-white/20 backdrop-blur-xl card-hover border-l-4 border-primary-red/80">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div class="flex-1">
-                        <h1 id="checklistTitulo" class="text-3xl font-bold text-gray-900 mb-2">
+                        <h1 id="checklistTitulo" class="text-3xl font-black text-white mb-2">
                             <%= checklist.titulo %>
                         </h1>
-                        <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                            <span class="px-3 py-1 bg-primary-red text-white rounded-full font-bold uppercase text-xs">
+                        <div class="flex flex-wrap items-center gap-4 text-sm text-white/80">
+                            <span class="px-3 py-1 bg-primary-red/80 text-white rounded-full font-bold uppercase text-xs">
                                 <%= checklist.tipo || 'Custom' %>
                             </span>
                             <span>
-                                <i class="fas fa-list mr-1"></i>
+                                <i class="fas fa-list mr-1 text-primary-yellow"></i>
                                 <%= itens.length %> item<%= itens.length !== 1 ? 's' : '' %>
                             </span>
                             <% 
@@ -82,12 +144,12 @@
                                 const percentual = itens.length > 0 ? Math.round((itensConcluidos / itens.length) * 100) : 0;
                             %>
                             <span>
-                                <i class="fas fa-check-circle mr-1"></i>
+                                <i class="fas fa-check-circle mr-1 text-green-400"></i>
                                 <%= itensConcluidos %> concluído<%= itensConcluidos !== 1 ? 's' : '' %>
                             </span>
                             <% if (checklist.created_at) { %>
                                 <span>
-                                    <i class="fas fa-calendar-alt mr-1"></i>
+                                    <i class="fas fa-calendar-alt mr-1 text-primary-yellow"></i>
                                     Criado em <%= new Date(checklist.created_at).toLocaleDateString('pt-BR') %>
                                 </span>
                             <% } %>
@@ -96,19 +158,24 @@
                     <button 
                         type="button"
                         data-action="editar-titulo"
-                        class="px-4 py-2 bg-gray-100 hover:bg-primary-yellow hover:text-white text-gray-700 rounded-lg font-semibold transition">
-                        <i class="fas fa-edit mr-2"></i>
-                        Editar Título
+                        class="group relative px-4 py-2 glass border border-white/20 text-white rounded-xl font-semibold hover:border-primary-yellow/50 transition-all transform hover:scale-105">
+                        <span class="relative z-10 flex items-center">
+                            <i class="fas fa-edit mr-2"></i>
+                            Editar Título
+                        </span>
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
+                        </div>
                     </button>
                 </div>
 
                 <!-- Barra de Progresso -->
                 <div class="mt-6">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm font-semibold text-gray-700">Progresso Geral</span>
-                        <span class="text-lg font-bold text-primary-red"><%= percentual %>%</span>
+                        <span class="text-sm font-semibold text-white/90">Progresso Geral</span>
+                        <span class="text-lg font-bold text-white"><%= percentual %>%</span>
                     </div>
-                    <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                    <div class="w-full bg-white/20 rounded-full h-4 overflow-hidden">
                         <div 
                             class="bg-gradient-to-r from-primary-red to-primary-yellow h-4 rounded-full transition-all duration-500 flex items-center justify-end pr-2"
                             style="width: <%= percentual %>%">
@@ -122,18 +189,28 @@
         </div>
 
         <!-- Lista de Itens -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="glass rounded-2xl shadow-2xl p-6 mb-6 border border-white/20 backdrop-blur-xl card-hover animate-slide-up">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-gray-900">
-                    <i class="fas fa-tasks text-primary-red mr-2"></i>
-                    Itens do Checklist
+                <h2 class="text-xl font-black text-white flex items-center">
+                    <div class="relative mr-3">
+                        <div class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur opacity-50"></div>
+                        <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-2 rounded-xl">
+                            <i class="fas fa-tasks text-white text-xl icon-glow"></i>
+                        </div>
+                    </div>
+                    Itens do <span class="gradient-text">Checklist</span>
                 </h2>
                 <button 
                     type="button"
                     data-action="adicionar-item"
-                    class="px-4 py-2 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-lg font-semibold hover:opacity-90 transition transform hover:scale-105">
-                    <i class="fas fa-plus mr-2"></i>
-                    Adicionar Item
+                    class="group relative px-4 py-2 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-primary-yellow/50 transition-all transform hover:scale-105 overflow-hidden">
+                    <span class="relative z-10 flex items-center">
+                        <i class="fas fa-plus mr-2"></i>
+                        Adicionar Item
+                    </span>
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity">
+                    </div>
                 </button>
             </div>
 
@@ -141,7 +218,7 @@
                 <% if (itens && itens.length > 0) { %>
                     <% itens.forEach((item, index) => { %>
                         <div 
-                            class="item-row flex items-start gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition fade-in-item border-l-4 <%= item.concluido ? 'border-green-500' : 'border-gray-300' %>"
+                            class="item-row flex items-start gap-4 p-4 glass rounded-xl hover:bg-white/10 transition fade-in-item border-l-4 <%= item.concluido ? 'border-green-500/80' : 'border-white/20' %> card-hover"
                             data-item-id="<%= item.id %>">
                             <input 
                                 type="checkbox" 
@@ -149,26 +226,26 @@
                                 <%= item.concluido ? 'checked' : '' %>
                                 data-action="toggle"
                                 data-item-id="<%= item.id %>"
-                                class="mt-1 w-5 h-5 text-primary-red focus:ring-primary-red border-gray-300 rounded cursor-pointer">
+                                class="mt-1 w-5 h-5 text-primary-red focus:ring-primary-red border-white/30 rounded cursor-pointer">
                             
                             <div class="flex-1">
                                 <div 
-                                    class="item-text <%= item.concluido ? 'item-completed' : 'text-gray-900' %> font-medium outline-none cursor-text"
+                                    class="item-text <%= item.concluido ? 'item-completed text-white/50' : 'text-white' %> font-medium outline-none cursor-text"
                                     contenteditable="true"
                                     data-action="editar-texto"
                                     data-item-id="<%= item.id %>">
                                     <%= item.item %>
                                 </div>
                                 <% if (item.observacao) { %>
-                                    <p class="text-sm text-gray-500 mt-1 italic">
-                                        <i class="fas fa-info-circle mr-1"></i>
+                                    <p class="text-sm text-white/70 mt-1 italic bg-white/5 p-2 rounded border border-white/10">
+                                        <i class="fas fa-info-circle mr-1 text-primary-yellow"></i>
                                         <%= item.observacao %>
                                     </p>
                                 <% } %>
-                                <div class="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                                <div class="flex items-center gap-3 mt-2 text-xs text-white/70">
                                     <% if (item.updated_at) { %>
                                         <span>
-                                            <i class="fas fa-clock mr-1"></i>
+                                            <i class="fas fa-clock mr-1 text-primary-yellow"></i>
                                             Atualizado <%= new Date(item.updated_at).toLocaleDateString('pt-BR') %>
                                         </span>
                                     <% } %>
@@ -188,14 +265,14 @@
                                     type="button"
                                     data-action="remover"
                                     data-item-id="<%= item.id %>"
-                                    class="p-2 text-gray-400 hover:text-primary-red transition">
+                                    class="p-2 text-white/50 hover:text-primary-red transition">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </div>
                     <% }); %>
                 <% } else { %>
-                    <div class="text-center py-12 text-gray-500">
+                    <div class="text-center py-12 text-white/70">
                         <i class="fas fa-clipboard-list text-4xl mb-3"></i>
                         <p>Nenhum item adicionado ainda.</p>
                         <p class="text-sm mt-2">Clique em "Adicionar Item" para começar.</p>
@@ -205,40 +282,51 @@
         </div>
 
         <!-- Adicionar Item Rápido -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-bold text-gray-900 mb-4">
-                <i class="fas fa-plus-circle text-primary-yellow mr-2"></i>
-                Adicionar Item Rápido
+        <div class="glass rounded-2xl shadow-2xl p-6 border border-white/20 backdrop-blur-xl card-hover animate-slide-up" style="animation-delay: 0.1s;">
+            <h3 class="text-lg font-black text-white mb-4 flex items-center">
+                <div class="relative mr-3">
+                    <div class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl blur opacity-50"></div>
+                    <div class="relative bg-gradient-to-r from-primary-yellow to-primary-red p-2 rounded-xl">
+                        <i class="fas fa-plus-circle text-white text-xl icon-glow-yellow"></i>
+                    </div>
+                </div>
+                Adicionar Item <span class="gradient-text">Rápido</span>
             </h3>
             <div class="flex gap-3">
                 <input 
                     type="text" 
                     id="novoItemInput" 
                     placeholder="Digite o novo item e pressione Enter..."
-                    class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition outline-none">
+                    class="flex-1 px-4 py-3 glass border border-white/20 rounded-xl text-white placeholder-white/50 focus:border-primary-red focus:ring-2 focus:ring-primary-red transition outline-none input-glow backdrop-blur-sm">
                 <button 
                     type="button"
                     data-action="salvar-item-rapido"
-                    class="px-6 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-lg font-bold hover:opacity-90 transition">
-                    <i class="fas fa-check mr-2"></i>
-                    Adicionar
+                    class="group relative px-6 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-xl font-bold hover:shadow-lg hover:shadow-primary-yellow/50 transition-all transform hover:scale-105 overflow-hidden">
+                    <span class="relative z-10 flex items-center">
+                        <i class="fas fa-check mr-2"></i>
+                        Adicionar
+                    </span>
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity">
+                    </div>
                 </button>
             </div>
+        </div>
         </div>
     </main>
 
     <!-- Modal Editar Título -->
-    <div id="modalTitulo" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full">
+    <div id="modalTitulo" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-dark border border-white/20 rounded-2xl shadow-2xl p-8 max-w-md w-full">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gray-900">
-                    <i class="fas fa-edit text-primary-yellow mr-2"></i>
-                    Editar Título
+                <h3 class="text-2xl font-black text-white">
+                    <i class="fas fa-edit text-primary-yellow mr-2 icon-glow-yellow"></i>
+                    Editar <span class="gradient-text">Título</span>
                 </h3>
                 <button 
                     type="button"
                     data-action="fechar-titulo"
-                    class="text-gray-400 hover:text-gray-600">
+                    class="text-white/70 hover:text-white transition-colors">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -252,19 +340,24 @@
                     id="novoTitulo" 
                     value="<%= checklist.titulo %>"
                     required
-                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition outline-none">
+                    class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white placeholder-white/50 focus:border-primary-red focus:ring-2 focus:ring-primary-red transition outline-none input-glow backdrop-blur-sm">
                 <div class="flex gap-3">
                     <button 
                         type="button"
                         data-action="fechar-titulo"
-                        class="flex-1 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition">
+                        class="flex-1 py-3 glass-dark border border-white/20 text-white font-bold rounded-xl hover:bg-white/10 transition">
                         Cancelar
                     </button>
                     <button 
                         type="submit"
-                        class="flex-1 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white font-bold rounded-lg hover:opacity-90 transition">
-                        <i class="fas fa-save mr-2"></i>
-                        Salvar
+                        class="group relative flex-1 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white font-bold rounded-xl hover:shadow-lg hover:shadow-primary-yellow/50 transition-all transform hover:scale-105 overflow-hidden">
+                        <span class="relative z-10 flex items-center justify-center">
+                            <i class="fas fa-save mr-2"></i>
+                            Salvar
+                        </span>
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity">
+                        </div>
                     </button>
                 </div>
             </form>
@@ -272,17 +365,17 @@
     </div>
 
     <!-- Modal Adicionar/Editar Observação -->
-    <div id="modalObservacao" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full">
+    <div id="modalObservacao" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-dark border border-white/20 rounded-2xl shadow-2xl p-8 max-w-md w-full">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gray-900">
-                    <i class="fas fa-comment text-primary-yellow mr-2"></i>
-                    Observação do Item
+                <h3 class="text-2xl font-black text-white">
+                    <i class="fas fa-comment text-primary-yellow mr-2 icon-glow-yellow"></i>
+                    Observação do <span class="gradient-text">Item</span>
                 </h3>
                 <button 
                     type="button"
                     data-action="fechar-observacao"
-                    class="text-gray-400 hover:text-gray-600">
+                    class="text-white/70 hover:text-white transition-colors">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -295,19 +388,24 @@
                     id="textoObservacao" 
                     rows="4"
                     placeholder="Digite uma observação para este item..."
-                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-yellow focus:ring-2 focus:ring-primary-yellow transition outline-none resize-none"></textarea>
+                    class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white placeholder-white/50 focus:border-primary-yellow focus:ring-2 focus:ring-primary-yellow transition outline-none resize-none input-glow backdrop-blur-sm"></textarea>
                 <div class="flex gap-3">
                     <button 
                         type="button"
                         data-action="fechar-observacao"
-                        class="flex-1 py-3 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition">
+                        class="flex-1 py-3 glass-dark border border-white/20 text-white font-bold rounded-xl hover:bg-white/10 transition">
                         Cancelar
                     </button>
                     <button 
                         type="submit"
-                        class="flex-1 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white font-bold rounded-lg hover:opacity-90 transition">
-                        <i class="fas fa-save mr-2"></i>
-                        Salvar
+                        class="group relative flex-1 py-3 bg-gradient-to-r from-primary-red to-primary-yellow text-white font-bold rounded-xl hover:shadow-lg hover:shadow-primary-yellow/50 transition-all transform hover:scale-105 overflow-hidden">
+                        <span class="relative z-10 flex items-center justify-center">
+                            <i class="fas fa-save mr-2"></i>
+                            Salvar
+                        </span>
+                        <div
+                            class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity">
+                        </div>
                     </button>
                 </div>
             </form>

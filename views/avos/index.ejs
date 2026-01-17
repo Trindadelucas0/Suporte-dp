@@ -14,6 +14,31 @@
                 extend: {
                     colors: {
                         primary: { red: '#DC2626', yellow: '#FBBF24' }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'gradient': 'gradient 15s ease infinite',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        gradient: {
+                            '0%, 100%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        }
                     }
                 }
             }
@@ -21,359 +46,435 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/loading.css">
     <!-- Favicon com as letras "DP" nas cores do sistema (Vermelho #DC2626 e Amarelo #FBBF24) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
     <style>
-        .bungee-inline-regular {
-            font-family: "Bungee Inline", sans-serif;
-            font-weight: 400;
-            font-style: normal;
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .icon-glow {
+            filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5));
+        }
+
+        .icon-glow-yellow {
+            filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));
+        }
+
+        .input-glow:focus {
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1), 0 0 20px rgba(220, 38, 38, 0.2);
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
     </style>
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
     <% if (typeof user !=='undefined' && user) { %>
         <%- include('../partials/navbar') %>
             <% } %>
 
-                <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-                    <!-- Cabeçalho com Explicação -->
-                    <div class="mb-6">
-                        <h1 class="text-3xl font-bold text-gray-900 mb-2">
-                            <i class="fas fa-gift text-primary-yellow mr-2"></i>
-                            Calculadora de 13º Salário
-                        </h1>
-                        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                            <p class="text-gray-700 mb-2">
-                                <i class="fas fa-info-circle text-blue-500 mr-2"></i>
-                                <strong>O que é o 13º Salário?</strong>
-                            </p>
-                            <p class="text-sm text-gray-600">
-                                O 13º salário (gratificação natalina) é um direito garantido por lei a todos os
-                                trabalhadores.
-                                Ele é calculado proporcionalmente ao tempo trabalhado no ano.
-                                Cada mês trabalhado com <strong>15 dias ou mais</strong> conta como <strong>1 avo
-                                    (1/12)</strong> do salário.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Formulário -->
-                        <div class="lg:col-span-1">
-                            <div class="bg-white rounded-xl shadow-xl p-4 sm:p-6 border-4 border-primary-red hover:border-primary-yellow transition-all duration-300 transform hover:shadow-2xl sticky top-4">
-                                <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-primary-red to-primary-yellow bg-clip-text text-transparent">
-                                    <i class="fas fa-edit text-primary-red mr-2"></i>
-                                    Preencha os Dados
-                                </h2>
-
-                                <% if (error) { %>
-                                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-                                        <i class="fas fa-exclamation-circle mr-2"></i>
-                                        <%= error %>
+                <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 relative">
+                    <!-- Background Elements -->
+                    <div class="absolute top-0 right-0 w-96 h-96 bg-primary-red/10 rounded-full blur-3xl"></div>
+                    <div class="absolute bottom-0 left-0 w-96 h-96 bg-primary-yellow/10 rounded-full blur-3xl"></div>
+                    
+                    <div class="relative z-10">
+                        <!-- Cabeçalho com Explicação -->
+                        <div class="mb-6 animate-fade-in">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <div class="relative">
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl blur-lg opacity-50">
                                     </div>
-                                    <% } %>
+                                    <div class="relative bg-gradient-to-r from-primary-yellow to-primary-red p-2 rounded-xl">
+                                        <i class="fas fa-gift text-white text-xl icon-glow-yellow"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h1 class="text-3xl font-black text-white mb-1">
+                                        Calculadora de <span class="gradient-text">13º Salário</span>
+                                    </h1>
+                                    <p class="text-white/70 text-sm font-medium">Fundo de Garantia do Tempo de Serviço - Lei 4.090/1962</p>
+                                </div>
+                            </div>
+                            <div class="glass-dark border-l-4 border-blue-500/80 p-4 rounded-xl">
+                                <p class="text-white mb-2 flex items-center">
+                                    <i class="fas fa-info-circle text-blue-400 mr-2 icon-glow"></i>
+                                    <strong class="text-white">O que é o 13º Salário?</strong>
+                                </p>
+                                <p class="text-sm text-white/80">
+                                    O 13º salário (gratificação natalina) é um direito garantido por lei a todos os
+                                    trabalhadores.
+                                    Ele é calculado proporcionalmente ao tempo trabalhado no ano.
+                                    Cada mês trabalhado com <strong class="text-primary-yellow">15 dias ou mais</strong> conta como <strong class="text-primary-yellow">1 avo
+                                        (1/12)</strong> do salário.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Formulário -->
+                            <div class="lg:col-span-1">
+                                <div class="glass rounded-2xl shadow-2xl p-4 sm:p-6 border border-white/20 backdrop-blur-xl card-hover animate-slide-up sticky top-4">
+                                    <div class="flex items-center mb-4 sm:mb-6">
+                                        <div class="relative mr-3">
+                                            <div
+                                                class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red rounded-xl blur opacity-50">
+                                            </div>
+                                            <div class="relative bg-gradient-to-r from-primary-yellow to-primary-red p-2 rounded-xl">
+                                                <i class="fas fa-edit text-white text-xl icon-glow-yellow"></i>
+                                            </div>
+                                        </div>
+                                        <h2 class="text-xl sm:text-2xl font-black text-white">
+                                            Preencha os <span class="gradient-text">Dados</span>
+                                        </h2>
+                                    </div>
+
+                                    <% if (error) { %>
+                                        <div class="glass-dark border-l-4 border-red-500 text-red-200 px-4 py-3 rounded-lg mb-4 flex items-start">
+                                            <i class="fas fa-exclamation-circle mr-2 mt-0.5 flex-shrink-0"></i>
+                                            <div>
+                                                <strong class="block">Erro:</strong>
+                                                <span class="text-sm"><%= error %></span>
+                                            </div>
+                                        </div>
+                                        <% } %>
 
                                         <form method="POST" action="/avos/calcular" class="space-y-5" id="formAvos">
                                             <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
                                                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                             <% } %>
-                                            <!-- Data de Admissão -->
-                                            <div>
-                                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                                    <i class="fas fa-calendar-alt text-primary-red mr-2"></i>
-                                                    Data de Admissão *
-                                                </label>
-                                                <input type="date" name="dataAdmissao" id="dataAdmissao" required
-                                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-red focus:ring-2 focus:ring-primary-red transition">
-                                                <div class="mt-2 bg-yellow-50 border border-yellow-200 rounded p-2">
-                                                    <p class="text-xs text-yellow-800">
-                                                        <i class="fas fa-lightbulb mr-1"></i>
-                                                        <strong>Dica:</strong> Data em que o funcionário começou a
-                                                        trabalhar na empresa.
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <!-- Data de Referência -->
-                                            <div>
-                                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                                    <i class="fas fa-calendar-check text-primary-yellow mr-2"></i>
-                                                    Data de Referência *
-                                                </label>
-                                                <input type="date" name="dataReferencia" id="dataReferencia" required
-                                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-yellow focus:ring-2 focus:ring-primary-yellow transition">
-                                                <div class="mt-2 bg-yellow-50 border border-yellow-200 rounded p-2">
-                                                    <p class="text-xs text-yellow-800">
-                                                        <i class="fas fa-lightbulb mr-1"></i>
-                                                        <strong>Dica:</strong> Geralmente 31 de dezembro do ano atual. É
-                                                        até quando você quer calcular os avos.
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <!-- Afastamentos -->
-                                            <div>
-                                                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                                    <i class="fas fa-user-injured text-primary-red mr-2"></i>
-                                                    Afastamentos por INSS (Opcional)
-                                                </label>
-                                                <div class="mb-2">
-                                                    <button type="button" onclick="adicionarAfastamento()"
-                                                        class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-gray-700">
-                                                        <i class="fas fa-plus mr-1"></i>Adicionar Afastamento
-                                                    </button>
-                                                </div>
-                                                <div id="afastamentosContainer" class="space-y-2">
-                                                    <!-- Afastamentos serão adicionados aqui via JavaScript -->
-                                                </div>
-                                                <input type="hidden" name="afastamentosINSS" id="afastamentosJSON">
-                                                <div class="mt-2 bg-blue-50 border border-blue-200 rounded p-2">
-                                                    <p class="text-xs text-blue-800">
-                                                        <i class="fas fa-info-circle mr-1"></i>
-                                                        <strong>O que são afastamentos?</strong> Períodos em que o
-                                                        funcionário ficou afastado por auxílio-doença, acidente de
-                                                        trabalho, etc.
-                                                        Esses dias <strong>não contam</strong> para o cálculo dos avos.
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <button type="submit"
-                                                class="w-full bg-gradient-to-r from-primary-yellow to-primary-red text-white py-4 rounded-lg font-bold text-lg hover:opacity-90 shadow-lg transition transform hover:scale-105">
-                                                <i class="fas fa-gift mr-2"></i>Calcular 13º Salário
-                                            </button>
-                                        </form>
-                            </div>
-                        </div>
-
-                        <!-- Resultado -->
-                        <div class="lg:col-span-2">
-                            <% if (resultado) { %>
-                                <!-- Resultado Principal -->
-                                <div class="bg-white rounded-xl shadow-xl p-4 sm:p-6 border-4 border-primary-yellow hover:border-primary-red transition-all duration-300 transform hover:shadow-2xl mb-6">
-                                    <div
-                                        class="bg-gradient-to-r from-primary-yellow via-primary-red to-primary-yellow rounded-xl p-8 text-white text-center mb-6">
-                                        <h3 class="text-2xl font-bold mb-4">
-                                            <i class="fas fa-gift mr-2"></i>
-                                            Resultado do Cálculo
-                                        </h3>
-                                        <div class="text-6xl font-bold mb-2">
-                                            <%= resultado.totalAvos %>/12
-                                        </div>
-                                        <p class="text-xl opacity-90">Avos de 13º Salário</p>
-                                        <p class="text-sm mt-4 opacity-80">
-                                            O funcionário tem direito a <strong>
-                                                <%= resultado.totalAvos %>
-                                            </strong> doze avos do 13º salário
-                                        </p>
-                                    </div>
-
-                                    <!-- Resumo Visual -->
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                        <div class="bg-green-50 border-2 border-green-200 rounded-lg p-4 text-center">
-                                            <i class="fas fa-check-circle text-green-600 text-3xl mb-2"></i>
-                                            <p class="text-2xl font-bold text-green-700">
-                                                <%= resultado.mesesCompletos %>
-                                            </p>
-                                            <p class="text-sm text-green-600">Meses Completos</p>
-                                            <p class="text-xs text-gray-600 mt-1">(15+ dias trabalhados)</p>
-                                        </div>
-                                        <div class="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4 text-center">
-                                            <i class="fas fa-clock text-yellow-600 text-3xl mb-2"></i>
-                                            <p class="text-2xl font-bold text-yellow-700">
-                                                <%= resultado.mesesParciais %>
-                                            </p>
-                                            <p class="text-sm text-yellow-600">Meses Parciais</p>
-                                            <p class="text-xs text-gray-600 mt-1">(< 15 dias trabalhados)</p>
-                                        </div>
-                                        <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 text-center">
-                                            <i class="fas fa-calendar-alt text-blue-600 text-3xl mb-2"></i>
-                                            <p class="text-2xl font-bold text-blue-700">
-                                                <%= resultado.meses.length %>
-                                            </p>
-                                            <p class="text-sm text-blue-600">Meses Analisados</p>
-                                            <p class="text-xs text-gray-600 mt-1">Período total</p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Explicação Educativa -->
-                                    <div class="bg-purple-50 border-l-4 border-purple-400 p-4 rounded mb-6">
-                                        <h4 class="font-bold text-purple-900 mb-2">
-                                            <i class="fas fa-graduation-cap mr-2"></i>
-                                            Como foi calculado?
-                                        </h4>
-                                        <p class="text-sm text-purple-800 mb-2">
-                                            O cálculo do 13º salário segue esta regra simples:
-                                        </p>
-                                        <ul class="text-sm text-purple-800 list-disc list-inside space-y-1">
-                                            <li><strong>Mês completo:</strong> Se o funcionário trabalhou 15 dias ou
-                                                mais no mês, ele ganha 1 avo (1/12 do salário)</li>
-                                            <li><strong>Mês incompleto:</strong> Se trabalhou menos de 15 dias, não
-                                                ganha avo naquele mês</li>
-                                            <li><strong>Afastamentos:</strong> Dias de afastamento por INSS não contam
-                                                para o cálculo</li>
-                                        </ul>
-                                    </div>
-
-                                    <!-- Análise Mês a Mês -->
-                                    <div class="mb-6">
-                                        <h4 class="text-xl font-bold text-gray-900 mb-4">
-                                            <i class="fas fa-calendar-check text-primary-red mr-2"></i>
-                                            Análise Detalhada Mês a Mês
-                                        </h4>
-                                        <div class="overflow-x-auto">
-                                            <table
-                                                class="min-w-full divide-y divide-gray-200 bg-white rounded-lg shadow">
-                                                <thead class="bg-gray-50">
-                                                    <tr>
-                                                        <th
-                                                            class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">
-                                                            Mês</th>
-                                                        <th
-                                                            class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase">
-                                                            Dias Trabalhados</th>
-                                                        <th
-                                                            class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase">
-                                                            Total do Mês</th>
-                                                        <th
-                                                            class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase">
-                                                            Avo</th>
-                                                        <th
-                                                            class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase">
-                                                            Status</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody class="divide-y divide-gray-200">
-                                                    <% resultado.meses.forEach((mes, index)=> { %>
-                                                        <tr
-                                                            class="<%= mes.avo === 1 ? 'bg-green-50' : 'bg-red-50' %> hover:bg-gray-100">
-                                                            <td class="px-4 py-3 text-sm font-semibold text-gray-900">
-                                                                <%= mes.mes %>
-                                                            </td>
-                                                            <td class="px-4 py-3 text-center text-sm text-gray-700">
-                                                                <span class="font-bold">
-                                                                    <%= mes.diasTrabalhados %>
-                                                                </span> dias
-                                                            </td>
-                                                            <td class="px-4 py-3 text-center text-sm text-gray-600">
-                                                                <%= mes.totalDiasMes %> dias
-                                                            </td>
-                                                            <td class="px-4 py-3 text-center">
-                                                                <% if (mes.avo===1) { %>
-                                                                    <span
-                                                                        class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-green-500 text-white">
-                                                                        <i class="fas fa-check mr-1"></i>1 avo
-                                                                    </span>
-                                                                    <% } else { %>
-                                                                        <span
-                                                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-red-500 text-white">
-                                                                            <i class="fas fa-times mr-1"></i>0 avos
-                                                                        </span>
-                                                                        <% } %>
-                                                            </td>
-                                                            <td class="px-4 py-3 text-center text-xs text-gray-600">
-                                                                <%= mes.observacao %>
-                                                            </td>
-                                                        </tr>
-                                                        <% }); %>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-
-                                    <!-- Memória de Cálculo Passo a Passo -->
-                                    <div class="mb-6">
-                                        <h4 class="text-xl font-bold text-gray-900 mb-4">
-                                            <i class="fas fa-list-ol text-primary-yellow mr-2"></i>
-                                            Passo a Passo do Cálculo
-                                        </h4>
-                                        <div class="space-y-3">
-                                            <% resultado.memoria.forEach((passo, index)=> { %>
-                                                <div
-                                                    class="bg-gray-50 rounded-lg p-4 border-l-4 <%= passo.destaque ? 'border-primary-yellow bg-yellow-50' : 'border-gray-300' %>">
-                                                    <div class="flex items-start">
-                                                        <span
-                                                            class="flex-shrink-0 bg-primary-red text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg mr-4">
-                                                            <%= passo.passo %>
-                                                        </span>
-                                                        <div class="flex-1">
-                                                            <p class="font-semibold text-gray-900 mb-1">
-                                                                <%= passo.descricao %>
-                                                            </p>
-                                                            <% if (passo.calculo) { %>
-                                                                <p
-                                                                    class="text-sm text-gray-600 bg-white rounded px-3 py-2 mt-2 border-l-2 border-primary-yellow">
-                                                                    <i
-                                                                        class="fas fa-calculator mr-1 text-primary-yellow"></i>
-                                                                    <%= passo.calculo %>
-                                                                </p>
-                                                                <% } %>
-                                                                    <% if (passo.valor) { %>
-                                                                        <p
-                                                                            class="text-primary-red font-bold mt-2 text-lg">
-                                                                            <i class="fas fa-check-circle mr-1"></i>
-                                                                            Resultado: <%= passo.valor %>
-                                                                        </p>
-                                                                        <% } %>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <% }); %>
-                                        </div>
-                                    </div>
-
-                                    <!-- Base Legal -->
-                                    <div class="bg-gray-50 rounded-lg p-6 border-t-4 border-primary-red">
-                                        <h4 class="font-bold text-lg text-gray-900 mb-4">
-                                            <i class="fas fa-gavel text-primary-red mr-2"></i>
-                                            Base Legal
-                                        </h4>
-                                        <h5 class="font-semibold mb-2 text-gray-800">
-                                            <%= resultado.baseLegal.titulo %>
-                                        </h5>
-                                        <p class="text-sm text-gray-700 mb-3">
-                                            <strong>Artigo:</strong>
-                                            <strong><%= resultado.baseLegal.artigo %></strong>
-                                        </p>
-                                        <% if (resultado.baseLegal.textoCompleto) { %>
-                                            <div
-                                                class="mt-4 text-sm text-gray-700 leading-relaxed bg-white rounded p-4 border">
-                                                <%= resultado.baseLegal.textoCompleto %>
-                                            </div>
-                                            <% } else { %>
-                                                <p class="text-sm text-gray-600">
-                                                    <%= resultado.baseLegal.descricao %>
+                                        <!-- Data de Admissão -->
+                                        <div>
+                                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                                <i class="fas fa-calendar-alt text-primary-red mr-2 icon-glow"></i>
+                                                Data de Admissão *
+                                            </label>
+                                            <input type="date" name="dataAdmissao" id="dataAdmissao" required
+                                                class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-primary-red focus:border-primary-red transition outline-none input-glow backdrop-blur-sm">
+                                            <div class="mt-2 glass-dark border-l-4 border-yellow-500/80 rounded-lg p-2">
+                                                <p class="text-xs text-yellow-200">
+                                                    <i class="fas fa-lightbulb mr-1 text-primary-yellow"></i>
+                                                    <strong>Dica:</strong> Data em que o funcionário começou a
+                                                    trabalhar na empresa.
                                                 </p>
-                                                <% } %>
-                                    </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Data de Referência -->
+                                        <div>
+                                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                                <i class="fas fa-calendar-check text-primary-yellow mr-2 icon-glow-yellow"></i>
+                                                Data de Referência *
+                                            </label>
+                                            <input type="date" name="dataReferencia" id="dataReferencia" required
+                                                class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none input-glow backdrop-blur-sm">
+                                            <div class="mt-2 glass-dark border-l-4 border-yellow-500/80 rounded-lg p-2">
+                                                <p class="text-xs text-yellow-200">
+                                                    <i class="fas fa-lightbulb mr-1 text-primary-yellow"></i>
+                                                    <strong>Dica:</strong> Geralmente 31 de dezembro do ano atual. É
+                                                    até quando você quer calcular os avos.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Afastamentos -->
+                                        <div>
+                                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                                <i class="fas fa-user-injured text-primary-red mr-2 icon-glow"></i>
+                                                Afastamentos por INSS (Opcional)
+                                            </label>
+                                            <div class="mb-2">
+                                                <button type="button" onclick="adicionarAfastamento()"
+                                                    class="text-sm glass border border-white/20 hover:bg-white/10 px-3 py-2 rounded-xl text-white transition">
+                                                    <i class="fas fa-plus mr-1"></i>Adicionar Afastamento
+                                                </button>
+                                            </div>
+                                            <div id="afastamentosContainer" class="space-y-2">
+                                                <!-- Afastamentos serão adicionados aqui via JavaScript -->
+                                            </div>
+                                            <input type="hidden" name="afastamentosINSS" id="afastamentosJSON">
+                                            <div class="mt-2 glass-dark border-l-4 border-blue-500/80 rounded-lg p-2">
+                                                <p class="text-xs text-blue-200">
+                                                    <i class="fas fa-info-circle mr-1 text-blue-400"></i>
+                                                    <strong>O que são afastamentos?</strong> Períodos em que o
+                                                    funcionário ficou afastado por auxílio-doença, acidente de
+                                                    trabalho, etc.
+                                                    Esses dias <strong>não contam</strong> para o cálculo dos avos.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <button type="submit"
+                                            class="group relative w-full bg-gradient-to-r from-primary-yellow to-primary-red text-white py-4 rounded-xl font-bold hover:shadow-2xl hover:shadow-primary-yellow/50 transition-all transform hover:scale-105 overflow-hidden">
+                                            <span class="relative z-10 flex items-center justify-center">
+                                                <i class="fas fa-gift mr-2"></i>Calcular 13º Salário
+                                            </span>
+                                            <div
+                                                class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow opacity-0 group-hover:opacity-100 transition-opacity">
+                                            </div>
+                                        </button>
+                                    </form>
                                 </div>
-                                <% } else { %>
-                                    <!-- Estado Inicial -->
-                                    <div class="bg-white rounded-lg shadow-md p-12 text-center">
-                                        <i class="fas fa-calculator text-gray-300 text-6xl mb-4"></i>
-                                        <h3 class="text-xl font-bold text-gray-700 mb-2">Pronto para Calcular!</h3>
-                                        <p class="text-gray-600 mb-4">
-                                            Preencha os dados ao lado para calcular o 13º salário proporcional
-                                        </p>
+                            </div>
+
+                            <!-- Resultado -->
+                            <div class="lg:col-span-2 animate-slide-up" style="animation-delay: 0.1s;">
+                                <% if (resultado) { %>
+                                    <!-- Resultado Principal -->
+                                    <div class="glass rounded-2xl shadow-2xl p-4 sm:p-6 border border-white/20 backdrop-blur-xl card-hover mb-6">
                                         <div
-                                            class="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto text-left">
-                                            <p class="text-sm text-blue-800 mb-2">
-                                                <i class="fas fa-lightbulb text-blue-500 mr-2"></i>
-                                                <strong>Exemplo:</strong>
+                                            class="bg-gradient-to-r from-primary-yellow/40 via-primary-red/40 to-primary-yellow/40 rounded-xl p-8 text-white text-center mb-6 border-4 border-primary-yellow/80 shadow-2xl shadow-primary-yellow/30 ring-2 ring-primary-yellow/50">
+                                            <h3 class="text-2xl font-black mb-4">
+                                                <i class="fas fa-gift mr-2 icon-glow-yellow"></i>
+                                                Resultado do <span class="gradient-text">Cálculo</span>
+                                            </h3>
+                                            <div class="text-6xl font-black mb-2">
+                                                <%= resultado.totalAvos %>/12
+                                            </div>
+                                            <p class="text-xl opacity-90 font-semibold">Avos de 13º Salário</p>
+                                            <p class="text-sm mt-4 opacity-80">
+                                                O funcionário tem direito a <strong>
+                                                    <%= resultado.totalAvos %>
+                                                </strong> doze avos do 13º salário
                                             </p>
-                                            <ul class="text-xs text-blue-700 space-y-1 list-disc list-inside">
-                                                <li>Funcionário admitido em <strong>01/03/2024</strong></li>
-                                                <li>Data de referência: <strong>31/12/2024</strong></li>
-                                                <li>Resultado: <strong>10/12 avos</strong> (10 meses completos)</li>
+                                        </div>
+
+                                        <!-- Resumo Visual -->
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                            <div class="glass border-2 border-green-500/50 rounded-xl p-4 text-center card-hover bg-green-900/20">
+                                                <i class="fas fa-check-circle text-green-400 text-3xl mb-2 icon-glow"></i>
+                                                <p class="text-2xl font-black text-green-400">
+                                                    <%= resultado.mesesCompletos %>
+                                                </p>
+                                                <p class="text-sm text-green-300 font-semibold">Meses Completos</p>
+                                                <p class="text-xs text-white/70 mt-1">(15+ dias trabalhados)</p>
+                                            </div>
+                                            <div class="glass border-2 border-yellow-500/50 rounded-xl p-4 text-center card-hover bg-yellow-900/20">
+                                                <i class="fas fa-clock text-yellow-400 text-3xl mb-2 icon-glow-yellow"></i>
+                                                <p class="text-2xl font-black text-yellow-400">
+                                                    <%= resultado.mesesParciais %>
+                                                </p>
+                                                <p class="text-sm text-yellow-300 font-semibold">Meses Parciais</p>
+                                                <p class="text-xs text-white/70 mt-1">(< 15 dias trabalhados)</p>
+                                            </div>
+                                            <div class="glass border-2 border-blue-500/50 rounded-xl p-4 text-center card-hover bg-blue-900/20">
+                                                <i class="fas fa-calendar-alt text-blue-400 text-3xl mb-2"></i>
+                                                <p class="text-2xl font-black text-blue-400">
+                                                    <%= resultado.meses.length %>
+                                                </p>
+                                                <p class="text-sm text-blue-300 font-semibold">Meses Analisados</p>
+                                                <p class="text-xs text-white/70 mt-1">Período total</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Explicação Educativa -->
+                                        <div class="glass-dark border-l-4 border-purple-500/80 p-4 rounded-xl mb-6">
+                                            <h4 class="font-black text-white mb-2 flex items-center">
+                                                <i class="fas fa-graduation-cap mr-2 text-purple-400 icon-glow"></i>
+                                                Como foi <span class="gradient-text">calculado?</span>
+                                            </h4>
+                                            <p class="text-sm text-white/90 mb-2">
+                                                O cálculo do 13º salário segue esta regra simples:
+                                            </p>
+                                            <ul class="text-sm text-white/80 list-disc list-inside space-y-1">
+                                                <li><strong class="text-primary-yellow">Mês completo:</strong> Se o funcionário trabalhou 15 dias ou
+                                                    mais no mês, ele ganha 1 avo (1/12 do salário)</li>
+                                                <li><strong class="text-primary-yellow">Mês incompleto:</strong> Se trabalhou menos de 15 dias, não
+                                                    ganha avo naquele mês</li>
+                                                <li><strong class="text-primary-yellow">Afastamentos:</strong> Dias de afastamento por INSS não contam
+                                                    para o cálculo</li>
                                             </ul>
                                         </div>
+
+                                        <!-- Análise Mês a Mês -->
+                                        <div class="mb-6">
+                                            <h4 class="text-xl font-black text-white mb-4 flex items-center">
+                                                <i class="fas fa-calendar-check text-primary-red mr-2 icon-glow"></i>
+                                                Análise Detalhada <span class="gradient-text">Mês a Mês</span>
+                                            </h4>
+                                            <div class="overflow-x-auto">
+                                                <table
+                                                    class="min-w-full divide-y divide-white/20 glass rounded-xl shadow-xl border border-white/20">
+                                                    <thead class="bg-white/10">
+                                                        <tr>
+                                                            <th
+                                                                class="px-4 py-3 text-left text-xs font-bold text-white/90 uppercase">
+                                                                Mês</th>
+                                                            <th
+                                                                class="px-4 py-3 text-center text-xs font-bold text-white/90 uppercase">
+                                                                Dias Trabalhados</th>
+                                                            <th
+                                                                class="px-4 py-3 text-center text-xs font-bold text-white/90 uppercase">
+                                                                Total do Mês</th>
+                                                            <th
+                                                                class="px-4 py-3 text-center text-xs font-bold text-white/90 uppercase">
+                                                                Avo</th>
+                                                            <th
+                                                                class="px-4 py-3 text-center text-xs font-bold text-white/90 uppercase">
+                                                                Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="divide-y divide-white/10">
+                                                        <% resultado.meses.forEach((mes, index)=> { %>
+                                                            <tr
+                                                                class="<%= mes.avo === 1 ? 'bg-green-900/20 hover:bg-green-900/30' : 'bg-red-900/20 hover:bg-red-900/30' %> transition-colors">
+                                                                <td class="px-4 py-3 text-sm font-semibold text-white">
+                                                                    <%= mes.mes %>
+                                                                </td>
+                                                                <td class="px-4 py-3 text-center text-sm text-white/90">
+                                                                    <span class="font-bold">
+                                                                        <%= mes.diasTrabalhados %>
+                                                                    </span> dias
+                                                                </td>
+                                                                <td class="px-4 py-3 text-center text-sm text-white/70">
+                                                                    <%= mes.totalDiasMes %> dias
+                                                                </td>
+                                                                <td class="px-4 py-3 text-center">
+                                                                    <% if (mes.avo===1) { %>
+                                                                        <span
+                                                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-green-500/80 text-white border border-green-400/50 shadow-md">
+                                                                            <i class="fas fa-check mr-1"></i>1 avo
+                                                                        </span>
+                                                                        <% } else { %>
+                                                                            <span
+                                                                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-red-500/80 text-white border border-red-400/50 shadow-md">
+                                                                                <i class="fas fa-times mr-1"></i>0 avos
+                                                                            </span>
+                                                                            <% } %>
+                                                                </td>
+                                                                <td class="px-4 py-3 text-center text-xs text-white/70">
+                                                                    <%= mes.observacao %>
+                                                                </td>
+                                                            </tr>
+                                                            <% }); %>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <!-- Memória de Cálculo Passo a Passo -->
+                                        <div class="mb-6">
+                                            <h4 class="text-xl font-black text-white mb-4 flex items-center">
+                                                <i class="fas fa-list-ol text-primary-yellow mr-2 icon-glow-yellow"></i>
+                                                Passo a Passo do <span class="gradient-text">Cálculo</span>
+                                            </h4>
+                                            <div class="space-y-3">
+                                                <% resultado.memoria.forEach((passo, index)=> { %>
+                                                    <div
+                                                        class="glass rounded-xl p-4 border-l-4 <%= passo.destaque ? 'border-primary-yellow/80 bg-yellow-900/20 shadow-lg' : 'border-white/20' %> card-hover">
+                                                        <div class="flex items-start">
+                                                            <span
+                                                                class="flex-shrink-0 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-full w-10 h-10 flex items-center justify-center font-bold text-lg mr-4 shadow-lg">
+                                                                <%= passo.passo %>
+                                                            </span>
+                                                            <div class="flex-1">
+                                                                <p class="font-semibold text-white mb-1">
+                                                                    <%= passo.descricao %>
+                                                                </p>
+                                                                <% if (passo.calculo) { %>
+                                                                    <p
+                                                                        class="text-sm text-white/80 glass rounded-xl px-3 py-2 mt-2 border-l-2 border-primary-yellow">
+                                                                        <i
+                                                                            class="fas fa-calculator mr-1 text-primary-yellow icon-glow-yellow"></i>
+                                                                        <%= passo.calculo %>
+                                                                    </p>
+                                                                    <% } %>
+                                                                        <% if (passo.valor) { %>
+                                                                            <p
+                                                                                class="text-primary-red font-bold mt-2 text-lg icon-glow">
+                                                                                <i class="fas fa-check-circle mr-1"></i>
+                                                                                Resultado: <%= passo.valor %>
+                                                                            </p>
+                                                                            <% } %>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <% }); %>
+                                            </div>
+                                        </div>
+
+                                        <!-- Base Legal -->
+                                        <div class="glass-dark rounded-xl p-6 border-t-4 border-primary-red/80 backdrop-blur-xl">
+                                            <h4 class="font-black text-lg text-white mb-4 flex items-center">
+                                                <i class="fas fa-gavel text-primary-red mr-2 icon-glow"></i>
+                                                Base <span class="gradient-text">Legal</span>
+                                            </h4>
+                                            <h5 class="font-semibold mb-2 text-white">
+                                                <%= resultado.baseLegal.titulo %>
+                                            </h5>
+                                            <p class="text-sm text-white/90 mb-3">
+                                                <strong class="text-white">Artigo:</strong>
+                                                <strong class="text-primary-red"><%= resultado.baseLegal.artigo %></strong>
+                                            </p>
+                                            <% if (resultado.baseLegal.textoCompleto) { %>
+                                                <div
+                                                    class="mt-4 text-sm text-white/80 leading-relaxed glass rounded-xl p-4 border border-white/20">
+                                                    <%= resultado.baseLegal.textoCompleto %>
+                                                </div>
+                                                <% } else { %>
+                                                    <p class="text-sm text-white/80">
+                                                        <%= resultado.baseLegal.descricao %>
+                                                    </p>
+                                                    <% } %>
+                                        </div>
                                     </div>
-                                    <% } %>
+                                    <% } else { %>
+                                        <!-- Estado Inicial -->
+                                        <div class="glass rounded-2xl shadow-xl p-12 text-center border border-white/20 backdrop-blur-xl animate-slide-up">
+                                            <i class="fas fa-calculator text-white/30 text-6xl mb-4"></i>
+                                            <h3 class="text-xl font-black text-white mb-2">Pronto para <span class="gradient-text">Calcular!</span></h3>
+                                            <p class="text-white/70 mb-4">
+                                                Preencha os dados ao lado para calcular o 13º salário proporcional
+                                            </p>
+                                            <div
+                                                class="glass-dark border-l-4 border-blue-500/80 rounded-xl p-4 max-w-md mx-auto text-left">
+                                                <p class="text-sm text-blue-200 mb-2 flex items-center">
+                                                    <i class="fas fa-lightbulb text-blue-400 mr-2 icon-glow"></i>
+                                                    <strong>Exemplo:</strong>
+                                                </p>
+                                                <ul class="text-xs text-white/80 space-y-1 list-disc list-inside">
+                                                    <li>Funcionário admitido em <strong class="text-primary-yellow">01/03/2024</strong></li>
+                                                    <li>Data de referência: <strong class="text-primary-yellow">31/12/2024</strong></li>
+                                                    <li>Resultado: <strong class="text-primary-yellow">10/12 avos</strong> (10 meses completos)</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <% } %>
+                            </div>
                         </div>
                     </div>
                 </main>
@@ -386,23 +487,23 @@
                         const index = afastamentos.length;
 
                         const div = document.createElement('div');
-                        div.className = 'bg-gray-50 border rounded-lg p-3';
+                        div.className = 'glass border border-white/20 rounded-xl p-3 backdrop-blur-xl';
                         div.id = `afastamento-${index}`;
                         div.innerHTML = `
                 <div class="grid grid-cols-2 gap-2 mb-2">
                     <div>
-                        <label class="text-xs font-medium text-gray-600">Data Início</label>
-                        <input type="date" class="afastamento-inicio w-full px-2 py-1 border rounded text-sm" 
+                        <label class="text-xs font-semibold text-white/90 mb-1 block">Data Início</label>
+                        <input type="date" class="afastamento-inicio w-full px-3 py-2 glass border border-white/20 rounded-xl text-white text-sm backdrop-blur-sm focus:ring-2 focus:ring-primary-red focus:border-primary-red transition outline-none" 
                                onchange="atualizarAfastamentos()">
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-gray-600">Data Fim</label>
-                        <input type="date" class="afastamento-fim w-full px-2 py-1 border rounded text-sm"
+                        <label class="text-xs font-semibold text-white/90 mb-1 block">Data Fim</label>
+                        <input type="date" class="afastamento-fim w-full px-3 py-2 glass border border-white/20 rounded-xl text-white text-sm backdrop-blur-sm focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none"
                                onchange="atualizarAfastamentos()">
                     </div>
                 </div>
                 <button type="button" onclick="removerAfastamento(${index})" 
-                        class="text-xs text-red-600 hover:text-red-800">
+                        class="text-xs text-red-400 hover:text-red-300 transition-colors">
                     <i class="fas fa-trash mr-1"></i>Remover
                 </button>
             `;

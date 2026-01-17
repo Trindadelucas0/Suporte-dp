@@ -14,6 +14,31 @@
                 extend: {
                     colors: {
                         primary: { red: '#DC2626', yellow: '#FBBF24' }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'gradient': 'gradient 15s ease infinite',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        gradient: {
+                            '0%, 100%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        }
                     }
                 }
             }
@@ -21,43 +46,103 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/loading.css">
     <!-- Favicon com as letras "DP" nas cores do sistema (Vermelho #DC2626 e Amarelo #FBBF24) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
     <style>
-        .bungee-inline-regular {
-            font-family: "Bungee Inline", sans-serif;
-            font-weight: 400;
-            font-style: normal;
+        * {
+            font-family: 'Inter', sans-serif;
         }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .icon-glow {
+            filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5));
+        }
+
+        .icon-glow-yellow {
+            filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
         .border-3 {
             border-width: 3px !important;
+        }
+
+        .neon-glow {
+            box-shadow: 
+                0 0 10px rgba(220, 38, 38, 0.5),
+                0 0 20px rgba(220, 38, 38, 0.4),
+                0 0 30px rgba(251, 191, 36, 0.3),
+                0 0 40px rgba(251, 191, 36, 0.2),
+                inset 0 0 20px rgba(220, 38, 38, 0.1);
+        }
+
+        .neon-glow:hover {
+            box-shadow: 
+                0 0 15px rgba(220, 38, 38, 0.7),
+                0 0 25px rgba(220, 38, 38, 0.6),
+                0 0 35px rgba(251, 191, 36, 0.5),
+                0 0 50px rgba(251, 191, 36, 0.4),
+                inset 0 0 30px rgba(220, 38, 38, 0.2);
         }
     </style>
 </head>
 
-<body class="bg-gradient-to-br from-gray-50 via-red-50 to-yellow-50 min-h-screen">
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
     <% if (typeof user !=='undefined' && user) { %>
         <%- include('../partials/navbar') %>
             <% } %>
 
-                <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-                    <div class="mb-6">
-                        <h1 class="text-3xl font-bold text-gray-900">Calendário de Obrigações</h1>
-                        <p class="mt-2 text-gray-600">Gerencie feriados, obrigações fiscais e anotações</p>
-                    </div>
+                <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 relative">
+                    <!-- Background Elements -->
+                    <div class="absolute top-0 right-0 w-96 h-96 bg-primary-red/10 rounded-full blur-3xl"></div>
+                    <div class="absolute bottom-0 left-0 w-96 h-96 bg-primary-yellow/10 rounded-full blur-3xl"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="mb-6 animate-fade-in">
+                            <h1 class="text-3xl font-black text-white">Calendário de <span class="gradient-text">Obrigações</span></h1>
+                            <p class="mt-2 text-white/70 text-sm font-medium">Gerencie feriados, obrigações fiscais e anotações</p>
+                        </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                         <!-- Calendário Principal -->
                         <div class="lg:col-span-3">
-                            <div class="bg-white rounded-xl shadow-xl p-4 sm:p-6 border-4 border-primary-red hover:border-primary-yellow transition-all duration-300 transform hover:shadow-2xl">
+                            <div class="glass rounded-2xl shadow-2xl p-4 sm:p-6 border border-white/20 backdrop-blur-xl card-hover animate-slide-up">
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-0">
-                                    <h2 class="text-xl sm:text-2xl font-bold capitalize bg-gradient-to-r from-primary-red to-primary-yellow bg-clip-text text-transparent">
-                                        <i class="fas fa-calendar-alt text-primary-red mr-2"></i>
-                                        <%= mesNome %>
-                                            <%= ano %>
+                                    <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white capitalize">
+                                        <i class="fas fa-calendar-alt text-primary-red mr-2 icon-glow"></i>
+                                        <span class="gradient-text"><%= mesNome %></span> <%= ano %>
                                     </h2>
                                     <div class="flex space-x-2">
                                         <a href="?ano=<%= mes === 1 ? ano - 1 : ano %>&mes=<%= mes === 1 ? 12 : mes - 1 %>"
@@ -76,35 +161,34 @@
                                 </div>
 
                                 <!-- Cabeçalho dos dias da semana -->
-                                <div class="grid grid-cols-7 gap-2 mb-2">
-                                    <div class="text-center font-bold text-white py-2 sm:py-3 bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-md text-xs sm:text-sm">Dom</div>
-                                    <div class="text-center font-bold text-white py-2 sm:py-3 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg shadow-md text-xs sm:text-sm">Seg</div>
-                                    <div class="text-center font-bold text-white py-2 sm:py-3 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg shadow-md text-xs sm:text-sm">Ter</div>
-                                    <div class="text-center font-bold text-white py-2 sm:py-3 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg shadow-md text-xs sm:text-sm">Qua</div>
-                                    <div class="text-center font-bold text-white py-2 sm:py-3 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg shadow-md text-xs sm:text-sm">Qui</div>
-                                    <div class="text-center font-bold text-white py-2 sm:py-3 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg shadow-md text-xs sm:text-sm">Sex</div>
-                                    <div class="text-center font-bold text-white py-2 sm:py-3 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg shadow-md text-xs sm:text-sm">Sáb</div>
+                                <div class="grid grid-cols-7 gap-1.5 mb-1.5">
+                                    <div class="text-center font-bold text-white py-2 bg-gradient-to-br from-gray-400 to-gray-500 rounded-lg shadow-md text-xs sm:text-sm">Dom</div>
+                                    <div class="text-center font-bold text-white py-2 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg shadow-md text-xs sm:text-sm">Seg</div>
+                                    <div class="text-center font-bold text-white py-2 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg shadow-md text-xs sm:text-sm">Ter</div>
+                                    <div class="text-center font-bold text-white py-2 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg shadow-md text-xs sm:text-sm">Qua</div>
+                                    <div class="text-center font-bold text-white py-2 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg shadow-md text-xs sm:text-sm">Qui</div>
+                                    <div class="text-center font-bold text-white py-2 bg-gradient-to-br from-gray-600 to-gray-700 rounded-lg shadow-md text-xs sm:text-sm">Sex</div>
+                                    <div class="text-center font-bold text-white py-2 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg shadow-md text-xs sm:text-sm">Sáb</div>
                                 </div>
 
                                 <!-- Dias do mês -->
-                                <div class="grid grid-cols-7 gap-2">
+                                <div class="grid grid-cols-7 gap-1.5 auto-rows-fr">
                                     <% const primeiroDia=new Date(ano, mes - 1, 1).getDay(); for (let i=0; i <
                                         primeiroDia; i++) { %>
-                                        <div class="h-24"></div>
+                                        <div class="min-h-[calc((100vh-350px)/6)]"></div>
                                         <% } %>
 
                                             <% if (typeof calendario !=='undefined' && calendario && calendario.length>
                                                 0) { %>
                                                 <% calendario.forEach(dia=> { %>
-                                                    <div data-dia="<%= dia.data %>" class="dia-calendario min-h-20 sm:min-h-24 border-3 rounded-lg p-1 sm:p-2 cursor-pointer transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:z-10
-                                        <%= dia.isFeriado && dia.feriadoTipo === 'nacional' ? 'bg-gradient-to-br from-red-400 to-red-500 border-red-700 hover:border-red-800 hover:from-red-500 hover:to-red-600' : 
-                                            dia.isFeriado && dia.feriadoTipo === 'facultativo' ? 'bg-gradient-to-br from-orange-300 to-orange-400 border-orange-600 hover:border-orange-700 hover:from-orange-400 hover:to-orange-500' :
-                                            dia.diaSemana === 0 ? 'bg-gradient-to-br from-gray-200 to-gray-300 border-gray-400 hover:border-gray-500' :
-                                            dia.anotacao || (dia.obrigacoes && dia.obrigacoes.length > 0) || (dia.tarefas && dia.tarefas.length > 0) ? 'bg-gradient-to-br from-yellow-300 to-yellow-400 border-yellow-600 hover:border-yellow-700 hover:from-yellow-400 hover:to-yellow-500' : 
-                                            'bg-gradient-to-br from-white to-gray-50 border-gray-300 hover:border-primary-red hover:from-primary-red hover:to-primary-yellow hover:text-white' %>">
-                                                        <div class="flex justify-between items-start mb-1">
+                                                    <% const temEventos = dia.anotacao || (dia.obrigacoes && dia.obrigacoes.length > 0) || (dia.tarefas && dia.tarefas.length > 0); %>
+                                                    <% const ehFeriado = dia.isFeriado; %>
+                                                    <% const temDestaque = temEventos || ehFeriado; %>
+                                                    <div data-dia="<%= dia.data %>" class="dia-calendario min-h-[calc((100vh-350px)/6)] flex flex-col border-3 rounded-xl p-1.5 sm:p-2 cursor-pointer transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:z-10 card-hover
+                                        <%= temDestaque ? 'bg-gradient-to-br from-primary-red/40 via-primary-yellow/40 to-primary-red/40 border-4 border-primary-yellow/100 hover:border-primary-red/100 shadow-2xl shadow-primary-yellow/60 ring-2 ring-primary-yellow/50 neon-glow' : dia.diaSemana === 0 ? 'bg-white/50 border-3 border-white/70 hover:border-white/90 shadow-lg' : 'glass border-3 border-white/20 hover:border-primary-red/50' %>">
+                                                        <div class="flex justify-between items-start mb-0.5 flex-shrink-0">
                                                             <span
-                                                                class="text-base sm:text-lg font-bold <%= dia.isFeriado && dia.feriadoTipo === 'nacional' ? 'text-red-900' : dia.isFeriado && dia.feriadoTipo === 'facultativo' ? 'text-orange-900' : dia.diaSemana === 0 ? 'text-gray-800' : 'text-gray-900' %> dia-numero">
+                                                                class="text-sm sm:text-base font-bold <%= dia.isFeriado && dia.feriadoTipo === 'nacional' ? 'text-red-300' : dia.isFeriado && dia.feriadoTipo === 'facultativo' ? 'text-orange-300' : dia.diaSemana === 0 ? 'text-white' : 'text-white' %> dia-numero">
                                                                 <%= typeof dia.dia !=='undefined' ? dia.dia : '' %>
                                                             </span>
                                                             <% 
@@ -119,7 +203,7 @@
                                                         </div>
 
                                                         <% if (dia.isFeriado) { %>
-                                                            <div class="text-xs <%= dia.feriadoTipo === 'facultativo' ? 'text-orange-900' : 'text-red-900' %> font-bold truncate"
+                                                            <div class="text-xs <%= dia.feriadoTipo === 'facultativo' ? 'text-orange-300' : 'text-red-300' %> font-bold truncate"
                                                                 title="<%= dia.feriadoNome %> (<%= dia.feriadoTipo === 'facultativo' ? 'Ponto Facultativo' : 'Feriado Nacional' %>)">
                                                                 <i class="fas fa-<%= dia.feriadoTipo === 'facultativo' ? 'calendar-check' : 'calendar-times' %> mr-1"></i>
                                                                 <%= dia.feriadoNome %>
@@ -130,10 +214,10 @@
                                                             <% } %>
 
                                                                 <% if (dia.obrigacoes && dia.obrigacoes.length> 0) { %>
-                                                                    <div class="space-y-1 mt-1">
+                                                                    <div class="space-y-0.5 mt-0.5 flex-1 overflow-hidden">
                                                                         <% dia.obrigacoes.slice(0,
                                                                             2).forEach(obrigacao=> { %>
-                                                                            <div class="text-xs <%= obrigacao.tipo === 'fgts' ? 'text-orange-700 bg-orange-100' : obrigacao.tipo === 'inss' ? 'text-green-700 bg-green-100' : obrigacao.tipo === 'irrf' ? 'text-purple-700 bg-purple-100' : obrigacao.tipo === 'dctfweb' ? 'text-blue-700 bg-blue-100' : obrigacao.tipo === 'efd_reinf' ? 'text-indigo-700 bg-indigo-100' : 'text-gray-700 bg-gray-100' %> px-1 py-0.5 rounded truncate"
+                                                                            <div class="text-xs <%= obrigacao.tipo === 'fgts' ? 'text-orange-300 bg-orange-900/30 border border-orange-500/30' : obrigacao.tipo === 'inss' ? 'text-green-300 bg-green-900/30 border border-green-500/30' : obrigacao.tipo === 'irrf' ? 'text-purple-300 bg-purple-900/30 border border-purple-500/30' : obrigacao.tipo === 'dctfweb' ? 'text-blue-300 bg-blue-900/30 border border-blue-500/30' : obrigacao.tipo === 'efd_reinf' ? 'text-indigo-300 bg-indigo-900/30 border border-indigo-500/30' : 'text-gray-300 bg-gray-900/30 border border-gray-500/30' %> px-1.5 py-0.5 rounded-md truncate font-medium"
                                                                                 title="<%= obrigacao.descricao %>">
                                                                                 <i
                                                                                     class="fas fa-<%= obrigacao.tipo === 'fgts' ? 'wallet' : obrigacao.tipo === 'inss' ? 'shield-alt' : obrigacao.tipo === 'irrf' ? 'receipt' : obrigacao.tipo === 'dctfweb' ? 'file-invoice' : obrigacao.tipo === 'efd_reinf' ? 'file-alt' : 'calendar-check' %> mr-1"></i>
@@ -141,7 +225,7 @@
                                                                             </div>
                                                                             <% }); %>
                                                                                 <% if (dia.obrigacoes.length> 2) { %>
-                                                                                    <div class="text-xs text-gray-600">
+                                                                                    <div class="text-xs text-white/60 font-semibold">
                                                                                         +<%= dia.obrigacoes.length - 2
                                                                                             %> mais
                                                                                     </div>
@@ -150,30 +234,30 @@
                                                                     <% } %>
 
                                                                         <% if (dia.tarefas && dia.tarefas.length > 0) { %>
-                                                                            <div class="space-y-1 mt-1">
+                                                                            <div class="space-y-0.5 mt-0.5 flex-1 overflow-hidden">
                                                                                 <% dia.tarefas.slice(0, 2).forEach(tarefa => { %>
                                                                                     <% 
-                                                                                        const corTipo = tarefa.tipo === 'FÉRIAS' ? 'text-blue-900 bg-blue-300 border border-blue-500 font-semibold' :
-                                                                                                       tarefa.tipo === '13° ADIANTAMENTO' || tarefa.tipo === '13° INTEGRAL' ? 'text-orange-900 bg-orange-300 border border-orange-500 font-semibold' :
-                                                                                                       tarefa.tipo === 'RESCISÃO' ? 'text-red-900 bg-red-300 border border-red-500 font-semibold' :
-                                                                                                       tarefa.tipo === 'ADMISSÃO' ? 'text-green-900 bg-green-300 border border-green-500 font-semibold' :
-                                                                                                       tarefa.tipo === 'AFASTAMENTO' ? 'text-yellow-900 bg-yellow-300 border border-yellow-500 font-semibold' :
-                                                                                                       tarefa.tipo === 'ALTERAÇÃO SALARIAL' ? 'text-purple-900 bg-purple-300 border border-purple-500 font-semibold' :
-                                                                                                       tarefa.tipo === 'ALTERAÇÃO DE CARGO' ? 'text-indigo-900 bg-indigo-300 border border-indigo-500 font-semibold' :
-                                                                                                       tarefa.prioridade === 'alta' ? 'text-red-900 bg-red-300 border border-red-500 font-semibold' :
-                                                                                                       tarefa.prioridade === 'media' ? 'text-yellow-900 bg-yellow-300 border border-yellow-500 font-semibold' :
-                                                                                                       'text-green-900 bg-green-300 border border-green-500 font-semibold';
+                                                                                        const corTipo = tarefa.tipo === 'FÉRIAS' ? 'text-blue-300 bg-blue-900/30 border border-blue-500/30 font-semibold' :
+                                                                                                       tarefa.tipo === '13° ADIANTAMENTO' || tarefa.tipo === '13° INTEGRAL' ? 'text-orange-300 bg-orange-900/30 border border-orange-500/30 font-semibold' :
+                                                                                                       tarefa.tipo === 'RESCISÃO' ? 'text-red-300 bg-red-900/30 border border-red-500/30 font-semibold' :
+                                                                                                       tarefa.tipo === 'ADMISSÃO' ? 'text-green-300 bg-green-900/30 border border-green-500/30 font-semibold' :
+                                                                                                       tarefa.tipo === 'AFASTAMENTO' ? 'text-yellow-300 bg-yellow-900/30 border border-yellow-500/30 font-semibold' :
+                                                                                                       tarefa.tipo === 'ALTERAÇÃO SALARIAL' ? 'text-purple-300 bg-purple-900/30 border border-purple-500/30 font-semibold' :
+                                                                                                       tarefa.tipo === 'ALTERAÇÃO DE CARGO' ? 'text-indigo-300 bg-indigo-900/30 border border-indigo-500/30 font-semibold' :
+                                                                                                       tarefa.prioridade === 'alta' ? 'text-red-300 bg-red-900/30 border border-red-500/30 font-semibold' :
+                                                                                                       tarefa.prioridade === 'media' ? 'text-yellow-300 bg-yellow-900/30 border border-yellow-500/30 font-semibold' :
+                                                                                                       'text-green-300 bg-green-900/30 border border-green-500/30 font-semibold';
                                                                                         const concluida = tarefa.status === 'feito';
                                                                                     %>
                                                                                     <a href="/tarefas?id=<%= tarefa.id %>" 
-                                                                                       class="block text-xs <%= corTipo %> px-2 py-1 rounded-md truncate <%= concluida ? 'opacity-60 line-through' : '' %> hover:opacity-100 hover:shadow-md transition-all"
+                                                                                       class="block text-xs <%= corTipo %> px-1.5 py-0.5 rounded-md truncate <%= concluida ? 'opacity-60 line-through' : '' %> hover:opacity-100 hover:shadow-md transition-all"
                                                                                        title="<%= tarefa.nome %>">
                                                                                         <i class="fas fa-<%= concluida ? 'check-circle' : 'tasks' %> mr-1"></i>
                                                                                         <%= tarefa.nome %>
                                                                                     </a>
                                                                                 <% }); %>
                                                                                 <% if (dia.tarefas.length > 2) { %>
-                                                                                    <div class="text-xs text-gray-600">
+                                                                                    <div class="text-xs text-white/60 font-semibold">
                                                                                         +<%= dia.tarefas.length - 2 %> tarefas
                                                                                     </div>
                                                                                 <% } %>
@@ -181,7 +265,7 @@
                                                                         <% } %>
 
                                                                         <% if (dia.anotacao) { %>
-                                                                            <div class="text-xs text-yellow-700 mt-1 truncate"
+                                                                            <div class="text-xs text-yellow-300 mt-0.5 truncate bg-yellow-900/30 px-2 py-0.5 rounded-md border border-yellow-500/30 font-medium"
                                                                                 title="<%= dia.anotacao %>">
                                                                                 <i
                                                                                     class="fas fa-sticky-note mr-1"></i>Anotação
@@ -190,7 +274,7 @@
                                                     </div>
                                                     <% }); %>
                                                         <% } else { %>
-                                                            <div class="col-span-7 text-center py-8 text-gray-500">
+                                                            <div class="col-span-7 text-center py-8 text-white/70">
                                                                 <i class="fas fa-calendar-times text-4xl mb-2"></i>
                                                                 <p>Carregando calendário...</p>
                                                                 <p class="text-xs mt-2">Se os dias não aparecerem,
@@ -277,6 +361,7 @@
                                 </p>
                             </div>
                         </div>
+                    </div>
                     </div>
                 </main>
 

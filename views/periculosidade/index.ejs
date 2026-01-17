@@ -14,6 +14,31 @@
                 extend: {
                     colors: {
                         primary: { red: '#DC2626', yellow: '#FBBF24' }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'gradient': 'gradient 15s ease infinite',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        gradient: {
+                            '0%, 100%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        }
                     }
                 }
             }
@@ -21,162 +46,259 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bungee+Inline&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/loading.css">
     <!-- Favicon com as letras "DP" nas cores do sistema (Vermelho #DC2626 e Amarelo #FBBF24) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
     <style>
-        .bungee-inline-regular {
-            font-family: "Bungee Inline", sans-serif;
-            font-weight: 400;
-            font-style: normal;
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .icon-glow {
+            filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5));
+        }
+
+        .icon-glow-yellow {
+            filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));
+        }
+
+        .input-glow:focus {
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1), 0 0 20px rgba(220, 38, 38, 0.2);
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
     </style>
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
     <% if (typeof user !=='undefined' && user) { %>
         <%- include('../partials/navbar') %>
             <% } %>
 
-                <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-                    <div class="mb-6">
-                        <h1 class="text-3xl font-bold text-gray-900">Periculosidade e Insalubridade</h1>
-                        <p class="mt-2 text-gray-600">Adicionais de risco</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-1">
-                            <div class="bg-white rounded-xl shadow-xl p-4 sm:p-6 border-4 border-primary-red hover:border-primary-yellow transition-all duration-300 transform hover:shadow-2xl">
-                                <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-primary-red to-primary-yellow bg-clip-text text-transparent">
-                                    <i class="fas fa-calculator text-primary-red mr-2"></i>Dados de Entrada
-                                </h2>
-
-                                <% if (error) { %>
-                                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-                                        <%= error %>
+                <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 relative">
+                    <!-- Background Elements -->
+                    <div class="absolute top-0 right-0 w-96 h-96 bg-primary-red/10 rounded-full blur-3xl"></div>
+                    <div class="absolute bottom-0 left-0 w-96 h-96 bg-primary-yellow/10 rounded-full blur-3xl"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="mb-6 animate-fade-in">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <div class="relative">
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur-lg opacity-50">
                                     </div>
-                                    <% } %>
-
-                                        <form method="POST" action="/periculosidade/calcular" class="space-y-4">
-                                            <% if (typeof csrfToken !=='undefined' && csrfToken) { %>
-                                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                                <% } %>
-                                                    <div>
-                                                        <label class="block text-sm font-medium mb-2">Ano *</label>
-                                                        <select name="ano" id="ano" required
-                                                            class="w-full px-4 py-2 border rounded-md">
-                                                            <option value="">Selecione o ano</option>
-                                                            <option value="2024">2024</option>
-                                                            <option value="2025">2025</option>
-                                                            <option value="2026">2026</option>
-                                                        </select>
-                                                        <p class="text-xs text-gray-500 mt-1">Ano para usar o salário
-                                                            mínimo correto</p>
-                                                    </div>
-
-                                                    <div>
-                                                        <label class="block text-sm font-medium mb-2">Tipo *</label>
-                                                        <select name="tipo" id="tipo" required
-                                                            class="w-full px-4 py-2 border rounded-md">
-                                                            <option value="">Selecione o tipo</option>
-                                                            <option value="periculosidade">Periculosidade (30% sobre
-                                                                salário mínimo)</option>
-                                                            <option value="insalubridade">Insalubridade (% sobre salário
-                                                                mínimo)</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div id="divGrau" class="hidden">
-                                                        <label class="block text-sm font-medium mb-2">Grau de
-                                                            Insalubridade *</label>
-                                                        <select name="grauInsalubridade"
-                                                            class="w-full px-4 py-2 border rounded-md">
-                                                            <option value="minimo">Mínimo (10%)</option>
-                                                            <option value="medio" selected>Médio (20%)</option>
-                                                            <option value="maximo">Máximo (40%)</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                                                        <p class="text-sm text-blue-800">
-                                                            <i class="fas fa-info-circle mr-2"></i>
-                                                            <strong>Importante:</strong> A
-                                                            <strong>periculosidade</strong> é calculada sobre o
-                                                            <strong>salário contratual do funcionário</strong>, enquanto
-                                                            a <strong>insalubridade</strong> é calculada sobre o
-                                                            <strong>salário mínimo nacional</strong>.
-                                                        </p>
-                                                    </div>
-
-
-                                                    <button type="submit"
-                                                        class="w-full bg-primary-red text-white py-3 rounded-md font-semibold hover:opacity-90">
-                                                        Calcular
-                                                    </button>
-                                        </form>
+                                    <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-2 rounded-xl">
+                                        <i class="fas fa-shield-alt text-white text-xl icon-glow"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h1 class="text-3xl font-black text-white">Periculosidade e <span class="gradient-text">Insalubridade</span></h1>
+                                    <p class="mt-1 text-white/70 text-sm font-medium">Adicionais de risco - CLT Art. 189 a 197</p>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="lg:col-span-2">
-                            <% if (resultado) { %>
-                                <div class="bg-white rounded-xl shadow-xl p-4 sm:p-6 border-4 border-primary-red hover:border-primary-yellow transition-all duration-300 transform hover:shadow-2xl">
-                                    <div
-                                        class="bg-gradient-to-r from-primary-red to-primary-yellow rounded-lg p-6 text-white mb-6">
-                                        <h3 class="text-2xl font-bold mb-4">
-                                            <%= resultado.tipo==='periculosidade' ? 'Periculosidade' : 'Insalubridade'
-                                                %>
-                                        </h3>
-                                        <p class="text-3xl font-bold">R$ <%= resultado.valorAdicional.toFixed(2) %>
-                                        </p>
-                                        <p class="text-sm opacity-90 mt-2">
-                                            <%= resultado.percentual %>% sobre salário mínimo <%= resultado.ano %>
-                                        </p>
-                                        <p class="text-xs opacity-75 mt-1">Salário Mínimo: R$ <%=
-                                                resultado.salarioMinimo.toFixed(2) %>
-                                        </p>
-                                    </div>
-
-                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                                        <h4 class="font-bold mb-2">Educação</h4>
-                                        <p class="text-sm text-yellow-800">
-                                            <%= resultado.educacao.descricao %>
-                                        </p>
-                                    </div>
-
-                                    <h4 class="font-bold mb-4">Memória de Cálculo</h4>
-                                    <div class="space-y-3">
-                                        <% resultado.memoria.forEach(passo=> { %>
-                                            <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-primary-red">
-                                                <p class="font-semibold">
-                                                    <%= passo.descricao %>
-                                                </p>
-                                                <% if (passo.calculo) { %>
-                                                    <p class="text-sm text-gray-600 mt-1">
-                                                        <%= passo.calculo %>
-                                                    </p>
-                                                    <% } %>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div class="lg:col-span-1">
+                                <div class="glass rounded-2xl shadow-2xl p-4 sm:p-6 border border-white/20 backdrop-blur-xl card-hover animate-slide-up sticky top-4">
+                                    <div class="flex items-center mb-4 sm:mb-6">
+                                        <div class="relative mr-3">
+                                            <div
+                                                class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur opacity-50">
                                             </div>
-                                            <% }); %>
+                                            <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-2 rounded-xl">
+                                                <i class="fas fa-calculator text-white text-xl icon-glow"></i>
+                                            </div>
+                                        </div>
+                                        <h2 class="text-xl sm:text-2xl font-black text-white">
+                                            Dados de <span class="gradient-text">Entrada</span>
+                                        </h2>
                                     </div>
 
-                                    <div class="mt-6 bg-gray-50 rounded-lg p-6">
-                                        <h4 class="font-bold mb-2">Base Legal</h4>
-                                        <p class="font-semibold">
-                                            <%= resultado.baseLegal.titulo %>
-                                        </p>
-                                        <p class="text-sm text-gray-600 mt-1">
-                                            <%= resultado.baseLegal.descricao %>
-                                        </p>
-                                    </div>
+                                    <% if (error) { %>
+                                        <div class="glass-dark border-l-4 border-red-500 text-red-200 px-4 py-3 rounded-lg mb-4 flex items-start">
+                                            <i class="fas fa-exclamation-circle mr-2 mt-0.5 flex-shrink-0"></i>
+                                            <div>
+                                                <strong class="block">Erro:</strong>
+                                                <span class="text-sm"><%= error %></span>
+                                            </div>
+                                        </div>
+                                        <% } %>
+
+                                            <form method="POST" action="/periculosidade/calcular" class="space-y-4">
+                                                <% if (typeof csrfToken !=='undefined' && csrfToken) { %>
+                                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                                    <% } %>
+                                                        <div>
+                                                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                                                <i class="fas fa-calendar-alt text-primary-red mr-2 icon-glow"></i>
+                                                                Ano *
+                                                            </label>
+                                                            <select name="ano" id="ano" required
+                                                                class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-primary-red focus:border-primary-red transition outline-none backdrop-blur-sm">
+                                                                <option value="" class="bg-gray-800">Selecione o ano</option>
+                                                                <option value="2024" class="bg-gray-800">2024</option>
+                                                                <option value="2025" class="bg-gray-800">2025</option>
+                                                                <option value="2026" class="bg-gray-800">2026</option>
+                                                            </select>
+                                                            <p class="text-xs text-white/70 mt-1">Ano para usar o salário
+                                                                mínimo correto</p>
+                                                        </div>
+
+                                                        <div>
+                                                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                                                <i class="fas fa-shield-alt text-primary-yellow mr-2 icon-glow-yellow"></i>
+                                                                Tipo *
+                                                            </label>
+                                                            <select name="tipo" id="tipo" required
+                                                                class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none backdrop-blur-sm">
+                                                                <option value="" class="bg-gray-800">Selecione o tipo</option>
+                                                                <option value="periculosidade" class="bg-gray-800">Periculosidade (30% sobre
+                                                                    salário mínimo)</option>
+                                                                <option value="insalubridade" class="bg-gray-800">Insalubridade (% sobre salário
+                                                                    mínimo)</option>
+                                                            </select>
+                                                        </div>
+
+                                                        <div id="divGrau" class="hidden">
+                                                            <label class="block text-sm font-semibold text-white/90 mb-2">
+                                                                <i class="fas fa-layer-group text-primary-red mr-2 icon-glow"></i>
+                                                                Grau de Insalubridade *
+                                                            </label>
+                                                            <select name="grauInsalubridade"
+                                                                class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-primary-red focus:border-primary-red transition outline-none backdrop-blur-sm">
+                                                                <option value="minimo" class="bg-gray-800">Mínimo (10%)</option>
+                                                                <option value="medio" selected class="bg-gray-800">Médio (20%)</option>
+                                                                <option value="maximo" class="bg-gray-800">Máximo (40%)</option>
+                                                            </select>
+                                                        </div>
+
+                                                        <div class="glass-dark border-l-4 border-blue-500/80 p-4 rounded-xl bg-blue-900/20">
+                                                            <p class="text-sm text-blue-200 flex items-start">
+                                                                <i class="fas fa-info-circle mr-2 text-blue-400 icon-glow mt-0.5 flex-shrink-0"></i>
+                                                                <span>
+                                                                    <strong class="text-white">Importante:</strong> A
+                                                                    <strong class="text-primary-yellow">periculosidade</strong> é calculada sobre o
+                                                                    <strong class="text-white">salário contratual do funcionário</strong>, enquanto
+                                                                    a <strong class="text-primary-yellow">insalubridade</strong> é calculada sobre o
+                                                                    <strong class="text-white">salário mínimo nacional</strong>.
+                                                                </span>
+                                                            </p>
+                                                        </div>
+
+                                                        <button type="submit"
+                                                            class="group relative w-full bg-gradient-to-r from-primary-red to-primary-yellow text-white py-3 rounded-xl font-bold hover:shadow-2xl hover:shadow-primary-yellow/50 transition-all transform hover:scale-105 overflow-hidden">
+                                                            <span class="relative z-10 flex items-center justify-center">
+                                                                <i class="fas fa-calculator mr-2"></i>
+                                                                Calcular
+                                                            </span>
+                                                            <div
+                                                                class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            </div>
+                                                        </button>
+                                            </form>
                                 </div>
-                                <% } else { %>
-                                    <div class="bg-white rounded-lg shadow-md p-12 text-center">
-                                        <i class="fas fa-shield-alt text-gray-300 text-6xl mb-4"></i>
-                                        <p class="text-gray-600">Preencha os dados para calcular</p>
+                            </div>
+
+                            <div class="lg:col-span-2 animate-slide-up" style="animation-delay: 0.1s;">
+                                <% if (resultado) { %>
+                                    <div class="glass rounded-2xl shadow-2xl p-4 sm:p-6 border border-white/20 backdrop-blur-xl card-hover">
+                                        <div
+                                            class="bg-gradient-to-r from-primary-red/40 via-primary-yellow/40 to-primary-red/40 rounded-xl p-6 text-white mb-6 border-4 border-primary-red/80 shadow-2xl shadow-primary-red/30 ring-2 ring-primary-red/50">
+                                            <h3 class="text-2xl font-black mb-4 flex items-center">
+                                                <i class="fas fa-shield-alt mr-2 icon-glow"></i>
+                                                <%= resultado.tipo==='periculosidade' ? 'Periculosidade' : 'Insalubridade' %>
+                                            </h3>
+                                            <p class="text-4xl font-black mb-2">R$ <%= resultado.valorAdicional.toFixed(2) %>
+                                            </p>
+                                            <p class="text-sm opacity-90 mt-2 font-semibold">
+                                                <%= resultado.percentual %>% sobre salário mínimo <%= resultado.ano %>
+                                            </p>
+                                            <p class="text-xs opacity-75 mt-1">Salário Mínimo: R$ <%=
+                                                    resultado.salarioMinimo.toFixed(2) %>
+                                            </p>
+                                        </div>
+
+                                        <div class="glass-dark border-l-4 border-yellow-500/80 rounded-xl p-4 mb-6 bg-yellow-900/20">
+                                            <h4 class="font-black text-yellow-200 mb-2 flex items-center">
+                                                <i class="fas fa-graduation-cap mr-2 text-primary-yellow icon-glow-yellow"></i>
+                                                <span class="gradient-text">Educação</span>
+                                            </h4>
+                                            <p class="text-sm text-yellow-100">
+                                                <%= resultado.educacao.descricao %>
+                                            </p>
+                                        </div>
+
+                                        <h4 class="font-black text-white mb-4 flex items-center">
+                                            <i class="fas fa-list-ol text-primary-yellow mr-2 icon-glow-yellow"></i>
+                                            Memória de <span class="gradient-text">Cálculo</span>
+                                        </h4>
+                                        <div class="space-y-3">
+                                            <% resultado.memoria.forEach(passo=> { %>
+                                                <div class="glass rounded-xl p-4 border-l-4 border-primary-red/80 card-hover">
+                                                    <p class="font-semibold text-white">
+                                                        <%= passo.descricao %>
+                                                    </p>
+                                                    <% if (passo.calculo) { %>
+                                                        <p class="text-sm text-white/70 mt-1">
+                                                            <%= passo.calculo %>
+                                                        </p>
+                                                        <% } %>
+                                                </div>
+                                                <% }); %>
+                                        </div>
+
+                                        <div class="mt-6 glass-dark rounded-xl p-6 border-t-4 border-primary-red/80 backdrop-blur-xl">
+                                            <h4 class="font-black text-white mb-2 flex items-center">
+                                                <i class="fas fa-gavel text-primary-red mr-2 icon-glow"></i>
+                                                Base <span class="gradient-text">Legal</span>
+                                            </h4>
+                                            <p class="font-semibold text-white">
+                                                <%= resultado.baseLegal.titulo %>
+                                            </p>
+                                            <p class="text-sm text-white/80 mt-1">
+                                                <%= resultado.baseLegal.descricao %>
+                                            </p>
+                                        </div>
                                     </div>
-                                    <% } %>
+                                <% } else { %>
+                                    <div class="glass rounded-2xl shadow-xl p-12 text-center border border-white/20 backdrop-blur-xl animate-slide-up">
+                                        <i class="fas fa-shield-alt text-white/30 text-6xl mb-4"></i>
+                                        <p class="text-white/70 text-lg">Preencha os dados para calcular</p>
+                                    </div>
+                                <% } %>
+                            </div>
                         </div>
                     </div>
                 </main>
