@@ -281,7 +281,7 @@
                                                 </span>
                                                 <% const totalEventos=(dia.obrigacoes ?
                                                     dia.obrigacoes.length : 0) + (dia.tarefas ?
-                                                    dia.tarefas.length : 0); %>
+                                                    dia.tarefas.length : 0) + (dia.anotacao ? 1 : 0); %>
                                                     <% if (totalEventos> 0) { %>
                                                         <span
                                                             class="text-xs bg-gradient-to-r from-primary-yellow to-primary-red text-white px-2 py-0.5 rounded-full font-bold shadow-md transform hover:scale-110 transition-transform">
@@ -303,28 +303,36 @@
                                                 </div>
                                                 <% } %>
 
-                                                    <% if (dia.obrigacoes && dia.obrigacoes.length> 0) { %>
-                                                        <div class="space-y-0.5 mt-0.5 flex-1 overflow-hidden">
-                                                            <% dia.obrigacoes.slice(0,
-                                                                2).forEach(obrigacao=> { %>
-                                                                <div class="text-xs <%= obrigacao.tipo === 'fgts' ? 'text-orange-300 bg-orange-900/30 border border-orange-500/30' : obrigacao.tipo === 'inss' ? 'text-green-300 bg-green-900/30 border border-green-500/30' : obrigacao.tipo === 'irrf' ? 'text-purple-300 bg-purple-900/30 border border-purple-500/30' : obrigacao.tipo === 'dctfweb' ? 'text-blue-300 bg-blue-900/30 border border-blue-500/30' : obrigacao.tipo === 'efd_reinf' ? 'text-indigo-300 bg-indigo-900/30 border border-indigo-500/30' : 'text-gray-300 bg-gray-900/30 border border-gray-500/30' %> px-1.5 py-0.5 rounded-md truncate font-medium"
-                                                                    title="<%= obrigacao.descricao %>">
-                                                                    <i
-                                                                        class="fas fa-<%= obrigacao.tipo === 'fgts' ? 'wallet' : obrigacao.tipo === 'inss' ? 'shield-alt' : obrigacao.tipo === 'irrf' ? 'receipt' : obrigacao.tipo === 'dctfweb' ? 'file-invoice' : obrigacao.tipo === 'efd_reinf' ? 'file-alt' : 'calendar-check' %> mr-1"></i>
-                                                                    <span class="hidden sm:inline">
-                                                                        <%= obrigacao.descricao %>
-                                                                    </span>
-                                                                </div>
-                                                                <% }); %>
-                                                                    <% if (dia.obrigacoes.length> 2) { %>
-                                                                        <div
-                                                                            class="text-xs text-white/60 font-semibold">
-                                                                            +<%= dia.obrigacoes.length - 2
-                                                                                %> mais
-                                                                        </div>
-                                                                        <% } %>
+                                                    <% if (dia.anotacao) { %>
+                                                        <div class="text-xs text-yellow-300 mt-0.5 truncate bg-yellow-900/30 px-1.5 py-0.5 rounded-md border border-yellow-500/30 font-medium flex-shrink-0"
+                                                            title="<%= dia.anotacao %>">
+                                                            <i class="fas fa-sticky-note mr-1"></i>
+                                                            <span class="hidden sm:inline">Anotação</span>
                                                         </div>
                                                         <% } %>
+
+                                                            <% if (dia.obrigacoes && dia.obrigacoes.length> 0) { %>
+                                                                <div class="space-y-0.5 mt-0.5 flex-1 overflow-hidden">
+                                                                    <% dia.obrigacoes.slice(0,
+                                                                        2).forEach(obrigacao=> { %>
+                                                                        <div class="text-xs <%= obrigacao.tipo === 'fgts' ? 'text-orange-300 bg-orange-900/30 border border-orange-500/30' : obrigacao.tipo === 'inss' ? 'text-green-300 bg-green-900/30 border border-green-500/30' : obrigacao.tipo === 'irrf' ? 'text-purple-300 bg-purple-900/30 border border-purple-500/30' : obrigacao.tipo === 'dctfweb' ? 'text-blue-300 bg-blue-900/30 border border-blue-500/30' : obrigacao.tipo === 'efd_reinf' ? 'text-indigo-300 bg-indigo-900/30 border border-indigo-500/30' : 'text-gray-300 bg-gray-900/30 border border-gray-500/30' %> px-1.5 py-0.5 rounded-md truncate font-medium"
+                                                                            title="<%= obrigacao.descricao %>">
+                                                                            <i
+                                                                                class="fas fa-<%= obrigacao.tipo === 'fgts' ? 'wallet' : obrigacao.tipo === 'inss' ? 'shield-alt' : obrigacao.tipo === 'irrf' ? 'receipt' : obrigacao.tipo === 'dctfweb' ? 'file-invoice' : obrigacao.tipo === 'efd_reinf' ? 'file-alt' : 'calendar-check' %> mr-1"></i>
+                                                                            <span class="hidden sm:inline">
+                                                                                <%= obrigacao.descricao %>
+                                                                            </span>
+                                                                        </div>
+                                                                        <% }); %>
+                                                                            <% if (dia.obrigacoes.length> 2) { %>
+                                                                                <div
+                                                                                    class="text-xs text-white/60 font-semibold">
+                                                                                    +<%= dia.obrigacoes.length - 2
+                                                                                        %> mais
+                                                                                </div>
+                                                                                <% } %>
+                                                                </div>
+                                                                <% } %>
 
                                                             <% if (dia.tarefas && dia.tarefas.length> 0) {
                                                                 %>
@@ -376,15 +384,6 @@
                                                                                     <% } %>
                                                                 </div>
                                                                 <% } %>
-
-                                                                    <% if (dia.anotacao) { %>
-                                                                        <div class="text-xs text-yellow-300 mt-0.5 truncate bg-yellow-900/30 px-2 py-0.5 rounded-md border border-yellow-500/30 font-medium"
-                                                                            title="<%= dia.anotacao %>">
-                                                                            <i
-                                                                                class="fas fa-sticky-note mr-1"></i><span
-                                                                                class="hidden sm:inline">Anotação</span>
-                                                                        </div>
-                                                                        <% } %>
                                         </div>
                                         <% }); %>
                                             <% } else { %>

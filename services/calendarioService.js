@@ -191,7 +191,11 @@ class CalendarioService {
 
     const anotacoesMap = new Map();
     anotacoes.rows.forEach(a => {
-      anotacoesMap.set(a.data, a.anotacao);
+      // Garante que a data está no formato correto
+      const dataStr = moment(a.data).format('YYYY-MM-DD');
+      // Converte string vazia para null (para que a verificação no template funcione corretamente)
+      const anotacaoTexto = a.anotacao && a.anotacao.trim() ? a.anotacao.trim() : null;
+      anotacoesMap.set(dataStr, anotacaoTexto);
     });
 
     const obrigacoesMap = new Map();
@@ -228,7 +232,7 @@ class CalendarioService {
         isFeriado: !!feriado,
         feriadoNome: feriado?.nome || null,
         feriadoTipo: feriado?.tipo || null, // 'nacional' ou 'facultativo'
-        anotacao: anotacoesMap.get(dataStr) || null,
+        anotacao: anotacoesMap.get(dataStr) || null, // null se não houver ou se for string vazia
         obrigacoes: obrigacoesMap.get(dataStr) || [],
         tarefas: tarefasMap.get(dataStr) || []
       });

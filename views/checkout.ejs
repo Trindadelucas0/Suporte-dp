@@ -15,34 +15,111 @@
                             red: '#DC2626',
                             yellow: '#FBBF24'
                         }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'gradient': 'gradient 15s ease infinite',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'fade-in': 'fadeIn 0.6s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        gradient: {
+                            '0%, 100%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(30px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        }
                     }
                 }
             }
         }
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/loading.css">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #DC2626 0%, #FBBF24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .icon-glow {
+            filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5));
+        }
+
+        .icon-glow-yellow {
+            filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5));
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+    </style>
     <!-- Favicon com as letras "DP" nas cores do sistema (Vermelho #DC2626 e Amarelo #FBBF24) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23DC2626;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23FBBF24;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='20' fill='url(%23grad)'/%3E%3Ctext x='100' y='140' font-family='Arial, sans-serif' font-size='120' font-weight='bold' text-anchor='middle' fill='white'%3EDP%3C/text%3E%3C/svg%3E" />
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen">
     <!-- Header -->
-    <header class="bg-white shadow-md">
+    <header class="glass border-b border-white/10 sticky top-0 z-50 backdrop-blur-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <a href="/dashboard" class="flex items-center">
-                        <i class="fas fa-calculator text-primary-red text-2xl mr-2"></i>
-                        <span class="text-xl font-bold text-gray-900">Suporte DP</span>
+                    <a href="/dashboard" class="flex items-center hover:opacity-80 transition">
+                        <div class="relative mr-3">
+                            <div class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-xl blur opacity-50"></div>
+                            <div class="relative bg-gradient-to-r from-primary-red to-primary-yellow p-2 rounded-xl">
+                                <i class="fas fa-calculator text-white text-xl icon-glow"></i>
+                            </div>
+                        </div>
+                        <span class="text-xl font-black text-white">Suporte <span class="gradient-text">DP</span></span>
                     </a>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <span class="text-sm text-gray-600">
-                        <i class="fas fa-user mr-1"></i><%= user ? user.nome : 'Usuário' %>
+                    <span class="text-sm text-white/80">
+                        <i class="fas fa-user mr-1 icon-glow-yellow"></i><%= user ? user.nome : 'Usuário' %>
                     </span>
                     <a href="/logout"
-                        class="px-4 py-2 text-gray-700 hover:text-primary-red font-medium transition">
+                        class="px-4 py-2 glass border border-white/20 text-white rounded-xl font-semibold hover:bg-white/10 transition">
                         Sair
                     </a>
                 </div>
@@ -51,139 +128,163 @@
     </header>
 
     <!-- Conteúdo Principal -->
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="bg-white rounded-lg shadow-xl p-8 md:p-12">
-            <div class="text-center mb-8">
-                <div class="bg-gradient-to-br from-primary-red to-primary-yellow rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-credit-card text-white text-3xl"></i>
-                </div>
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                    Finalizar Pagamento
-                </h1>
-                <p class="text-lg text-gray-600">
-                    Complete seu pagamento para liberar o acesso ao sistema.
-                </p>
-            </div>
-
-            <% if (error) { %>
-                <div class="bg-red-50 border-l-4 border-red-500 p-6 mb-8">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-exclamation-circle text-red-500 text-2xl"></i>
-                        </div>
-                        <div class="ml-3">
-                            <h3 class="text-lg font-semibold text-red-900 mb-2">
-                                Erro
-                            </h3>
-                            <p class="text-red-700">
-                                <%= error %>
-                            </p>
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative">
+        <!-- Background Elements -->
+        <div class="absolute top-0 right-0 w-96 h-96 bg-primary-red/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-primary-yellow/10 rounded-full blur-3xl"></div>
+        
+        <div class="relative z-10">
+            <div class="glass rounded-2xl shadow-2xl p-8 md:p-12 border border-white/20 backdrop-blur-xl card-hover animate-slide-up">
+                <div class="text-center mb-8 animate-fade-in">
+                    <div class="relative inline-block mb-4">
+                        <div class="absolute inset-0 bg-gradient-to-r from-primary-red to-primary-yellow rounded-full blur-xl opacity-50"></div>
+                        <div class="relative bg-gradient-to-br from-primary-red to-primary-yellow rounded-full w-20 h-20 flex items-center justify-center mx-auto">
+                            <i class="fas fa-credit-card text-white text-3xl icon-glow"></i>
                         </div>
                     </div>
+                    <h1 class="text-3xl md:text-4xl font-black text-white mb-4">
+                        Finalizar <span class="gradient-text">Pagamento</span>
+                    </h1>
+                    <p class="text-lg text-white/70">
+                        Complete seu pagamento para liberar o acesso ao sistema.
+                    </p>
                 </div>
-            <% } %>
 
-            <% if (typeof successMessage !== 'undefined' && successMessage) { %>
-                <div class="bg-green-50 border-l-4 border-green-500 p-6 mb-8">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-check-circle text-green-500 text-2xl"></i>
-                        </div>
-                        <div class="ml-3">
-                            <h3 class="text-lg font-semibold text-green-900 mb-2">
-                                Sucesso!
-                            </h3>
-                            <p class="text-green-700">
-                                <%= successMessage %>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            <% } %>
-
-            <% if (user) { %>
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-6 mb-8">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-info-circle text-blue-500 text-2xl"></i>
-                        </div>
-                        <div class="ml-3">
-                            <h3 class="text-lg font-semibold text-blue-900 mb-2">
-                                Informações da Conta
-                            </h3>
-                            <div class="text-blue-800 space-y-1">
-                                <p><strong>Usuário:</strong> <%= user.nome %></p>
-                                <p><strong>Email:</strong> <%= user.email %></p>
+                <% if (error) { %>
+                    <div class="glass-dark border-l-4 border-red-500/80 text-red-200 p-6 mb-8 rounded-xl bg-red-900/20 backdrop-blur-xl">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mr-3">
+                                <i class="fas fa-exclamation-circle text-red-400 text-2xl icon-glow"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-black text-red-200 mb-2">
+                                    Erro
+                                </h3>
+                                <p class="text-red-100">
+                                    <%= error %>
+                                </p>
                             </div>
                         </div>
                     </div>
-                </div>
-            <% } %>
+                <% } %>
 
-            <!-- Informações de Preço -->
-            <div class="bg-green-50 border-l-4 border-green-500 p-6 mb-8">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-tag text-green-500 text-2xl"></i>
+                <% if (typeof successMessage !== 'undefined' && successMessage) { %>
+                    <div class="glass-dark border-l-4 border-green-500/80 text-green-200 p-6 mb-8 rounded-xl bg-green-900/20 backdrop-blur-xl">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mr-3">
+                                <i class="fas fa-check-circle text-green-400 text-2xl icon-glow"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-black text-green-200 mb-2">
+                                    Sucesso!
+                                </h3>
+                                <p class="text-green-100">
+                                    <%= successMessage %>
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="ml-3">
-                        <h3 class="text-lg font-semibold text-green-900 mb-2">
-                            Valor da Assinatura
-                        </h3>
-                        <p class="text-green-800">
-                            A assinatura custa <strong class="text-2xl">R$ 19,90</strong> e garante <strong>30 dias</strong> de acesso ao sistema.
-                        </p>
-                    </div>
-                </div>
-            </div>
+                <% } %>
 
-            <% if (typeof checkoutUrl !== 'undefined' && checkoutUrl) { %>
-                <!-- Link de pagamento gerado - mostrar botão para ir ao pagamento -->
-                <div class="mt-8 p-6 bg-gradient-to-br from-green-50 to-blue-50 border-2 border-green-300 rounded-lg shadow-lg">
-                    <div class="text-center mb-6">
-                        <i class="fas fa-check-circle text-green-600 text-5xl mb-4"></i>
-                        <h3 class="text-2xl font-bold text-green-800 mb-2">Link de Pagamento Gerado!</h3>
-                        <p class="text-gray-700 text-lg">Clique no botão abaixo para ser redirecionado ao pagamento:</p>
+                <% if (user) { %>
+                    <div class="glass-dark border-l-4 border-blue-500/80 text-blue-200 p-6 mb-8 rounded-xl bg-blue-900/20 backdrop-blur-xl">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mr-3">
+                                <i class="fas fa-info-circle text-blue-400 text-2xl icon-glow"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-black text-blue-200 mb-2">
+                                    Informações da <span class="gradient-text">Conta</span>
+                                </h3>
+                                <div class="text-blue-100 space-y-1">
+                                    <p><strong>Usuário:</strong> <%= user.nome %></p>
+                                    <p><strong>Email:</strong> <%= user.email %></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        <a href="/dashboard"
-                            class="px-6 py-3 bg-gray-200 text-gray-800 rounded-md font-semibold hover:bg-gray-300 transition text-center">
-                            <i class="fas fa-arrow-left mr-2"></i>Voltar
-                        </a>
-                        <a href="<%= checkoutUrl %>" target="_blank"
-                            class="px-8 py-4 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-md font-bold text-lg hover:opacity-90 transition shadow-xl text-center transform hover:scale-105">
-                            <i class="fas fa-credit-card mr-2"></i>Ir para Pagamento
-                        </a>
-                    </div>
-                    <div class="mt-6 text-center">
-                        <p class="text-sm text-gray-600 mb-2">Pedido: <code class="bg-gray-100 px-2 py-1 rounded font-mono"><%= orderNsu %></code></p>
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
-                            <p class="text-xs text-yellow-800">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                <strong>Importante:</strong> Após o pagamento, o sistema será atualizado automaticamente e você terá acesso liberado por 30 dias. 
-                                Você pode voltar ao sistema e verificar o status do pagamento.
+                <% } %>
+
+                <!-- Informações de Preço -->
+                <div class="glass-dark border-l-4 border-green-500/80 text-green-200 p-6 mb-8 rounded-xl bg-green-900/20 backdrop-blur-xl">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mr-3">
+                            <i class="fas fa-tag text-green-400 text-2xl icon-glow-yellow"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-black text-green-200 mb-2">
+                                Valor da <span class="gradient-text">Assinatura</span>
+                            </h3>
+                            <p class="text-green-100 text-lg">
+                                A assinatura custa <strong class="text-2xl text-white">R$ 19,90</strong> e garante <strong class="text-white">30 dias</strong> de acesso ao sistema.
                             </p>
                         </div>
                     </div>
                 </div>
-            <% } else { %>
-                <!-- Formulário para gerar link de pagamento -->
-                <form method="POST" action="/checkout" class="mt-8">
-                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
-                    <div class="text-center">
-                        <button type="submit"
-                            class="px-12 py-4 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-lg font-bold text-lg hover:opacity-90 transition shadow-xl transform hover:scale-105">
-                            <i class="fas fa-credit-card mr-2"></i>Gerar Link de Pagamento
-                        </button>
+
+                <% if (typeof checkoutUrl !== 'undefined' && checkoutUrl) { %>
+                    <!-- Link de pagamento gerado - mostrar botão para ir ao pagamento -->
+                    <div class="mt-8 p-6 glass-dark border-2 border-green-500/50 rounded-xl shadow-2xl bg-green-900/20 backdrop-blur-xl">
+                        <div class="text-center mb-6">
+                            <div class="relative inline-block mb-4">
+                                <div class="absolute inset-0 bg-green-500/50 rounded-full blur-xl opacity-50"></div>
+                                <div class="relative bg-gradient-to-r from-green-500 to-green-600 rounded-full w-20 h-20 flex items-center justify-center mx-auto">
+                                    <i class="fas fa-check-circle text-white text-4xl icon-glow"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-2xl font-black text-green-200 mb-2">Link de Pagamento <span class="gradient-text">Gerado!</span></h3>
+                            <p class="text-green-100 text-lg">Clique no botão abaixo para ser redirecionado ao pagamento:</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                            <a href="/dashboard"
+                                class="group relative px-6 py-3 glass border border-white/20 text-white rounded-xl font-semibold hover:bg-white/10 transition text-center card-hover">
+                                <span class="relative z-10 flex items-center justify-center">
+                                    <i class="fas fa-arrow-left mr-2"></i>Voltar
+                                </span>
+                            </a>
+                            <a href="<%= checkoutUrl %>" target="_blank"
+                                class="group relative px-8 py-4 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-xl font-black text-lg hover:shadow-2xl hover:shadow-primary-yellow/50 transition-all transform hover:scale-105 overflow-hidden text-center">
+                                <span class="relative z-10 flex items-center justify-center">
+                                    <i class="fas fa-credit-card mr-2"></i>Ir para Pagamento
+                                </span>
+                                <div class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            </a>
+                        </div>
+                        <div class="mt-6 text-center">
+                            <p class="text-sm text-white/80 mb-2">Pedido: <code class="glass px-3 py-1.5 rounded-lg font-mono text-white border border-white/20"><%= orderNsu %></code></p>
+                            <div class="glass-dark border-l-4 border-yellow-500/80 rounded-xl p-4 mt-4 bg-yellow-900/20 backdrop-blur-xl">
+                                <p class="text-sm text-yellow-100 flex items-start">
+                                    <i class="fas fa-info-circle mr-2 text-yellow-400 icon-glow-yellow mt-0.5 flex-shrink-0"></i>
+                                    <span>
+                                        <strong class="text-white">Importante:</strong> Após o pagamento, o sistema será atualizado automaticamente e você terá acesso liberado por 30 dias. 
+                                        Você pode voltar ao sistema e verificar o status do pagamento.
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mt-6 text-center">
-                        <p class="text-sm text-gray-500">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Clique no botão acima para gerar o link de pagamento seguro.
-                        </p>
-                    </div>
-                </form>
-            <% } %>
+                <% } else { %>
+                    <!-- Formulário para gerar link de pagamento -->
+                    <form method="POST" action="/checkout" class="mt-8">
+                        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                        <div class="text-center">
+                            <button type="submit"
+                                class="group relative px-12 py-4 bg-gradient-to-r from-primary-red to-primary-yellow text-white rounded-xl font-black text-lg hover:shadow-2xl hover:shadow-primary-yellow/50 transition-all transform hover:scale-105 overflow-hidden">
+                                <span class="relative z-10 flex items-center justify-center">
+                                    <i class="fas fa-credit-card mr-2"></i>Gerar Link de Pagamento
+                                </span>
+                                <div class="absolute inset-0 bg-gradient-to-r from-primary-yellow to-primary-red opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            </button>
+                        </div>
+                        <div class="mt-6 text-center">
+                            <p class="text-sm text-white/70">
+                                <i class="fas fa-info-circle mr-1 icon-glow-yellow"></i>
+                                Clique no botão acima para gerar o link de pagamento seguro.
+                            </p>
+                        </div>
+                    </form>
+                <% } %>
+            </div>
         </div>
     </main>
 </body>
