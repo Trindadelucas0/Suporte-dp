@@ -121,21 +121,10 @@
                     </div>
                     <div>
                         <h1 class="text-3xl font-black text-white mb-1">
-                            Calculadora de Avos de <span class="gradient-text">Férias</span>
+                            Calculadora de <span class="gradient-text">Férias</span>
                         </h1>
-                        <p class="text-white/70 text-sm font-medium">CLT Art. 130 e Art. 134 - Período Aquisitivo</p>
+                        <p class="text-white/70 text-sm font-medium">CLT Art. 130 e Art. 134 - Cálculo completo com impostos</p>
                     </div>
-                </div>
-                <div class="glass-dark border-l-4 border-blue-500/80 p-4 rounded-xl">
-                    <p class="text-white mb-2 flex items-center">
-                        <i class="fas fa-info-circle text-blue-400 mr-2 icon-glow"></i>
-                        <strong class="text-white">O que são Avos de Férias?</strong>
-                    </p>
-                    <p class="text-sm text-white/80">
-                        As férias são calculadas proporcionalmente ao tempo trabalhado. 
-                        Cada mês trabalhado com <strong class="text-primary-yellow">15 dias ou mais</strong> conta como <strong class="text-primary-yellow">1 avo (1/12)</strong> do período aquisitivo.
-                        <strong class="text-primary-yellow">Este módulo calcula apenas a quantidade de avos, não valores em dinheiro.</strong>
-                    </p>
                 </div>
             </div>
 
@@ -171,57 +160,152 @@
                             <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
                                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                             <% } %>
+                            
+                            <!-- Período Aquisitivo -->
                             <div>
-                                <label for="dataAdmissao" class="block text-sm font-semibold text-white/90 mb-2">
+                                <label for="periodoAquisitivoInicio" class="block text-sm font-semibold text-white/90 mb-2">
                                     <i class="fas fa-calendar-alt text-primary-red mr-2 icon-glow"></i>
-                                    Data de Admissão *
+                                    Período Aquisitivo <i class="fas fa-info-circle text-blue-400 ml-1 cursor-help" title="Período de 12 meses consecutivos trabalhados que dá direito às férias. Ao informar a data início, o sistema calcula automaticamente a data fim (12 meses depois). Conforme CLT Art. 130"></i>
                                 </label>
-                                <input type="date" id="dataAdmissao" name="dataAdmissao" required
-                                    class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none input-glow backdrop-blur-sm">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <input type="date" id="periodoAquisitivoInicio" name="periodoAquisitivoInicio" required
+                                            class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none input-glow backdrop-blur-sm">
+                                    </div>
+                                    <div>
+                                        <input type="date" id="periodoAquisitivoFim" name="periodoAquisitivoFim" readonly
+                                            class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white/70 bg-white/5 backdrop-blur-sm">
+                                    </div>
+                                </div>
                             </div>
 
+                            <!-- Período de Concessão (automático) -->
                             <div>
-                                <label for="dataReferencia" class="block text-sm font-semibold text-white/90 mb-2">
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
                                     <i class="fas fa-calendar-check text-primary-yellow mr-2 icon-glow-yellow"></i>
-                                    Data de Referência *
+                                    Período de Concessão <i class="fas fa-info-circle text-blue-400 ml-1 cursor-help" title="Período de 12 meses após o término do período aquisitivo em que o empregado pode tirar as férias. Calculado automaticamente. Conforme CLT Art. 134"></i>
                                 </label>
-                                <input type="date" id="dataReferencia" name="dataReferencia" required
-                                    class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none input-glow backdrop-blur-sm">
-                                <p class="text-xs text-white/70 mt-1">Data até a qual deseja calcular os avos de férias</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="date" id="periodoConcessaoInicio" name="periodoConcessaoInicio" readonly
+                                        class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white/70 bg-white/5 backdrop-blur-sm">
+                                    <input type="date" id="periodoConcessaoFim" name="periodoConcessaoFim" readonly
+                                        class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white/70 bg-white/5 backdrop-blur-sm">
+                                </div>
                             </div>
 
+                            <!-- Data da Concessão (período que vai tirar as férias) -->
                             <div>
-                                <label for="feriasJaTiradas" class="block text-sm font-semibold text-white/90 mb-2">
-                                    <i class="fas fa-calendar-times text-primary-red mr-2 icon-glow"></i>
-                                    Férias Já Tiradas (dias)
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    <i class="fas fa-calendar-day text-primary-yellow mr-2 icon-glow-yellow"></i>
+                                    Data da Concessão <i class="fas fa-info-circle text-blue-400 ml-1 cursor-help" title="Período efetivo em que o funcionário vai tirar as férias (data início e fim). Deve estar dentro do período de concessão e pode ter até 30 dias corridos"></i>
                                 </label>
-                                <input type="number" id="feriasJaTiradas" name="feriasJaTiradas" min="0" value="0"
-                                    class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none input-glow backdrop-blur-sm"
-                                    placeholder="0">
-                                <p class="text-xs text-white/70 mt-1">Quantidade de dias de férias já utilizados</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="date" id="dataConcessaoInicio" name="dataConcessaoInicio" required
+                                        class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none input-glow backdrop-blur-sm">
+                                    <input type="date" id="dataConcessaoFim" name="dataConcessaoFim" required
+                                        class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none input-glow backdrop-blur-sm">
+                                </div>
                             </div>
 
+                            <!-- Salário -->
+                            <div>
+                                <label for="salario" class="block text-sm font-semibold text-white/90 mb-2">
+                                    <i class="fas fa-dollar-sign text-primary-yellow mr-2 icon-glow-yellow"></i>
+                                    Salário (R$) *
+                                </label>
+                                <input type="number" id="salario" name="salario" step="0.01" min="0" required
+                                    class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none input-glow backdrop-blur-sm"
+                                    placeholder="0.00">
+                            </div>
+
+                            <!-- Deseja vender 1/3 das férias -->
+                            <div class="flex items-center">
+                                <input type="checkbox" id="venderUmTerco" name="venderUmTerco" value="true"
+                                    class="h-5 w-5 text-primary-red focus:ring-primary-red border-white/30 rounded cursor-pointer">
+                                <label for="venderUmTerco" class="ml-2 block text-sm text-white/90">
+                                    Deseja vender 1/3 das férias?
+                                </label>
+                            </div>
+
+                            <!-- Dedução do IR -->
+                            <div class="glass-dark border-l-4 border-blue-500/80 rounded-lg p-3">
+                                <label class="block text-sm font-semibold text-white/90 mb-3">
+                                    <i class="fas fa-file-invoice-dollar text-blue-400 mr-2"></i>
+                                    Dedução do IR
+                                </label>
+                                
+                                <div class="mb-3">
+                                    <label for="dependentes" class="block text-xs font-semibold text-white/80 mb-1">
+                                        Quantos dependentes possui?
+                                    </label>
+                                    <input type="number" id="dependentes" name="dependentes" min="0" value="0"
+                                        class="w-full px-3 py-2 glass border border-white/20 rounded-lg text-white placeholder-white/50 focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none backdrop-blur-sm"
+                                        placeholder="0">
+                                </div>
+
+                                <div>
+                                    <label for="pensaoAlimenticia" class="block text-xs font-semibold text-white/80 mb-1">
+                                        Qual o valor total referente à pensão alimentícia? (R$)
+                                    </label>
+                                    <input type="number" id="pensaoAlimenticia" name="pensaoAlimenticia" step="0.01" min="0" value="0"
+                                        class="w-full px-3 py-2 glass border border-white/20 rounded-lg text-white placeholder-white/50 focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none backdrop-blur-sm"
+                                        placeholder="0.00">
+                                </div>
+                            </div>
+
+                            <!-- Faltas injustificadas -->
+                            <div>
+                                <label class="block text-sm font-semibold text-white/90 mb-2">
+                                    <i class="fas fa-exclamation-triangle text-primary-red mr-2 icon-glow"></i>
+                                    O empregado faltou injustificadamente no período aquisitivo de férias?
+                                </label>
+                                <div class="flex items-center mb-2">
+                                    <input type="radio" id="faltouSim" name="faltouInjustificada" value="sim"
+                                        class="h-4 w-4 text-primary-red focus:ring-primary-red border-white/30 cursor-pointer">
+                                    <label for="faltouSim" class="ml-2 text-sm text-white/90">Sim</label>
+                                    <input type="radio" id="faltouNao" name="faltouInjustificada" value="nao" checked
+                                        class="h-4 w-4 text-primary-red focus:ring-primary-red border-white/30 ml-4 cursor-pointer">
+                                    <label for="faltouNao" class="ml-2 text-sm text-white/90">Não</label>
+                                </div>
+                                <div id="diasFaltasContainer" class="hidden">
+                                    <label for="diasFaltas" class="block text-xs font-semibold text-white/80 mb-1">
+                                        Quantidade de dias:
+                                    </label>
+                                    <input type="number" id="diasFaltas" name="diasFaltas" min="0" value="0"
+                                        class="w-full px-3 py-2 glass border border-white/20 rounded-lg text-white placeholder-white/50 focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none backdrop-blur-sm"
+                                        placeholder="0">
+                                </div>
+                            </div>
+
+                            <!-- Afastamento por auxílio-doença -->
                             <div>
                                 <label class="block text-sm font-semibold text-white/90 mb-2">
                                     <i class="fas fa-hospital text-primary-red mr-2 icon-glow"></i>
-                                    Afastamentos por INSS
+                                    Ocorreu afastamento motivado por benefício de auxílio-doença previdenciário?
                                 </label>
-                                <div class="mb-2">
-                                    <button type="button" onclick="adicionarAfastamento()" 
-                                            class="text-sm glass border border-white/20 hover:bg-white/10 px-3 py-2 rounded-xl text-white transition">
-                                        <i class="fas fa-plus mr-1"></i>Adicionar Afastamento
-                                    </button>
+                                <div class="flex items-center mb-2">
+                                    <input type="radio" id="afastamentoSim" name="afastamentoAuxilioDoenca" value="sim"
+                                        class="h-4 w-4 text-primary-red focus:ring-primary-red border-white/30 cursor-pointer">
+                                    <label for="afastamentoSim" class="ml-2 text-sm text-white/90">Sim</label>
+                                    <input type="radio" id="afastamentoNao" name="afastamentoAuxilioDoenca" value="nao" checked
+                                        class="h-4 w-4 text-primary-red focus:ring-primary-red border-white/30 ml-4 cursor-pointer">
+                                    <label for="afastamentoNao" class="ml-2 text-sm text-white/90">Não</label>
                                 </div>
-                                <div id="afastamentosContainer" class="space-y-2">
-                                    <!-- Afastamentos serão adicionados aqui via JavaScript -->
-                                </div>
-                                <input type="hidden" name="afastamentosINSS" id="afastamentosJSON">
-                                <div class="mt-2 glass-dark border-l-4 border-blue-500/80 rounded-lg p-2">
-                                    <p class="text-xs text-blue-200">
-                                        <i class="fas fa-info-circle mr-1 text-blue-400"></i>
-                                        <strong>O que são afastamentos?</strong> Períodos em que o funcionário ficou afastado por auxílio-doença, acidente de trabalho, etc. 
-                                        Esses dias <strong>não contam</strong> para o cálculo das férias proporcionais.
-                                    </p>
+                                <div id="afastamentoContainer" class="hidden grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label for="afastamentoInicio" class="block text-xs font-semibold text-white/80 mb-1">
+                                            Data Início:
+                                        </label>
+                                        <input type="date" id="afastamentoInicio" name="afastamentoInicio"
+                                            class="w-full px-3 py-2 glass border border-white/20 rounded-lg text-white focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none backdrop-blur-sm">
+                                    </div>
+                                    <div>
+                                        <label for="afastamentoFim" class="block text-xs font-semibold text-white/80 mb-1">
+                                            Data Fim:
+                                        </label>
+                                        <input type="date" id="afastamentoFim" name="afastamentoFim"
+                                            class="w-full px-3 py-2 glass border border-white/20 rounded-lg text-white focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none backdrop-blur-sm">
+                                    </div>
                                 </div>
                             </div>
 
@@ -243,116 +327,91 @@
                     <% if (resultado) { %>
                         <!-- Resultado Principal -->
                         <div class="glass rounded-2xl shadow-2xl p-4 sm:p-6 border border-white/20 backdrop-blur-xl card-hover mb-6">
-                            <div class="bg-gradient-to-r from-primary-yellow/40 via-primary-red/40 to-primary-yellow/40 rounded-xl p-8 text-white text-center mb-6 border-4 border-primary-yellow/80 shadow-2xl shadow-primary-yellow/30 ring-2 ring-primary-yellow/50">
-                                <h3 class="text-2xl font-black mb-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-2xl font-black text-white">
                                     <i class="fas fa-umbrella-beach mr-2 icon-glow-yellow"></i>
                                     Resultado do <span class="gradient-text">Cálculo</span>
                                 </h3>
-                                <div class="text-6xl font-black mb-2">
-                                    <%= resultado.totalAvos %>/12
+                                <a href="/ferias" class="px-4 py-2 bg-primary-red text-white rounded-lg hover:bg-primary-red/80 transition">
+                                    Novo Cálculo
+                                </a>
+                            </div>
+
+                            <!-- Informações do Período -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div class="glass-dark rounded-lg p-4">
+                                    <p class="text-sm text-white/70 mb-1">Período Aquisitivo</p>
+                                    <p class="text-white font-semibold">
+                                        <%= resultado.periodoAquisitivoFormatado.inicio %> a 
+                                        <%= resultado.periodoAquisitivoFormatado.fim %>
+                                    </p>
                                 </div>
-                                <p class="text-xl opacity-90 font-semibold">Avos de Férias</p>
-                                <p class="text-sm mt-4 opacity-80">
-                                    O funcionário tem direito a <strong><%= resultado.totalAvos %></strong> doze avos de férias
+                                <div class="glass-dark rounded-lg p-4">
+                                    <p class="text-sm text-white/70 mb-1">Data Concessão</p>
+                                    <p class="text-white font-semibold">
+                                        <%= resultado.dataConcessaoFormatada %>
+                                    </p>
+                                </div>
+                                <div class="glass-dark rounded-lg p-4">
+                                    <p class="text-sm text-white/70 mb-1">Salário <i class="fas fa-question-circle text-blue-400 cursor-help" title="Salário bruto do funcionário utilizado como base para o cálculo das férias"></i></p>
+                                    <p class="text-white font-semibold">R$ <%= resultado.salario.toFixed(2) %></p>
+                                </div>
+                                <div class="glass-dark rounded-lg p-4">
+                                    <p class="text-sm text-white/70 mb-1">Dias de Férias</p>
+                                    <p class="text-white font-semibold"><%= resultado.diasFerias %></p>
+                                </div>
+                            </div>
+
+                            <!-- Valores Calculados -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div class="glass-dark rounded-lg p-4">
+                                    <p class="text-sm text-white/70 mb-1">Valor das Férias <i class="fas fa-question-circle text-blue-400 cursor-help" title="Valor calculado proporcionalmente aos dias de férias: (Salário ÷ 30) × Dias de Férias. Utiliza divisor padrão de 30 dias conforme CLT Art. 64"></i></p>
+                                    <p class="text-2xl text-white font-bold">R$ <%= resultado.valorFerias.toFixed(2) %></p>
+                                </div>
+                                <div class="glass-dark rounded-lg p-4">
+                                    <p class="text-sm text-white/70 mb-1">Adicional de 1/3</p>
+                                    <p class="text-2xl text-white font-bold">R$ <%= resultado.adicionalUmTerco.toFixed(2) %></p>
+                                </div>
+                                <% if (resultado.abonoPecuniario > 0) { %>
+                                <div class="glass-dark rounded-lg p-4">
+                                    <p class="text-sm text-white/70 mb-1">Abono Pecuniário</p>
+                                    <p class="text-2xl text-white font-bold">R$ <%= resultado.abonoPecuniario.toFixed(2) %></p>
+                                </div>
+                                <% } %>
+                                <div class="glass-dark rounded-lg p-4">
+                                    <p class="text-sm text-white/70 mb-1">INSS <i class="fas fa-question-circle text-blue-400 cursor-help" title="Contribuição previdenciária calculada sobre a base de cálculo (Valor das Férias + Adicional de 1/3). Desconto obrigatório conforme tabela progressiva do INSS"></i></p>
+                                    <p class="text-2xl text-white font-bold">R$ <%= resultado.valorINSS.toFixed(2) %></p>
+                                </div>
+                                <div class="glass-dark rounded-lg p-4">
+                                    <p class="text-sm text-white/70 mb-1">IRPF <i class="fas fa-question-circle text-blue-400 cursor-help" title="Imposto de Renda Retido na Fonte calculado sobre a base tributável (após desconto do INSS), considerando dependentes e pensão alimentícia informados"></i></p>
+                                    <p class="text-2xl text-white font-bold">R$ <%= resultado.valorIRRF.toFixed(2) %></p>
+                                </div>
+                                <div class="glass-dark rounded-lg p-4">
+                                    <p class="text-sm text-white/70 mb-1">IRPF - Desconto Simplificado <i class="fas fa-question-circle text-blue-400 cursor-help" title="Imposto de Renda calculado com dedução simplificada de R$ 607,20 (Lei 15.191/2025). Esta opção substitui todas as deduções legais (INSS, dependentes, pensão) e pode resultar em menor imposto a pagar"></i></p>
+                                    <p class="text-2xl text-white font-bold">R$ <%= resultado.valorIRRFSimplificado.toFixed(2) %></p>
+                                </div>
+                            </div>
+
+                            <!-- Total -->
+                            <div class="glass-dark border-t-2 border-primary-yellow/50 rounded-lg p-4 mb-6">
+                                <div class="flex justify-between items-center">
+                                    <p class="text-lg text-white font-semibold">Total</p>
+                                    <p class="text-3xl text-primary-yellow font-black">R$ <%= resultado.total.toFixed(2) %></p>
+                                </div>
+                            </div>
+
+                            <!-- Nota sobre Divisor -->
+                            <div class="glass-dark border-l-4 border-yellow-500/80 rounded-lg p-4 mb-6">
+                                <p class="text-sm text-white/90">
+                                    Este simulador utiliza como divisor a quantidade padrão de <strong class="text-primary-yellow">30 dias</strong>, não contemplando, nesta versão, cálculo para 31, 29 ou 28 dias. Para fins de detalhamento da memória de cálculo e preenchimento do eSocial, deve-se considerar como divisor a quantidade de dias do mês em que está sendo efetuado o cálculo da remuneração das férias (<strong class="text-primary-red">28, 29, 30 ou 31 dias</strong>), em que pese o disposto no <strong class="text-primary-red">artigo 64 da CLT</strong>.
                                 </p>
-                            </div>
-
-                            <!-- Resumo Visual -->
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                <div class="glass border-2 border-green-500/50 rounded-xl p-4 text-center card-hover bg-green-900/20">
-                                    <i class="fas fa-check-circle text-green-400 text-3xl mb-2 icon-glow"></i>
-                                    <p class="text-2xl font-black text-green-400"><%= resultado.mesesCompletos %></p>
-                                    <p class="text-sm text-green-300 font-semibold">Meses Completos</p>
-                                    <p class="text-xs text-white/70 mt-1">(15+ dias trabalhados)</p>
-                                </div>
-                                <div class="glass border-2 border-yellow-500/50 rounded-xl p-4 text-center card-hover bg-yellow-900/20">
-                                    <i class="fas fa-clock text-yellow-400 text-3xl mb-2 icon-glow-yellow"></i>
-                                    <p class="text-2xl font-black text-yellow-400"><%= resultado.mesesParciais %></p>
-                                    <p class="text-sm text-yellow-300 font-semibold">Meses Parciais</p>
-                                    <p class="text-xs text-white/70 mt-1">(< 15 dias trabalhados)</p>
-                                </div>
-                                <div class="glass border-2 border-blue-500/50 rounded-xl p-4 text-center card-hover bg-blue-900/20">
-                                    <i class="fas fa-calendar-alt text-blue-400 text-3xl mb-2"></i>
-                                    <p class="text-2xl font-black text-blue-400"><%= resultado.meses.length %></p>
-                                    <p class="text-sm text-blue-300 font-semibold">Meses Analisados</p>
-                                    <p class="text-xs text-white/70 mt-1">Período total</p>
-                                </div>
-                            </div>
-
-                            <!-- Explicação Educativa -->
-                            <div class="glass-dark border-l-4 border-purple-500/80 p-4 rounded-xl mb-6">
-                                <h4 class="font-black text-white mb-2 flex items-center">
-                                    <i class="fas fa-graduation-cap mr-2 text-purple-400 icon-glow"></i>
-                                    Como foi <span class="gradient-text">calculado?</span>
-                                </h4>
-                                <p class="text-sm text-white/90 mb-2">
-                                    O cálculo dos avos de férias segue esta regra simples:
-                                </p>
-                                <ul class="text-sm text-white/80 list-disc list-inside space-y-1">
-                                    <li><strong class="text-primary-yellow">Regra de férias (CLT Art. 130):</strong> Se o funcionário trabalhou 15 dias ou mais no mês, ele ganha 1 avo (1/12 do período aquisitivo)</li>
-                                    <li><strong class="text-primary-yellow">Menos de 15 dias:</strong> Se trabalhou menos de 15 dias no mês, não ganha avo naquele mês</li>
-                                    <li><strong class="text-primary-yellow">Não exige mês completo:</strong> A regra é baseada apenas em 15+ dias trabalhados, não em mês fechado</li>
-                                    <li><strong class="text-primary-yellow">Afastamentos:</strong> Dias de afastamento por INSS não contam para o cálculo dos avos</li>
-                                    <li><strong class="text-primary-yellow">Férias já tiradas:</strong> São descontadas dos avos disponíveis</li>
-                                    <li><strong class="text-primary-yellow">Período aquisitivo:</strong> Baseado em 12 meses de trabalho, diferente do 13º salário (ano-calendário)</li>
-                                </ul>
-                            </div>
-
-                            <!-- Análise Mês a Mês -->
-                            <div class="mb-6">
-                                <h4 class="text-xl font-black text-white mb-4 flex items-center">
-                                    <i class="fas fa-calendar-check text-primary-red mr-2 icon-glow"></i>
-                                    Análise Detalhada <span class="gradient-text">Mês a Mês</span>
-                                </h4>
-                                <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-white/20 glass rounded-xl shadow-xl border border-white/20">
-                                        <thead class="bg-white/10">
-                                            <tr>
-                                                <th class="px-4 py-3 text-left text-xs font-bold text-white/90 uppercase">Mês</th>
-                                                <th class="px-4 py-3 text-center text-xs font-bold text-white/90 uppercase">Dias Trabalhados</th>
-                                                <th class="px-4 py-3 text-center text-xs font-bold text-white/90 uppercase">Total do Mês</th>
-                                                <th class="px-4 py-3 text-center text-xs font-bold text-white/90 uppercase">Avo</th>
-                                                <th class="px-4 py-3 text-center text-xs font-bold text-white/90 uppercase">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-white/10">
-                                            <% resultado.meses.forEach((mes, index) => { %>
-                                                <tr class="<%= mes.avo === 1 ? 'bg-green-900/20 hover:bg-green-900/30' : 'bg-red-900/20 hover:bg-red-900/30' %> transition-colors">
-                                                    <td class="px-4 py-3 text-sm font-semibold text-white">
-                                                        <%= mes.mes %>
-                                                    </td>
-                                                    <td class="px-4 py-3 text-center text-sm text-white/90">
-                                                        <span class="font-bold"><%= mes.diasTrabalhados %></span> dias
-                                                    </td>
-                                                    <td class="px-4 py-3 text-center text-sm text-white/70">
-                                                        <%= mes.totalDiasMes %> dias
-                                                    </td>
-                                                    <td class="px-4 py-3 text-center">
-                                                        <% if (mes.avo === 1) { %>
-                                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-green-500/80 text-white border border-green-400/50 shadow-md">
-                                                                <i class="fas fa-check mr-1"></i>1 avo
-                                                            </span>
-                                                        <% } else { %>
-                                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-red-500/80 text-white border border-red-400/50 shadow-md">
-                                                                <i class="fas fa-times mr-1"></i>0 avos
-                                                            </span>
-                                                        <% } %>
-                                                    </td>
-                                                    <td class="px-4 py-3 text-center text-xs text-white/70">
-                                                        <%= mes.observacao %>
-                                                    </td>
-                                                </tr>
-                                            <% }); %>
-                                        </tbody>
-                                    </table>
-                                </div>
                             </div>
 
                             <!-- Memória de Cálculo Passo a Passo -->
                             <div class="mb-6">
                                 <h4 class="text-xl font-black text-white mb-4 flex items-center">
                                     <i class="fas fa-list-ol text-primary-yellow mr-2 icon-glow-yellow"></i>
-                                    Passo a Passo do <span class="gradient-text">Cálculo</span>
+                                    Memória de <span class="gradient-text">Cálculo</span>
                                 </h4>
                                 <div class="space-y-3">
                                     <% resultado.memoria.forEach((passo, index) => { %>
@@ -422,66 +481,68 @@
     </main>
 
     <script>
-        let afastamentos = [];
-
-        function adicionarAfastamento() {
-            const container = document.getElementById('afastamentosContainer');
-            const index = afastamentos.length;
+        // Função para calcular período aquisitivo fim e período de concessão
+        function calcularPeriodos() {
+            const periodoAquisitivoInicio = document.getElementById('periodoAquisitivoInicio').value;
             
-            const div = document.createElement('div');
-            div.className = 'glass border border-white/20 rounded-xl p-3 backdrop-blur-xl';
-            div.innerHTML = `
-                <div class="grid grid-cols-2 gap-2 mb-2">
-                    <div>
-                        <label class="text-xs font-semibold text-white/90 mb-1 block">Início</label>
-                        <input type="date" class="afastamento-inicio w-full px-3 py-2 glass border border-white/20 rounded-xl text-white text-sm backdrop-blur-sm focus:ring-2 focus:ring-primary-red focus:border-primary-red transition outline-none" 
-                               data-index="${index}">
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold text-white/90 mb-1 block">Fim</label>
-                        <input type="date" class="afastamento-fim w-full px-3 py-2 glass border border-white/20 rounded-xl text-white text-sm backdrop-blur-sm focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none" 
-                               data-index="${index}">
-                    </div>
-                </div>
-                <button type="button" onclick="removerAfastamento(${index})" 
-                        class="text-xs text-red-400 hover:text-red-300 transition-colors">
-                    <i class="fas fa-trash mr-1"></i>Remover
-                </button>
-            `;
-            
-            container.appendChild(div);
-            afastamentos.push({ inicio: '', fim: '' });
-            
-            // Adiciona listeners
-            div.querySelector('.afastamento-inicio').addEventListener('change', function() {
-                afastamentos[index].inicio = this.value;
-                atualizarJSON();
-            });
-            div.querySelector('.afastamento-fim').addEventListener('change', function() {
-                afastamentos[index].fim = this.value;
-                atualizarJSON();
-            });
+            if (periodoAquisitivoInicio) {
+                const inicio = new Date(periodoAquisitivoInicio);
+                
+                // Período aquisitivo: 12 meses a partir da data início
+                const periodoAquisitivoFim = new Date(inicio);
+                periodoAquisitivoFim.setMonth(periodoAquisitivoFim.getMonth() + 12);
+                periodoAquisitivoFim.setDate(periodoAquisitivoFim.getDate() - 1); // Um dia antes para completar exatamente 12 meses
+                
+                document.getElementById('periodoAquisitivoFim').value = periodoAquisitivoFim.toISOString().split('T')[0];
+                
+                // Período de concessão: 12 meses após o fim do período aquisitivo
+                const periodoConcessaoInicio = new Date(periodoAquisitivoFim);
+                periodoConcessaoInicio.setDate(periodoConcessaoInicio.getDate() + 1);
+                
+                const periodoConcessaoFim = new Date(periodoConcessaoInicio);
+                periodoConcessaoFim.setMonth(periodoConcessaoFim.getMonth() + 12);
+                periodoConcessaoFim.setDate(periodoConcessaoFim.getDate() - 1);
+                
+                document.getElementById('periodoConcessaoInicio').value = periodoConcessaoInicio.toISOString().split('T')[0];
+                document.getElementById('periodoConcessaoFim').value = periodoConcessaoFim.toISOString().split('T')[0];
+            }
         }
 
-        function removerAfastamento(index) {
-            afastamentos.splice(index, 1);
-            atualizarJSON();
-            document.getElementById('afastamentosContainer').innerHTML = '';
-            afastamentos.forEach((_, i) => {
-                adicionarAfastamento();
-                // Restaura valores
-                const divs = document.getElementById('afastamentosContainer').children;
-                if (divs[i]) {
-                    divs[i].querySelector('.afastamento-inicio').value = afastamentos[i].inicio;
-                    divs[i].querySelector('.afastamento-fim').value = afastamentos[i].fim;
-                }
-            });
-        }
+        // Event listener para período aquisitivo início
+        document.addEventListener('DOMContentLoaded', function() {
+            const periodoAquisitivoInicio = document.getElementById('periodoAquisitivoInicio');
+            if (periodoAquisitivoInicio) {
+                periodoAquisitivoInicio.addEventListener('change', calcularPeriodos);
+            }
 
-        function atualizarJSON() {
-            const json = JSON.stringify(afastamentos.filter(a => a.inicio));
-            document.getElementById('afastamentosJSON').value = json;
-        }
+            // Mostrar/ocultar campo de dias de faltas
+            const faltouSim = document.getElementById('faltouSim');
+            const faltouNao = document.getElementById('faltouNao');
+            const diasFaltasContainer = document.getElementById('diasFaltasContainer');
+            
+            if (faltouSim && faltouNao && diasFaltasContainer) {
+                faltouSim.addEventListener('change', function() {
+                    diasFaltasContainer.classList.toggle('hidden', !this.checked);
+                });
+                faltouNao.addEventListener('change', function() {
+                    diasFaltasContainer.classList.toggle('hidden', this.checked);
+                });
+            }
+
+            // Mostrar/ocultar campo de afastamento
+            const afastamentoSim = document.getElementById('afastamentoSim');
+            const afastamentoNao = document.getElementById('afastamentoNao');
+            const afastamentoContainer = document.getElementById('afastamentoContainer');
+            
+            if (afastamentoSim && afastamentoNao && afastamentoContainer) {
+                afastamentoSim.addEventListener('change', function() {
+                    afastamentoContainer.classList.toggle('hidden', !this.checked);
+                });
+                afastamentoNao.addEventListener('change', function() {
+                    afastamentoContainer.classList.toggle('hidden', this.checked);
+                });
+            }
+        });
     </script>
 </body>
 </html>

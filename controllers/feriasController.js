@@ -17,12 +17,25 @@ class FeriasController {
 
   static async calcular(req, res) {
     const userId = req.session.user.id;
-    // CORREÇÃO: Férias não calcula valores, apenas avos (igual ao 13º)
-    // REMOVIDO: campo diasATirar não deve existir
-    const { dataAdmissao, dataReferencia, afastamentosINSS, feriasJaTiradas } = req.body;
+    const {
+      periodoAquisitivoInicio,
+      periodoAquisitivoFim,
+      dataConcessaoInicio,
+      dataConcessaoFim,
+      salario,
+      venderUmTerco,
+      dependentes,
+      pensaoAlimenticia,
+      faltouInjustificada,
+      diasFaltas,
+      afastamentoAuxilioDoenca,
+      afastamentoInicio,
+      afastamentoFim
+    } = req.body;
 
     try {
-      if (!dataAdmissao || !dataReferencia) {
+      // Validação dos campos obrigatórios
+      if (!periodoAquisitivoInicio || !dataConcessaoInicio || !dataConcessaoFim || !salario) {
         return res.render('ferias/index', {
           title: 'Calculadora de Férias - Suporte DP',
           resultado: null,
@@ -30,28 +43,42 @@ class FeriasController {
         });
       }
 
-      const feriasTiradas = parseInt(feriasJaTiradas) || 0;
-
-      let afastamentos = [];
-      if (afastamentosINSS) {
-        try {
-          afastamentos = typeof afastamentosINSS === 'string' 
-            ? JSON.parse(afastamentosINSS) 
-            : afastamentosINSS;
-        } catch (e) {
-          afastamentos = [];
-        }
+      // Calcula período aquisitivo fim se não fornecido
+      const moment = require('moment');
+      let periodoAquisitivoFimCalculado = periodoAquisitivoFim;
+      if (!periodoAquisitivoFimCalculado && periodoAquisitivoInicio) {
+        const inicio = moment(periodoAquisitivoInicio);
+        const fim = inicio.clone().add(12, 'months').subtract(1, 'day');
+        periodoAquisitivoFimCalculado = fim.format('YYYY-MM-DD');
       }
 
-      // CORREÇÃO: Remove salário e médias - férias calcula apenas avos
-      // REMOVIDO: diasATirar não é mais usado
-      const resultado = FeriasService.calcular(
-        dataAdmissao,
-        dataReferencia,
-        afastamentos,
-        0, // faltas não é usado no cálculo de avos
-        feriasTiradas
-      );
+      // Prepara dados para cálculo
+      const dadosCalculo = {
+        periodoAquisitivoInicio,
+        periodoAquisitivoFim: periodoAquisitivoFimCalculado,
+        dataConcessaoInicio,
+        dataConcessaoFim,
+        salario: parseFloat(salario) || 0,
+        venderUmTerco: venderUmTerco === 'true' || venderUmTerco === true,
+        dependentes: parseInt(dependentes) || 0,
+        pensaoAlimenticia: parseFloat(pensaoAlimenticia) || 0,
+        faltouInjustificada: faltouInjustificada === 'sim',
+        diasFaltas: parseInt(diasFaltas) || 0,
+        afastamentoAuxilioDoenca: afastamentoAuxilioDoenca === 'sim',
+        afastamentoInicio: afastamentoAuxilioDoenca === 'sim' ? afastamentoInicio : null,
+        afastamentoFim: afastamentoAuxilioDoenca === 'sim' ? afastamentoFim : null,
+        ano: new Date().getFullYear()
+      };
+
+      // Calcula valores monetários de férias
+      const resultado = FeriasService.calcularValores(dadosCalculo);
+
+      // Formata datas para exibição
+      resultado.periodoAquisitivoFormatado = {
+        inicio: moment(resultado.periodoAquisitivo.inicio).format("DD/MM/YYYY"),
+        fim: moment(resultado.periodoAquisitivo.fim).format("DD/MM/YYYY")
+      };
+      resultado.dataConcessaoFormatada = moment(resultado.dataConcessao).format("DD/MM/YYYY");
 
       // Carrega lei completa
       const fs = require('fs');
@@ -66,18 +93,17 @@ class FeriasController {
         console.warn('Erro ao carregar lei completa:', e.message);
       }
 
-      // Salva no histórico (usando tabela de avos)
-      // CORREÇÃO: resultado.totalAvos é o campo correto, não diasFerias ou valorTotal
+      // Salva no histórico
       await db.query(
         `INSERT INTO calculos_avos (user_id, data_admissao, data_referencia, tipo, avos, valor, memoria_calculo)
          VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         [
           userId,
-          dataAdmissao,
-          dataReferencia,
+          periodoAquisitivoInicio,
+          dataConcessaoInicio,
           'ferias',
-          resultado.totalAvos || 0, // Campo correto: totalAvos
-          0, // Férias não calcula valores, apenas avos
+          0, // Não calcula avos neste módulo
+          resultado.total,
           JSON.stringify(resultado.memoria)
         ]
       );
@@ -85,7 +111,8 @@ class FeriasController {
       res.render('ferias/index', {
         title: 'Calculadora de Férias - Suporte DP',
         resultado,
-        error: null
+        error: null,
+        user: req.session.user
       });
     } catch (error) {
       console.error('Erro ao calcular férias:', error);
