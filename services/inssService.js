@@ -41,11 +41,12 @@ class INSSService {
         2026: {
           faixas: [
             { limite: 1621.00, aliquota: 7.5 },
-            { limite: 2985.00, aliquota: 9.0 },
-            { limite: 4480.00, aliquota: 12.0 },
-            { limite: 8537.55, aliquota: 14.0 }
+            { limite: 2902.84, aliquota: 9.0 },
+            { limite: 4354.27, aliquota: 12.0 },
+            { limite: 8475.55, aliquota: 14.0 }
           ],
-          teto: 8537.55
+          teto: 8475.55,
+          minimoRecolhimento: 10.00
         }
       };
     }
@@ -152,6 +153,7 @@ class INSSService {
       aliquotaEfetiva: parseFloat(((valorTotal / salarioBruto) * 100).toFixed(2)),
       ano: anoUsado,
       teto: TETO_PREVIDENCIARIO,
+      minimoRecolhimento: tabela.minimoRecolhimento || null,
       memoria,
       baseLegal: {
         titulo: 'Lei nº 8.212, de 24 de julho de 1991',
@@ -205,6 +207,7 @@ class INSSService {
       proLabore: true,
       ano: anoUsado,
       teto: TETO_PREVIDENCIARIO,
+      minimoRecolhimento: tabela.minimoRecolhimento || null,
       memoria,
       baseLegal: {
         titulo: 'Lei nº 8.212, de 24 de julho de 1991',

@@ -376,10 +376,17 @@
                                                             </tbody>
                                                         </table>
                                                     </div>
-                                                    <p class="text-sm text-gray-600 mt-4">
-                                                        <strong>Teto Previdenciário:</strong> R$ <%= (resultado.teto ||
-                                                            8157.41).toFixed(2) %>
-                                                    </p>
+                                                    <div class="flex flex-col sm:flex-row gap-4 mt-4">
+                                                        <p class="text-sm text-gray-600">
+                                                            <strong>Teto Previdenciário:</strong> R$ <%= (resultado.teto ||
+                                                                8157.41).toFixed(2) %>
+                                                        </p>
+                                                        <% if (resultado.minimoRecolhimento) { %>
+                                                            <p class="text-sm text-gray-600">
+                                                                <strong>Mínimo para recolhimento:</strong> R$ <%= resultado.minimoRecolhimento.toFixed(2) %>
+                                                            </p>
+                                                        <% } %>
+                                                    </div>
                                                 </div>
                                                 <% } %>
 

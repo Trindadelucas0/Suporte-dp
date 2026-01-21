@@ -50,6 +50,9 @@ class INSSController {
         const anoUsado = anoSelecionado || new Date().getFullYear();
         if (tabelas[anoUsado]) {
           resultado.tabelaFaixas = tabelas[anoUsado].faixas;
+          if (tabelas[anoUsado].minimoRecolhimento) {
+            resultado.minimoRecolhimento = tabelas[anoUsado].minimoRecolhimento;
+          }
         }
       } catch (e) {
         console.warn('Erro ao carregar leis/tabelas:', e.message);
