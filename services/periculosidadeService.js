@@ -79,11 +79,6 @@ class PericulosidadeService {
       percentual,
       valorAdicional: parseFloat(valorAdicional.toFixed(2)),
       memoria,
-      educacao: {
-        titulo: 'Periculosidade: Base de Cálculo',
-        descricao: 'O adicional de periculosidade é calculado sobre o SALÁRIO MÍNIMO, não sobre o salário do funcionário. Isso é diferente de outros adicionais que podem usar o salário base.',
-        observacao: 'O percentual de 30% é fixo e aplicado sempre sobre o salário mínimo vigente no ano.'
-      },
       baseLegal: {
         titulo: 'CLT - Art. 193',
         artigo: 'Art. 193',
@@ -161,11 +156,6 @@ class PericulosidadeService {
       salarioMinimo: parseFloat(salarioMinimo.toFixed(2)),
       valorAdicional: parseFloat(valorAdicional.toFixed(2)),
       memoria,
-      educacao: {
-        titulo: 'Insalubridade: Base de Cálculo',
-        descricao: 'A insalubridade é calculada sobre o SALÁRIO MÍNIMO, não sobre o salário do funcionário. O percentual varia conforme o grau determinado pelo LTCAT.',
-        observacao: 'O grau de insalubridade é determinado por laudo técnico de periculosidade e insalubridade (LTCAT).'
-      },
       baseLegal: {
         titulo: 'CLT - Art. 189',
         artigo: 'Art. 189',
