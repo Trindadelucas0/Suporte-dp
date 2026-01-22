@@ -305,19 +305,57 @@ class FeriasService {
     // Base de cálculo para impostos = Valor das férias + Adicional de 1/3
     const baseCalculoImpostos = valorFerias + adicionalUmTerco;
 
+    memoria.push({
+      passo: venderUmTerco ? 7 : 6,
+      descricao: `Base de Cálculo para Impostos: Valor das Férias + Adicional de 1/3`,
+      calculo: `R$ ${valorFerias.toFixed(2)} + R$ ${adicionalUmTerco.toFixed(2)} = R$ ${baseCalculoImpostos.toFixed(2)}`,
+      valor: baseCalculoImpostos.toFixed(2)
+    });
+
     // Calcula INSS sobre a base
     const calculoINSS = INSSService.calcular(baseCalculoImpostos, false, ano);
     const valorINSS = calculoINSS.valorINSS;
 
+    // Adiciona detalhamento do cálculo de INSS
     memoria.push({
-      passo: venderUmTerco ? 7 : 6,
-      descricao: `INSS: Calculado sobre R$ ${baseCalculoImpostos.toFixed(2)}`,
-      calculo: `Base: R$ ${baseCalculoImpostos.toFixed(2)}`,
-      valor: valorINSS.toFixed(2)
+      passo: venderUmTerco ? 8 : 7,
+      descricao: `Cálculo de INSS - Tabela ${ano} (Teto: R$ ${calculoINSS.teto.toFixed(2)})`,
+      calculo: `Base de cálculo: R$ ${baseCalculoImpostos.toFixed(2)}`,
+      valor: `Ano ${ano}`
+    });
+
+    // Adiciona cada faixa de INSS utilizada
+    let passoINSS = venderUmTerco ? 9 : 8;
+    calculoINSS.memoria.forEach((passo, index) => {
+      if (passo.descricao.includes('Faixa')) {
+        memoria.push({
+          passo: passoINSS,
+          descricao: `INSS ${passo.descricao}`,
+          calculo: passo.calculo || passo.detalhe || '',
+          valor: passo.valor
+        });
+        passoINSS++;
+      }
+    });
+
+    // Adiciona o valor total do INSS
+    memoria.push({
+      passo: passoINSS,
+      descricao: `Valor Total de INSS: R$ ${valorINSS.toFixed(2)}`,
+      calculo: `Cálculo progressivo sobre R$ ${baseCalculoImpostos.toFixed(2)}`,
+      valor: valorINSS.toFixed(2),
+      destaque: true
     });
 
     // Base para IR = Base de cálculo - INSS
     const baseIR = baseCalculoImpostos - valorINSS;
+
+    memoria.push({
+      passo: passoINSS + 1,
+      descricao: `Base de Cálculo para IRRF: Base de Impostos - INSS`,
+      calculo: `R$ ${baseCalculoImpostos.toFixed(2)} - R$ ${valorINSS.toFixed(2)} = R$ ${baseIR.toFixed(2)}`,
+      valor: baseIR.toFixed(2)
+    });
 
     // Calcula IRRF
     const calculoIRRF = IRRFService.calcular(
@@ -330,12 +368,33 @@ class FeriasService {
     );
     const valorIRRF = calculoIRRF.valorIRRF;
 
-    memoria.push({
-      passo: venderUmTerco ? 8 : 7,
-      descricao: `IRRF: Calculado sobre base de R$ ${baseIR.toFixed(2)}`,
-      calculo: `Base: R$ ${baseIR.toFixed(2)} | Dependentes: ${dependentes} | Pensão: R$ ${parseFloat(pensaoAlimenticia).toFixed(2)}`,
-      valor: valorIRRF.toFixed(2)
-    });
+    // Adiciona detalhamento do cálculo de IRRF
+    let passoIRRF = passoINSS + 2;
+    
+    // Adiciona todos os detalhes da memória de cálculo do IRRF
+    if (calculoIRRF.memoria && calculoIRRF.memoria.length > 0) {
+      calculoIRRF.memoria.forEach((passo, index) => {
+        // Substitui o primeiro passo para mostrar a base correta (já descontado INSS)
+        if (index === 0) {
+          memoria.push({
+            passo: passoIRRF,
+            descricao: `Base para IRRF: R$ ${baseIR.toFixed(2)}`,
+            calculo: `R$ ${baseCalculoImpostos.toFixed(2)} - R$ ${valorINSS.toFixed(2)} = R$ ${baseIR.toFixed(2)}`,
+            valor: baseIR.toFixed(2)
+          });
+          passoIRRF++;
+        } else {
+          memoria.push({
+            passo: passoIRRF,
+            descricao: passo.descricao,
+            calculo: passo.calculo || '',
+            valor: passo.valor,
+            destaque: passo.destaque || false
+          });
+          passoIRRF++;
+        }
+      });
+    }
 
     // IRRF com dedução simplificada (se aplicável)
     const calculoIRRFSimplificado = IRRFService.calcular(
@@ -348,10 +407,11 @@ class FeriasService {
     );
     const valorIRRFSimplificado = calculoIRRFSimplificado.valorIRRF;
 
+    let passoSimplificado = passoIRRF + 1;
     memoria.push({
-      passo: venderUmTerco ? 9 : 8,
-      descricao: `IRRF - Desconto Simplificado: Calculado com dedução simplificada`,
-      calculo: `Base: R$ ${baseIR.toFixed(2)} | Dedução Simplificada: R$ 607,20`,
+      passo: passoSimplificado,
+      descricao: `IRRF - Desconto Simplificado (R$ 607,20)`,
+      calculo: `Base: R$ ${baseIR.toFixed(2)} | Dedução Simplificada: R$ 607,20 | Base após dedução: R$ ${calculoIRRFSimplificado.baseCalculo.toFixed(2)}`,
       valor: valorIRRFSimplificado.toFixed(2)
     });
 
@@ -359,9 +419,9 @@ class FeriasService {
     const totalLiquido = baseCalculoImpostos + abonoPecuniario - valorINSS - valorIRRF;
 
     memoria.push({
-      passo: venderUmTerco ? 10 : 9,
-      descricao: `Total: R$ ${baseCalculoImpostos.toFixed(2)} + R$ ${abonoPecuniario.toFixed(2)} - R$ ${valorINSS.toFixed(2)} - R$ ${valorIRRF.toFixed(2)}`,
-      calculo: `R$ ${(baseCalculoImpostos + abonoPecuniario).toFixed(2)} - R$ ${valorINSS.toFixed(2)} - R$ ${valorIRRF.toFixed(2)} = R$ ${totalLiquido.toFixed(2)}`,
+      passo: passoSimplificado + 1,
+      descricao: `Total Líquido a Receber`,
+      calculo: `(R$ ${baseCalculoImpostos.toFixed(2)} + R$ ${abonoPecuniario.toFixed(2)}) - R$ ${valorINSS.toFixed(2)} - R$ ${valorIRRF.toFixed(2)} = R$ ${totalLiquido.toFixed(2)}`,
       valor: totalLiquido.toFixed(2),
       destaque: true
     });
@@ -385,6 +445,7 @@ class FeriasService {
       valorIRRF: parseFloat(valorIRRF.toFixed(2)),
       valorIRRFSimplificado: parseFloat(valorIRRFSimplificado.toFixed(2)),
       total: parseFloat(totalLiquido.toFixed(2)),
+      ano: ano,
       memoria,
       baseLegal: {
         titulo: "Consolidação das Leis do Trabalho - CLT",

@@ -23,6 +23,7 @@ class FeriasController {
       dataConcessaoInicio,
       dataConcessaoFim,
       salario,
+      ano,
       venderUmTerco,
       dependentes,
       pensaoAlimenticia,
@@ -35,7 +36,7 @@ class FeriasController {
 
     try {
       // Validação dos campos obrigatórios
-      if (!periodoAquisitivoInicio || !dataConcessaoInicio || !dataConcessaoFim || !salario) {
+      if (!periodoAquisitivoInicio || !dataConcessaoInicio || !dataConcessaoFim || !salario || !ano) {
         return res.render('ferias/index', {
           title: 'Calculadora de Férias - Suporte DP',
           resultado: null,
@@ -67,7 +68,7 @@ class FeriasController {
         afastamentoAuxilioDoenca: afastamentoAuxilioDoenca === 'sim',
         afastamentoInicio: afastamentoAuxilioDoenca === 'sim' ? afastamentoInicio : null,
         afastamentoFim: afastamentoAuxilioDoenca === 'sim' ? afastamentoFim : null,
-        ano: new Date().getFullYear()
+        ano: parseInt(ano) || new Date().getFullYear()
       };
 
       // Calcula valores monetários de férias

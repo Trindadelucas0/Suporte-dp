@@ -172,7 +172,14 @@
                                         <input type="date" id="periodoAquisitivoInicio" name="periodoAquisitivoInicio" required
                                             class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none input-glow backdrop-blur-sm">
                                     </div>
-                                    <div>
+                                    <div class="relative">
+                                        <div class="flex items-center mb-1">
+                                            <input type="checkbox" id="editarPeriodoAquisitivoFim" 
+                                                class="h-4 w-4 text-primary-yellow focus:ring-primary-yellow border-white/30 rounded cursor-pointer">
+                                            <label for="editarPeriodoAquisitivoFim" class="ml-2 text-xs text-white/70 cursor-pointer">
+                                                Editar manualmente
+                                            </label>
+                                        </div>
                                         <input type="date" id="periodoAquisitivoFim" name="periodoAquisitivoFim" readonly
                                             class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white/70 bg-white/5 backdrop-blur-sm">
                                     </div>
@@ -205,6 +212,22 @@
                                     <input type="date" id="dataConcessaoFim" name="dataConcessaoFim" required
                                         class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none input-glow backdrop-blur-sm">
                                 </div>
+                            </div>
+
+                            <!-- Ano -->
+                            <div>
+                                <label for="ano" class="block text-sm font-semibold text-white/90 mb-2">
+                                    <i class="fas fa-calendar text-primary-yellow mr-2 icon-glow-yellow"></i>
+                                    Ano da Tabela *
+                                </label>
+                                <select id="ano" name="ano" required
+                                    class="w-full px-4 py-3 glass border border-white/20 rounded-xl text-white focus:ring-2 focus:ring-primary-yellow focus:border-primary-yellow transition outline-none input-glow backdrop-blur-sm">
+                                    <option value="" class="bg-gray-800">Selecione o ano</option>
+                                    <option value="2026" selected class="bg-gray-800">2026</option>
+                                    <option value="2025" class="bg-gray-800">2025</option>
+                                    <option value="2024" class="bg-gray-800">2024</option>
+                                </select>
+                                <p class="text-xs text-white/70 mt-1">Ano para usar as tabelas de INSS e IRRF</p>
                             </div>
 
                             <!-- Salário -->
@@ -484,6 +507,12 @@
         // Função para calcular período aquisitivo fim e período de concessão
         function calcularPeriodos() {
             const periodoAquisitivoInicio = document.getElementById('periodoAquisitivoInicio').value;
+            const editarManual = document.getElementById('editarPeriodoAquisitivoFim').checked;
+            
+            // Se estiver em modo de edição manual, não calcula automaticamente
+            if (editarManual) {
+                return;
+            }
             
             if (periodoAquisitivoInicio) {
                 const inicio = new Date(periodoAquisitivoInicio);
@@ -493,7 +522,8 @@
                 periodoAquisitivoFim.setMonth(periodoAquisitivoFim.getMonth() + 12);
                 periodoAquisitivoFim.setDate(periodoAquisitivoFim.getDate() - 1); // Um dia antes para completar exatamente 12 meses
                 
-                document.getElementById('periodoAquisitivoFim').value = periodoAquisitivoFim.toISOString().split('T')[0];
+                const campoFim = document.getElementById('periodoAquisitivoFim');
+                campoFim.value = periodoAquisitivoFim.toISOString().split('T')[0];
                 
                 // Período de concessão: 12 meses após o fim do período aquisitivo
                 const periodoConcessaoInicio = new Date(periodoAquisitivoFim);
@@ -507,12 +537,38 @@
                 document.getElementById('periodoConcessaoFim').value = periodoConcessaoFim.toISOString().split('T')[0];
             }
         }
+        
+        // Função para alternar entre edição manual e automática
+        function toggleEdicaoManual() {
+            const checkbox = document.getElementById('editarPeriodoAquisitivoFim');
+            const campoFim = document.getElementById('periodoAquisitivoFim');
+            
+            if (checkbox.checked) {
+                // Modo manual: torna o campo editável
+                campoFim.removeAttribute('readonly');
+                campoFim.classList.remove('text-white/70', 'bg-white/5');
+                campoFim.classList.add('text-white', 'focus:ring-2', 'focus:ring-primary-yellow', 'focus:border-primary-yellow', 'input-glow');
+            } else {
+                // Modo automático: torna o campo somente leitura e recalcula
+                campoFim.setAttribute('readonly', 'readonly');
+                campoFim.classList.remove('text-white', 'focus:ring-2', 'focus:ring-primary-yellow', 'focus:border-primary-yellow', 'input-glow');
+                campoFim.classList.add('text-white/70', 'bg-white/5');
+                // Recalcula os períodos
+                calcularPeriodos();
+            }
+        }
 
         // Event listener para período aquisitivo início
         document.addEventListener('DOMContentLoaded', function() {
             const periodoAquisitivoInicio = document.getElementById('periodoAquisitivoInicio');
             if (periodoAquisitivoInicio) {
                 periodoAquisitivoInicio.addEventListener('change', calcularPeriodos);
+            }
+            
+            // Event listener para checkbox de edição manual
+            const checkboxEditar = document.getElementById('editarPeriodoAquisitivoFim');
+            if (checkboxEditar) {
+                checkboxEditar.addEventListener('change', toggleEdicaoManual);
             }
 
             // Mostrar/ocultar campo de dias de faltas
